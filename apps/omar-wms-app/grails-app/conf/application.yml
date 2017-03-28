@@ -1,0 +1,344 @@
+---
+# For dialects:
+#   Postgis: org.hibernate.spatial.dialect.postgis.PostgisDialect
+#   H2:org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+#   Oracle: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+#
+
+hibernate:
+    cache:
+        queries: false
+        use_second_level_cache: true
+        use_query_cache: false
+        region.factory_class: org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+
+dataSource:
+    pooled: true
+    jmxExport: true
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+    dialect: "org.hibernate.spatial.dialect.h2geodb.GeoDBDialect"
+
+environments:
+    development:
+        dataSource:
+            dbCreate: create-drop
+            url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+    test:
+        dataSource:
+            dbCreate: update
+            url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+    production:
+        dataSource:
+            dbCreate: update
+            url: jdbc:h2:./prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+            properties:
+                jmxEnabled: true
+                initialSize: 5
+                maxActive: 50
+                minIdle: 5
+                maxIdle: 25
+                maxWait: 10000
+                maxAge: 600000
+                timeBetweenEvictionRunsMillis: 5000
+                minEvictableIdleTimeMillis: 60000
+                validationQuery: SELECT 1
+                validationQueryTimeout: 3
+                validationInterval: 15000
+                testOnBorrow: true
+                testWhileIdle: true
+                testOnReturn: false
+                jdbcInterceptors: ConnectionState
+                defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
+
+---
+grails:
+    profile: web
+    codegen:
+        defaultPackage: wms.app
+    spring:
+        transactionManagement:
+            proxies: false
+info:
+    app:
+        name: '@info.app.name@'
+        version: '@info.app.version@'
+        grailsVersion: '@info.app.grailsVersion@'
+spring:
+    groovy:
+        template:
+            check-template-location: false
+# Spring Actuator Endpoints are Disabled by Default
+endpoints:
+    enabled: true
+    jmx:
+        enabled: true
+
+---
+grails:
+    mime:
+        disable:
+            accept:
+                header:
+                    userAgents:
+                        - Gecko
+                        - WebKit
+                        - Presto
+                        - Trident
+        types:
+            all: '*/*'
+            atom: application/atom+xml
+            css: text/css
+            csv: text/csv
+            form: application/x-www-form-urlencoded
+            html:
+              - text/html
+              - application/xhtml+xml
+            js: text/javascript
+            json:
+              - application/json
+              - text/json
+            multipartForm: multipart/form-data
+            pdf: application/pdf
+            rss: application/rss+xml
+            text: text/plain
+            hal:
+              - application/hal+json
+              - application/hal+xml
+            xml:
+              - text/xml
+              - application/xml
+    urlmapping:
+        cache:
+            maxsize: 1000
+    controllers:
+        defaultScope: singleton
+    converters:
+        encoding: UTF-8
+    views:
+        default:
+            codec: html
+        gsp:
+            encoding: UTF-8
+            htmlcodec: xml
+            codecs:
+                expression: html
+                scriptlets: html
+                taglib: none
+                staticparts: none
+endpoints:
+    jmx:
+        unique-names: true
+---
+wms:
+  styles:
+      byFileType:
+          adrg:
+            filter: file_type='adrg'
+            color:
+              r: 50
+              g: 111
+              b: 111
+              a: 255
+          aaigrid:
+            filter: file_type='aaigrid'
+            color: pink
+          cadrg:
+            filter: file_type='cadrg'
+            color:
+              r: 0
+              g: 255
+              b: 255
+              a: 255
+          ccf:
+            filter: file_type='ccf'
+            color:
+              r: 128
+              g: 100
+              b: 255
+              a: 255
+          cib:
+            filter: file_type='cib'
+            color:
+              r: 0
+              g: 128
+              b: 128
+              a: 255
+          doqq:
+            filter: file_type='doqq'
+            color: purple
+          dted:
+            filter: file_type='dted'
+            color:
+              r: 0
+              g: 255
+              b: 0
+              a: 255
+          imagine_hfa:
+            filter: file_type='imagine_hfa'
+            color: lightGray
+          jpeg:
+            filter: file_type='jpeg'
+            color:
+              r: 255
+              g: 255
+              b: 0
+              a: 255
+          jpeg2000:
+            filter: file_type='jpeg2000'
+            color:
+              r: 255
+              g: 200
+              b: 0
+              a: 255
+          landsat7:
+            filter: file_type='landsat7'
+            color:
+              r: 255
+              g: 0
+              b: 255
+              a: 255
+          mrsid:
+            filter: file_type='mrsid'
+            color:
+              r: 0
+              g: 188
+              b: 0
+              a: 255
+          nitf:
+            filter: file_type='nitf'
+            color:
+              r: 0
+              g: 0
+              b: 255
+              a: 255
+          tiff:
+            filter: file_type='tiff'
+            color:
+              r: 255
+              g: 0
+              b: 0
+              a: 255
+          mpeg:
+            filter: file_type='mpeg'
+            color:
+              r: 164
+              g: 254
+              b: 255
+              a: 255
+          unspecified:
+            filter: file_type='unspecified'
+            color: white
+      bySensorType:
+          'ACES_YOGI-HRI1':
+            filter: mission_id='ACES_YOGI-HRI1'
+            color:
+              r: 255
+              g: 0
+              b: 0
+              a: 255
+          'ACES_YOGI-HRI2':
+            filter: mission_id='ACES_YOGI-HRI2'
+            color:
+              r: 255
+              g: 0
+              b: 0
+              a: 255
+          'ACES_YOGI-HRI3':
+            filter: mission_id='ACES_YOGI-HRI3'
+            color:
+              r: 255
+              g: 0
+              b: 0
+              a: 255
+          'ACES_YOGI-HSI':
+            filter: mission_id='ACES_YOGI-HSI'
+            color:
+              r: 255
+              g: 255
+              b: 0
+              a: 255
+          ALPHA:
+            filter: mission_id='ALPHA'
+            color:
+              r: 255
+              g: 0
+              b: 255
+              a: 255
+          BRAVO:
+            filter: mission_id='BRAVO'
+            color:
+              r: 0
+              g: 255
+              b: 0
+              a: 255
+          CHARLIE:
+            filter: mission_id='CHARLIE'
+            color:
+              r: 0
+              g: 255
+              b: 255
+              a: 255
+          DELTA:
+            filter: mission_id='DELTA'
+            color:
+              r: 0
+              g: 0
+              b: 255
+              a: 255
+          unspecified:
+            filter: mission_id='unspecified'
+            color:
+              r: 255
+              g: 255
+              b: 255
+              a: 255
+      byVideoType:
+          mpeg:
+            filter: filename like '%mpg'
+            color:
+              r: 255
+              g: 0
+              b: 0
+              a: 255
+  
+wfs:
+
+  featureTypeNamespaces:
+      - prefix: omar
+        uri: http://omar.ossim.org
+
+  datastores:
+
+      - namespaceId: omar
+        datastoreId: omardb-1.8.20-prod
+        datastoreParams:
+          dbtype: postgis
+          host: localhost
+          port: '5432'
+          database: omardb-1.8.20-prod
+          user: postgres
+          passwd: postgres
+          'Expose primary keys': 'true'
+          namespace: http://omar.ossim.org
+
+  featureTypes:
+
+      - name: raster_entry
+        title: raster_entry
+        description: ''
+        keywords:
+          - omar
+          - raster_entry
+          - features
+        datastoreId: omardb-1.8.20-prod
+
+      - name: video_data_set
+        title: video_data_set
+        description: ''
+        keywords:
+          - omar
+          - video_data_set
+          - features
+        datastoreId: omardb-1.8.20-prod
