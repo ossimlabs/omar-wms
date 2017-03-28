@@ -15,6 +15,7 @@ node("master"){
     def workspaceDir = pwd()
     def appName = "omar-wms"
     def omarCommonProjName = "omar-common"
+    env.OMAR_COMMON_PROPERTIES="${workspaceDir}/${omarCommonProjName}/omar-common-properties.gradle"
 
     stage("Checkout"){
         dir("ossim-ci") {
@@ -35,20 +36,35 @@ node("master"){
     }
 
     try {
-      stage("Build"){
-        env.OMAR_COMMON_PROPERTIES="${workspaceDir}/${omarCommonProjName}/omar-common-properties.gradle"
+      stage ("Publish Plugin Artifactory")
+      {
 
-        // cd into the code directory to pick up the local build.gradle when building
-        // build the plugin
+//          withCredentials([[$class: 'UsernamePasswordMultiBinding', 
+//                            credentialsId: 'artifactoryCredentials',
+//                            usernameVariable: 'ARTIFACTORY_USERNAME', 
+//                            passwordVariable: 'ARTIFACTORY_PASSWORD']])
+//            {
+                sh """
+                pushd ${workspaceDir}/${appName}/plugins/${appName}-plugin
+                ./gradlew artifactoryPublish
+                popd
+                """
+//            } 
+      }
+      stage ("Publish App Artifactory")
+      {
         sh """
-        pushd ${workspaceDir}/${appName}/plugins/omar-wms-plugin
-        ./gradlew install
+        pushd ${workspaceDir}/${appName}/apps/${appName}-app
+        ./gradlew artifactoryPublish
         popd
         """
+      }
 
+      stage ("Publish Docker App") 
+      {      
         // Run all tasks on the app. This includes pushing to OpenShift and S3.
         sh """
-        pushd ${workspaceDir}/omar-stager/apps/omar-wms-app
+        pushd ${workspaceDir}/${appName}/apps/${appName}-app
         ./gradlew ${GRADLE_TASK}
         popd
         """
