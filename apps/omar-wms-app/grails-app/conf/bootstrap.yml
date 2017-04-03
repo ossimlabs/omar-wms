@@ -1,6 +1,6 @@
 spring:
   application:
-    name: o2-wms
+    name: omar-wms
   cloud:
     config:
       enabled: false
