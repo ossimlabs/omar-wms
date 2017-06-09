@@ -17,7 +17,7 @@ import org.springframework.beans.factory.InitializingBean
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
-
+import omar.core.HttpStatus
 @Slf4j
 class WebMappingService implements InitializingBean
 {
@@ -282,6 +282,8 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
+    HashMap result = [status: HttpStatus.OK]
+    String omsChipperUrl = grailsApplication.config.wms.oms.chipper.url
     log.trace "getMap: Entered ................"
     def renderMode = RenderMode.FILTER
     def otherParams = [startDate: new Date()
@@ -334,8 +336,8 @@ class WebMappingService implements InitializingBean
       break
 
     case RenderMode.FILTER:
+    HashMap omsParams = [:]
       log.trace "getMap: Using  RenderMode.FILTER Method"
-
       def layerNames = wmsParams?.layers?.split( ',' )
       def layers = []
 
@@ -355,12 +357,9 @@ class WebMappingService implements InitializingBean
           break
         }
 
-//        println "${prefix} ${typeName} ${id}"
-
         def layerInfo = LayerInfo.where {
           name == typeName && workspaceInfo.namespaceInfo.prefix == prefix
         }.get()
-//          println "LAYER INFO ============= ${layerInfo}"
         List images = null
 
         //def maxCount = grailsApplication?.config.omar.wms.autoMosaic.maxCount
@@ -382,7 +381,6 @@ class WebMappingService implements InitializingBean
             [id: it.get( 'id' ), imageFile: it.filename, groundGeom: it.ground_geom, entry: it.entry_id?.toInteger()]
           }
         }
-
         // apply ordering for filters having:  in(1,2,3)
         def ids = wmsParams?.filter?.find( /.*in[(](.*)[)].*/ ) { matcher, ids -> return ids }
         if ( ids )
@@ -391,10 +389,14 @@ class WebMappingService implements InitializingBean
           ids.split( "," ).collect( { it as Integer } ).each() {
             def idIndex = it
             orderedImages << images.find { it.id == idIndex }
+
           }
           images = orderedImages
         }
-
+        images.eachWithIndex{v,i->
+          omsParams."images[${i}].file" = v.imageFile
+          omsParams."images[${i}].entry" = v.entry
+        }
         def chipperLayer = new ChipperLayer( images, style )
 
         layers << chipperLayer
@@ -412,7 +414,40 @@ class WebMappingService implements InitializingBean
       {
         bbox = new Bounds( *coords, proj )
       }
+      omsParams.cutWmsBbox   = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+      omsParams.cutWidth     = wmsParams.width
+      omsParams.cutHeight    = wmsParams.height
+      omsParams.srs          = bbox?.proj.id
+      omsParams.outputFormat = wmsParams.format
+      omsParams.transparent  = wmsParams.transparent
+      omsParams.operation    = "ortho"
+      URL omsUrl             = new URL("${omsChipperUrl}")
+      omsParams              = omsParams+omsUrl.params
+      //omsParams.each{k,v->omsParams."${k}" = v?.encodeAsURL()}
+      omsUrl.setParams(omsParams)
+      try{
+          HttpURLConnection connection = (HttpURLConnection)omsUrl.openConnection();
+          Map responseMap = connection.headerFields;
+          String contentType =  responseMap."Content-Type"[0].split(";")[0]
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
 
+          // We later need to map to an OGC exception.  For now we will just carry
+          // the response on to this response
+          //
+          outputStream << connection.inputStream
+          result.buffer      = outputStream?.toByteArray()
+          result.contentType = contentType
+          result.status      = connection.responseCode
+      }
+      catch(e)
+      {
+          result.status = HttpStatus.INTERNAL_SERVER_ERROR
+          result.buffer = e.toString().bytes
+          result.contentType = "text/plain"
+          log.error e.message
+      }
+/*
+println omsParams.toString()
       def renderParams = [
           fixAspectRatio: false,
           width: wmsParams?.width,
@@ -427,13 +462,15 @@ class WebMappingService implements InitializingBean
 
       map.render( ostream )
       map.close()
+      */
       otherParams.internalTime = System.currentTimeMillis()
       break
     }
-
     //otherParams.endDate = new Date()
-
+    result.metrics = otherParams
     log.trace "getMap: Leaving ................"
-    [contentType: wmsParams.format, buffer: ostream.toByteArray(), metrics: otherParams]
+//    [contentType: wmsParams.format, buffer: ostream.toByteArray(), metrics: otherParams]
+  
+  result
   }
 }

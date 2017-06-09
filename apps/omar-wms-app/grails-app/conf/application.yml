@@ -132,6 +132,10 @@ endpoints:
         unique-names: true
 ---
 wms:
+  oms:
+    chipper:
+      url: http://localhost:8081/chipper
+
   styles:
       byFileType:
           adrg:
@@ -342,3 +346,4 @@ wfs:
           - video_data_set
           - features
         datastoreId: omardb-1.8.20-prod
+
