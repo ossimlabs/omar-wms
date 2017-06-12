@@ -59,7 +59,8 @@ class WmsController
 			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "[GetMap]", defaultValue = 'GetMap', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'layers', value = 'Type name', defaultValue = "omar:raster_entry", paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'filter', value = 'Filter', paramType = 'query', dataType = 'string', required = false ),
-			@ApiImplicitParam( name = 'srs', value = 'Spatial Reference System', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'srs', value = 'Spatial Reference System (Version 1.1.1)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
+			@ApiImplicitParam( name = 'crs', value = 'Spatial Reference System (Version 1.3.0)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
 			@ApiImplicitParam( name = 'bbox', value = 'Bounding box', defaultValue = "-180,-90,180,90", paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'width', value = 'Width of result image', defaultValue = "1024", paramType = 'query', dataType = 'int', required = true ),
 			@ApiImplicitParam( name = 'height', value = 'Height of result image', defaultValue = "512", paramType = 'query', dataType = 'int', required = true ),
@@ -93,7 +94,7 @@ class WmsController
 		}
 		catch ( e )
 		{
-			//println e
+			println e
 			log.debug(e.toString())
 		}
 		finally{

@@ -1,4 +1,4 @@
-package omar.wms
+/*package omar.wms
 
 import geoscript.geom.Bounds
 import omar.core.HttpStatus
@@ -17,9 +17,6 @@ import omar.oms.ChipperUtil
 
 import java.awt.image.BufferedImage
 
-/**
- * Created by sbortman on 1/19/16.
- */
 class ChipperLayer extends DirectLayer
 {
   private static final identity = new AffineTransform()
@@ -213,3 +210,4 @@ class ChipperLayer extends DirectLayer
     super.dispose()
   }
 }
+*/
