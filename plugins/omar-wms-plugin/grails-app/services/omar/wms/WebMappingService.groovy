@@ -18,6 +18,8 @@ import org.springframework.beans.factory.InitializingBean
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
 import omar.core.HttpStatus
+import omar.core.OgcExceptionUtil
+
 @Slf4j
 class WebMappingService implements InitializingBean
 {
@@ -279,8 +281,14 @@ class WebMappingService implements InitializingBean
     [contentType: contentType, buffer: buffer]
   }
 
+  static String toCamelCase( String text, boolean capitalized = false ) 
+  {
+    text = text.replaceAll( "(_)([A-Za-z0-9])", { Object[] it -> it[2].toUpperCase() } )
+    return capitalized ? capitalize(text) : text
+  }
   def getMap(GetMapRequest wmsParams)
   {
+
     HashMap result = [status: HttpStatus.OK]
     String omsChipperUrl = grailsApplication.config.wms.oms.chipper.url
     def otherParams = [startDate: new Date()
@@ -289,19 +297,26 @@ class WebMappingService implements InitializingBean
     log.trace "getMap: Entered ................"
     otherParams.startTime = System.currentTimeMillis()
     otherParams.internalTime = otherParams.startTime
+    HashMap omsParams = [:]
 
     def ostream = new ByteArrayOutputStream()
-    def style = [:]
+    def styles = [:]
 
     if (wmsParams?.styles?.trim()) {
       try {
-        style = new JsonSlurper().parseText(wmsParams?.styles)
+        styles = new JsonSlurper().parseText(wmsParams?.styles)
       } catch ( e ) {
         e.printStackTrace()
       }
     }
+    // chipper requires to be camel case
+    // so change from snake to camelCase
+    styles.each{k,v->
+      String newKey = toCamelCase(k)
+      omsParams."${newKey}" = v
+    }
 
-    HashMap omsParams = [:]
+    println omsParams
     def layerNames = wmsParams?.layers?.split( ',' )
     def layers = []
 
@@ -366,7 +381,8 @@ class WebMappingService implements InitializingBean
 
     if ( wmsParams.version == "1.3.0" && proj?.crs?.unit?.toString() == '\u00b0' )
     {
-      bbox = new Bounds( coords[1], coords[0], coords[3], coords[2], proj )
+//      bbox = new Bounds( coords[1], coords[0], coords[3], coords[2], proj )
+      bbox = new Bounds( *coords, proj )
     }
     else
     {
@@ -383,31 +399,50 @@ class WebMappingService implements InitializingBean
     omsParams.operation    = "ortho"
     URL omsUrl             = new URL("${omsChipperUrl}")
     omsParams              = omsParams+omsUrl.params
+
+
     //omsParams.each{k,v->omsParams."${k}" = v?.encodeAsURL()}
     omsUrl.setParams(omsParams)
 
-    println omsParams
     try{
       // call OMS and forward the response content and type
         HttpURLConnection connection = (HttpURLConnection)omsUrl.openConnection();
         Map responseMap = connection.headerFields;
         String contentType =  responseMap."Content-Type"[0].split(";")[0]
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
-
-        // We later need to map to an OGC exception.  For now we will just carry
-        // the response on to this response
-        //
+        result.status = connection.responseCode
         outputStream << connection.inputStream
-        result.buffer      = outputStream?.toByteArray()
-        result.contentType = contentType
-        result.status      = connection.responseCode
+
+
+        if(connection.responseCode >= 400)
+        {
+          String tempError           = new String(outputStream?.toByteArray(), "UTF-8")
+          HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse(wmsParams, "WMS server Error: ${tempError}" )
+
+          //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(wmsParams)
+          result.buffer      = ogcExceptionResult.buffer
+          result.contentType = ogcExceptionResult.contentType
+        }
+        else
+        {
+          // We later need to map to an OGC exception.  For now we will just carry
+          // the response on to this response
+          //
+          result.buffer      = outputStream?.toByteArray()
+          result.contentType = contentType
+
+        }
     }
     catch(e)
     {
+
+      HashMap ogcExcpetionResult = OgcExceptionUtil.formatOgcException(wmsParams, "WMS server Error: ${e}" )
+
       // need to test OGC exception style
         result.status = HttpStatus.INTERNAL_SERVER_ERROR
-        result.buffer = e.toString().bytes
-        result.contentType = "text/plain"
+        result.buffer      = ogcExceptionResult.buffer
+        result.contentType = ogcExceptionResult.contentType
+
         log.error e.message
     }
     otherParams.internalTime = System.currentTimeMillis()
