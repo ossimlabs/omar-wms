@@ -17,6 +17,8 @@ import org.springframework.beans.factory.InitializingBean
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
+import omar.core.HttpStatus
+import omar.core.OgcExceptionUtil
 
 @Slf4j
 class WebMappingService implements InitializingBean
@@ -279,161 +281,176 @@ class WebMappingService implements InitializingBean
     [contentType: contentType, buffer: buffer]
   }
 
-
+  static String toCamelCase( String text, boolean capitalized = false ) 
+  {
+    text = text.replaceAll( "(_)([A-Za-z0-9])", { Object[] it -> it[2].toUpperCase() } )
+    return capitalized ? capitalize(text) : text
+  }
   def getMap(GetMapRequest wmsParams)
   {
-    log.trace "getMap: Entered ................"
-    def renderMode = RenderMode.FILTER
+
+    HashMap result = [status: HttpStatus.OK]
+    String omsChipperUrl = grailsApplication.config.wms.oms.chipper.url
     def otherParams = [startDate: new Date()
                        ]
+    Integer imageListIdx = 0
+    log.trace "getMap: Entered ................"
     otherParams.startTime = System.currentTimeMillis()
     otherParams.internalTime = otherParams.startTime
-
-//    println wmsParams
+    HashMap omsParams = [:]
 
     def ostream = new ByteArrayOutputStream()
-    def style = [:]
+    def styles = [:]
 
     if (wmsParams?.styles?.trim()) {
       try {
-        style = new JsonSlurper().parseText(wmsParams?.styles)
+        styles = new JsonSlurper().parseText(wmsParams?.styles)
       } catch ( e ) {
         e.printStackTrace()
       }
     }
-
-    //println "style: ${style}"
-
-    switch ( renderMode )
-    {
-    case RenderMode.GEOSCRIPT:
-      log.trace "getMap: Using  RenderMode.GEOSCRIPT Method"
-      def images = wmsParams?.layers?.split( ',' )?.collect { [imageFile: it.toString()] }
-      def chipperLayer = new ChipperLayer( images, style )
-
-      def map = new GeoScriptMap(
-          fixAspectRatio: false,
-          width: wmsParams?.width,
-          height: wmsParams?.height,
-          type: wmsParams?.format?.split( '/' )?.last(),
-          proj: wmsParams?.srs,
-          bounds: new Bounds( *( wmsParams?.bbox?.split( ',' )?.collect { it.toDouble() } ), wmsParams?.srs ),
-          layers: [chipperLayer]
-      )
-
-      map.render( ostream )
-      map.close()
-      otherParams.internalTime = System.currentTimeMillis()
-      break
-
-    case RenderMode.BLANK:
-      log.trace "getMap: Using  RenderMode.BLANK Method"
-      def image = new BufferedImage( wmsParams.width, wmsParams.height, BufferedImage.TYPE_INT_ARGB )
-
-      ImageIO.write( image, wmsParams?.format?.split( '/' )?.last(), ostream )
-      break
-
-    case RenderMode.FILTER:
-      log.trace "getMap: Using  RenderMode.FILTER Method"
-
-      def layerNames = wmsParams?.layers?.split( ',' )
-      def layers = []
-
-
-      layerNames?.each { layerName ->
-        def parts = layerName?.split( /[:\.]/ )
-
-        def prefix, typeName, id
-
-        switch ( parts?.size() )
-        {
-        case 2:
-          (prefix, typeName) = parts
-          break
-        case 3:
-          (prefix, typeName, id) = parts
-          break
-        }
-
-//        println "${prefix} ${typeName} ${id}"
-
-        def layerInfo = LayerInfo.where {
-          name == typeName && workspaceInfo.namespaceInfo.prefix == prefix
-        }.get()
-//          println "LAYER INFO ============= ${layerInfo}"
-        List images = null
-
-        //def maxCount = grailsApplication?.config.omar.wms.autoMosaic.maxCount
-        //println "BEFORE: ${maxCount}"
-        //maxCount = maxCount?:10
-        //println maxCount
-        //def sorting = grailsApplication?.config.omar.wms.autoMosaic.sorting
-        HashMap workspaceParams = layerInfo.workspaceInfo.workspaceParams
-
-        Workspace.withWorkspace( geoscriptService.getWorkspace( workspaceParams ) ) { Workspace workspace ->
-          def layer = workspace[typeName]
-
-          images = layer?.collectFromFeature(
-              filter: ( id ) ? "in(${id})" : wmsParams?.filter,
-          //sorting: sorting,
-          //	max: maxCount, // will remove and change to have the wms plugin have defaults
-              fields: ['id', 'ground_geom', 'filename', 'entry_id'] as List<String>
-          ) {
-            [id: it.get( 'id' ), imageFile: it.filename, groundGeom: it.ground_geom, entry: it.entry_id?.toInteger()]
-          }
-        }
-
-        // apply ordering for filters having:  in(1,2,3)
-        def ids = wmsParams?.filter?.find( /.*in[(](.*)[)].*/ ) { matcher, ids -> return ids }
-        if ( ids )
-        {
-          def orderedImages = []
-          ids.split( "," ).collect( { it as Integer } ).each() {
-            def idIndex = it
-            orderedImages << images.find { it.id == idIndex }
-          }
-          images = orderedImages
-        }
-
-        def chipperLayer = new ChipperLayer( images, style )
-
-        layers << chipperLayer
-      }
-
-      def coords = wmsParams?.bbox?.split( ',' )?.collect { it.toDouble() }
-      def proj = new Projection( ( wmsParams.version == "1.3.0" ) ? wmsParams?.crs : wmsParams?.srs )
-      def bbox
-
-      if ( wmsParams.version == "1.3.0" && proj?.crs?.unit?.toString() == '\u00b0' )
-      {
-        bbox = new Bounds( coords[1], coords[0], coords[3], coords[2], proj )
-      }
-      else
-      {
-        bbox = new Bounds( *coords, proj )
-      }
-
-      def renderParams = [
-          fixAspectRatio: false,
-          width: wmsParams?.width,
-          height: wmsParams?.height,
-          type: wmsParams?.format?.split( '/' )?.last(),
-          proj: bbox?.proj,
-          bounds: bbox,
-          layers: layers
-      ]
-
-      def map = new GeoScriptMap( renderParams )
-
-      map.render( ostream )
-      map.close()
-      otherParams.internalTime = System.currentTimeMillis()
-      break
+    // chipper requires to be camel case
+    // so change from snake to camelCase
+    styles.each{k,v->
+      String newKey = toCamelCase(k)
+      omsParams."${newKey}" = v
     }
 
-    //otherParams.endDate = new Date()
+    println omsParams
+    def layerNames = wmsParams?.layers?.split( ',' )
+    def layers = []
 
+    layerNames?.each { layerName ->
+      def parts = layerName?.split( /[:\.]/ )
+
+      def prefix, typeName, id
+
+      switch ( parts?.size() )
+      {
+      case 2:
+        (prefix, typeName) = parts
+        break
+      case 3:
+        (prefix, typeName, id) = parts
+        break
+      }
+// now setup the query and then setup the Chipper params for call
+      def layerInfo = LayerInfo.where {
+        name == typeName && workspaceInfo.namespaceInfo.prefix == prefix
+      }.get()
+      List images = null
+
+      HashMap workspaceParams = layerInfo.workspaceInfo.workspaceParams
+
+      Workspace.withWorkspace( geoscriptService.getWorkspace( workspaceParams ) ) { Workspace workspace ->
+        def layer = workspace[typeName]
+
+        images = layer?.collectFromFeature(
+            filter: ( id ) ? "in(${id})" : wmsParams?.filter,
+        //sorting: sorting,
+        //  max: maxCount, // will remove and change to have the wms plugin have defaults
+          //  fields: ['id', 'ground_geom', 'filename', 'entry_id'] as List<String>
+            fields: ['id','filename', 'entry_id'] as List<String>
+        ) {
+          [ id: it.get( 'id' ), imageFile: it.filename, entry: it.entry_id?.toInteger()]
+         // [id: it.get( 'id' ), imageFile: it.filename, groundGeom: it.ground_geom, entry: it.entry_id?.toInteger()]
+        }
+      }
+      // apply ordering for filters having:  in(1,2,3)
+      def ids = wmsParams?.filter?.find( /.*in[(](.*)[)].*/ ) { matcher, ids -> return ids }
+      if ( ids )
+      {
+        def orderedImages = []
+        ids.split( "," ).collect( { it as Integer } ).each() {
+          def idIndex = it
+          orderedImages << images.find { it.id == idIndex }
+
+        }
+        images = orderedImages
+      }
+      // add image chipper files for the oms params
+      images.eachWithIndex{v,i->
+        omsParams."images[${i+imageListIdx}].file" = v.imageFile
+        omsParams."images[${i+imageListIdx}].entry" = v.entry
+        imageListIdx++
+      }
+    }
+    def coords = wmsParams?.bbox?.split( ',' )?.collect { it.toDouble() }
+    def proj = new Projection( ( wmsParams.version == "1.3.0" ) ? wmsParams?.crs : wmsParams?.srs )
+    def bbox
+
+    if ( wmsParams.version == "1.3.0" && proj?.crs?.unit?.toString() == '\u00b0' )
+    {
+//      bbox = new Bounds( coords[1], coords[0], coords[3], coords[2], proj )
+      bbox = new Bounds( *coords, proj )
+    }
+    else
+    {
+      bbox = new Bounds( *coords, proj )
+    }
+
+    // now add in the cut params for oms
+    omsParams.cutWmsBbox   = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+    omsParams.cutWidth     = wmsParams.width
+    omsParams.cutHeight    = wmsParams.height
+    omsParams.srs          = bbox?.proj.id
+    omsParams.outputFormat = wmsParams.format
+    omsParams.transparent  = wmsParams.transparent
+    omsParams.operation    = "ortho"
+    URL omsUrl             = new URL("${omsChipperUrl}")
+    omsParams              = omsParams+omsUrl.params
+
+
+    //omsParams.each{k,v->omsParams."${k}" = v?.encodeAsURL()}
+    omsUrl.setParams(omsParams)
+
+    try{
+      // call OMS and forward the response content and type
+        HttpURLConnection connection = (HttpURLConnection)omsUrl.openConnection();
+        Map responseMap = connection.headerFields;
+        String contentType =  responseMap."Content-Type"[0].split(";")[0]
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+        result.status = connection.responseCode
+        outputStream << connection.inputStream
+
+
+        if(connection.responseCode >= 400)
+        {
+          String tempError           = new String(outputStream?.toByteArray(), "UTF-8")
+          HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse(wmsParams, "WMS server Error: ${tempError}" )
+
+          //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(wmsParams)
+          result.buffer      = ogcExceptionResult.buffer
+          result.contentType = ogcExceptionResult.contentType
+        }
+        else
+        {
+          // We later need to map to an OGC exception.  For now we will just carry
+          // the response on to this response
+          //
+          result.buffer      = outputStream?.toByteArray()
+          result.contentType = contentType
+
+        }
+    }
+    catch(e)
+    {
+
+      HashMap ogcExcpetionResult = OgcExceptionUtil.formatOgcException(wmsParams, "WMS server Error: ${e}" )
+
+      // need to test OGC exception style
+        result.status = HttpStatus.INTERNAL_SERVER_ERROR
+        result.buffer      = ogcExceptionResult.buffer
+        result.contentType = ogcExceptionResult.contentType
+
+        log.error e.message
+    }
+    otherParams.internalTime = System.currentTimeMillis()
+    //otherParams.endDate = new Date()
+    result.metrics = otherParams
     log.trace "getMap: Leaving ................"
-    [contentType: wmsParams.format, buffer: ostream.toByteArray(), metrics: otherParams]
+    
+    result
+
   }
 }
