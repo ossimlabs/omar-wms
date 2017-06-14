@@ -311,12 +311,13 @@ class WebMappingService implements InitializingBean
     }
     // chipper requires to be camel case
     // so change from snake to camelCase
+    // if it's already camel it will not affect
+    // the string
     styles.each{k,v->
       String newKey = toCamelCase(k)
       omsParams."${newKey}" = v
     }
 
-    println omsParams
     def layerNames = wmsParams?.layers?.split( ',' )
     def layers = []
 
