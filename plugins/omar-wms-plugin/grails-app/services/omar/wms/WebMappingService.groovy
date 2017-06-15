@@ -10,9 +10,7 @@ import geoscript.proj.Projection
 import geoscript.render.Map as GeoScriptMap
 
 import omar.geoscript.LayerInfo
-import omar.geoscript.WorkspaceInfo
-import org.geotools.data.DataStoreFinder
-import org.geotools.referencing.CRS
+
 import org.springframework.beans.factory.InitializingBean
 
 import javax.imageio.ImageIO
@@ -38,15 +36,7 @@ class WebMappingService implements InitializingBean
   {
     serverData = grailsApplication.config.geoscript.serverData
 //    layers = grailsApplication.config.geoscript.layers
-
-    //projections = CRS.getSupportedAuthorities( false ).inject( [] ) { a, b ->
-    projections = ['AUTO', 'EPSG', 'CRS'].inject( [] ) { a, b ->
-      def c = CRS.getSupportedCodes( b )?.grep( ~/\d+/ )?.collect { it?.toInteger() }?.sort()
-      def d = c?.collect { "${b}:${it}" }
-
-      a.addAll( d )
-      a
-    }
+    projections = geoscriptService.listProjections()
   }
 
   enum RenderMode {
@@ -59,6 +49,8 @@ class WebMappingService implements InitializingBean
     def version = wmsParams?.version ?: "1.3.0"
     def schemaLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.3.0/capabilities_1_3_0.xsd" )
     def docTypeLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd" )
+    def model = geoscriptService.capabilitiesData
+
 
     def x = {
       mkp.xmlDeclaration()
@@ -201,73 +193,36 @@ class WebMappingService implements InitializingBean
                   maxy: serverData.Capability.Layer.BoundingBox.maxLat
               )
             }
-            LayerInfo.list()?.each { layerInfo ->
-              WorkspaceInfo workspaceInfo = WorkspaceInfo.findByName( layerInfo.workspaceInfo.name )
-
-              Workspace.withWorkspace( geoscriptService.getWorkspace( workspaceInfo?.workspaceParams ) ) { Workspace workspace ->
-                try
-                {
-                  def layer = workspace[layerInfo.name]
-                  def bounds = layer.bounds
-                  def geoBounds = ( layer?.proj?.epsg == 4326 ) ? bounds : bounds?.reproject( 'epsg:4326' )
-
-//                Layer( queryable: layerInfo?.queryable, opaque: layerInfo?.opaque ?: "0" ) {
-                  Layer( queryable: "1", opaque: "0" ) {
-
-                    Name( "${layerInfo.workspaceInfo.namespaceInfo.prefix}:${layerInfo.name}" )
-                    Title( layerInfo?.title )
-                    Abstract( layerInfo?.description )
-                    if ( layerInfo?.keywords )
-                    {
-                      KeywordList {
-                        layerInfo?.keywords?.each { keyword ->
-                          Keyword( keyword )
-                        }
-                      }
-                    }
-                    "${crsTag}"( bounds?.proj?.id )
-                    if ( version == "1.3.0" )
-                    {
-                      EX_GeographicBoundingBox {
-                        westBoundLongitude( geoBounds?.minX )
-                        eastBoundLongitude( geoBounds?.maxX )
-                        southBoundLatitude( geoBounds?.minY )
-                        northBoundLatitude( geoBounds?.maxY )
-                      }
-                    }
-                    else
-                    {
-                      LatLonBoundingBox(
-                          minx: geoBounds?.minX,
-                          miny: geoBounds?.minY,
-                          maxx: geoBounds?.maxX,
-                          maxy: geoBounds?.maxY
-                      )
-                    }
-                    BoundingBox( ( "${crsTag}" ): bounds?.proj?.id,
-                        minx: bounds?.minX, miny: bounds?.minY,
-                        maxx: bounds?.maxX, maxy: bounds?.maxY )
-//                  layerInfo?.styles?.each { style ->
-/*
-                    [].each { style ->
-                      Style {
-                        Name( style?.name )
-                        Title( style?.title )
-                        Abstract( style?.description )
-
-                        LegendURL( width: style?.legend?.width, height: style?.legend?.height ) {
-                          Format( style?.legend?.format )
-                          OnlineResource( 'xmlns:xlink': "http://www.w3.org/1999/xlink", 'xlink:type': "simple",
-                              'xlink:href': style?.legend?.url )
-                        }
-                      }
-                    }
-*/
+            model?.featureTypes?.each { featureType ->
+              Layer( queryable: "1", opaque: "0") {
+                Name("${featureType.namespace.prefix}:${featureType.name}")
+                Title(featureType.title)
+                Abstract(featureType.description)
+                Keywords {
+                  featureType.keywords.each { keyword ->
+                    Keyword(keyword)
                   }
                 }
-                catch ( e )
+                def bounds = featureType.geoBounds
+
+                "${crsTag}"( bounds?.proj )
+                if ( version == "1.3.0" )
                 {
-                  e.printStackTrace()
+                  EX_GeographicBoundingBox {
+                    westBoundLongitude( bounds?.minX )
+                    eastBoundLongitude( bounds?.maxX )
+                    southBoundLatitude( bounds?.minY )
+                    northBoundLatitude( bounds?.maxY )
+                  }
+                }
+                else
+                {
+                  LatLonBoundingBox(
+                      minx: bounds?.minX,
+                      miny: bounds?.minY,
+                      maxx: bounds?.maxX,
+                      maxy: bounds?.maxY
+                  )
                 }
               }
             }
@@ -281,13 +236,17 @@ class WebMappingService implements InitializingBean
     [contentType: contentType, buffer: buffer]
   }
 
-  static String toCamelCase( String text, boolean capitalized = false ) 
+  static String toCamelCase( String text, boolean capitalized = false )
   {
     text = text.replaceAll( "(_)([A-Za-z0-9])", { Object[] it -> it[2].toUpperCase() } )
     return capitalized ? capitalize(text) : text
   }
+
   def getMap(GetMapRequest wmsParams)
   {
+
+println wmsParams
+
 
     HashMap result = [status: HttpStatus.OK]
     String omsChipperUrl = grailsApplication.config.wms.oms.chipper.url
@@ -335,10 +294,13 @@ class WebMappingService implements InitializingBean
         (prefix, typeName, id) = parts
         break
       }
+
 // now setup the query and then setup the Chipper params for call
       def layerInfo = LayerInfo.where {
         name == typeName && workspaceInfo.namespaceInfo.prefix == prefix
       }.get()
+
+
       List images = null
 
       HashMap workspaceParams = layerInfo.workspaceInfo.workspaceParams
@@ -450,7 +412,7 @@ class WebMappingService implements InitializingBean
     //otherParams.endDate = new Date()
     result.metrics = otherParams
     log.trace "getMap: Leaving ................"
-    
+
     result
 
   }
