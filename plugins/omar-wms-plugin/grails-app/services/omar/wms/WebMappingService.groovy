@@ -399,7 +399,7 @@ println wmsParams
     catch(e)
     {
 
-      HashMap ogcExcpetionResult = OgcExceptionUtil.formatOgcException(wmsParams, "WMS server Error: ${e}" )
+      HashMap ogcExcpetionResult = OgcExceptionUtil.formatOgcExceptionForResponse(wmsParams, "WMS server Error: ${e}" )
 
       // need to test OGC exception style
         result.status = HttpStatus.INTERNAL_SERVER_ERROR
