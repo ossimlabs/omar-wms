@@ -145,7 +145,7 @@ class WmsController
 				otherParams.ip = IpUtil.getClientIpAddr(request)
 				otherParams.endDate = new Date()
 				otherParams.endTime = System.currentTimeMillis()
-				wmsLogService.logGetMapRequest( wmsParams, otherParams )		
+//				wmsLogService.logGetMapRequest( wmsParams, otherParams )
 			}
 			else
 			{
