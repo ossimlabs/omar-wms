@@ -1,24 +1,11 @@
 package omar.wms
 
-import groovy.util.logging.Slf4j
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 import groovy.xml.StreamingMarkupBuilder
-
-import geoscript.workspace.Workspace
-import geoscript.geom.Bounds
-import geoscript.proj.Projection
-import geoscript.render.Map as GeoScriptMap
-
-import omar.geoscript.LayerInfo
-import omar.geoscript.WorkspaceInfo
-import org.geotools.data.DataStoreFinder
-import org.geotools.referencing.CRS
-import org.springframework.beans.factory.InitializingBean
-
-import javax.imageio.ImageIO
-import java.awt.image.BufferedImage
 import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
+import org.springframework.beans.factory.InitializingBean
 
 @Slf4j
 class WebMappingService implements InitializingBean
@@ -38,15 +25,7 @@ class WebMappingService implements InitializingBean
   {
     serverData = grailsApplication.config.geoscript.serverData
 //    layers = grailsApplication.config.geoscript.layers
-
-    //projections = CRS.getSupportedAuthorities( false ).inject( [] ) { a, b ->
-    projections = ['AUTO', 'EPSG', 'CRS'].inject( [] ) { a, b ->
-      def c = CRS.getSupportedCodes( b )?.grep( ~/\d+/ )?.collect { it?.toInteger() }?.sort()
-      def d = c?.collect { "${b}:${it}" }
-
-      a.addAll( d )
-      a
-    }
+    projections = geoscriptService.listProjections()
   }
 
   enum RenderMode {
@@ -59,6 +38,8 @@ class WebMappingService implements InitializingBean
     def version = wmsParams?.version ?: "1.3.0"
     def schemaLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.3.0/capabilities_1_3_0.xsd" )
     def docTypeLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd" )
+    def model = geoscriptService.capabilitiesData
+
 
     def x = {
       mkp.xmlDeclaration()
@@ -175,7 +156,7 @@ class WebMappingService implements InitializingBean
             Abstract( serverData.Capability.Layer.Abstract )
             def crsTag = ( version == '1.1.1' ) ? "SRS" : "CRS"
             projections?.each { crs ->
-              "${crsTag}"( crs )
+              "${crsTag}"( crs?.id )
             }
             if ( version == '1.3.0' )
             {
@@ -201,73 +182,36 @@ class WebMappingService implements InitializingBean
                   maxy: serverData.Capability.Layer.BoundingBox.maxLat
               )
             }
-            LayerInfo.list()?.each { layerInfo ->
-              WorkspaceInfo workspaceInfo = WorkspaceInfo.findByName( layerInfo.workspaceInfo.name )
-
-              Workspace.withWorkspace( geoscriptService.getWorkspace( workspaceInfo?.workspaceParams ) ) { Workspace workspace ->
-                try
-                {
-                  def layer = workspace[layerInfo.name]
-                  def bounds = layer.bounds
-                  def geoBounds = ( layer?.proj?.epsg == 4326 ) ? bounds : bounds?.reproject( 'epsg:4326' )
-
-//                Layer( queryable: layerInfo?.queryable, opaque: layerInfo?.opaque ?: "0" ) {
-                  Layer( queryable: "1", opaque: "0" ) {
-
-                    Name( "${layerInfo.workspaceInfo.namespaceInfo.prefix}:${layerInfo.name}" )
-                    Title( layerInfo?.title )
-                    Abstract( layerInfo?.description )
-                    if ( layerInfo?.keywords )
-                    {
-                      KeywordList {
-                        layerInfo?.keywords?.each { keyword ->
-                          Keyword( keyword )
-                        }
-                      }
-                    }
-                    "${crsTag}"( bounds?.proj?.id )
-                    if ( version == "1.3.0" )
-                    {
-                      EX_GeographicBoundingBox {
-                        westBoundLongitude( geoBounds?.minX )
-                        eastBoundLongitude( geoBounds?.maxX )
-                        southBoundLatitude( geoBounds?.minY )
-                        northBoundLatitude( geoBounds?.maxY )
-                      }
-                    }
-                    else
-                    {
-                      LatLonBoundingBox(
-                          minx: geoBounds?.minX,
-                          miny: geoBounds?.minY,
-                          maxx: geoBounds?.maxX,
-                          maxy: geoBounds?.maxY
-                      )
-                    }
-                    BoundingBox( ( "${crsTag}" ): bounds?.proj?.id,
-                        minx: bounds?.minX, miny: bounds?.minY,
-                        maxx: bounds?.maxX, maxy: bounds?.maxY )
-//                  layerInfo?.styles?.each { style ->
-/*
-                    [].each { style ->
-                      Style {
-                        Name( style?.name )
-                        Title( style?.title )
-                        Abstract( style?.description )
-
-                        LegendURL( width: style?.legend?.width, height: style?.legend?.height ) {
-                          Format( style?.legend?.format )
-                          OnlineResource( 'xmlns:xlink': "http://www.w3.org/1999/xlink", 'xlink:type': "simple",
-                              'xlink:href': style?.legend?.url )
-                        }
-                      }
-                    }
-*/
+            model?.featureTypes?.each { featureType ->
+              Layer( queryable: "1", opaque: "0" ) {
+                Name( "${featureType.namespace.prefix}:${featureType.name}" )
+                Title( featureType.title )
+                Abstract( featureType.description )
+                Keywords {
+                  featureType.keywords.each { keyword ->
+                    Keyword( keyword )
                   }
                 }
-                catch ( e )
+                def bounds = featureType.geoBounds
+
+                "${crsTag}"( bounds?.proj )
+                if ( version == "1.3.0" )
                 {
-                  e.printStackTrace()
+                  EX_GeographicBoundingBox {
+                    westBoundLongitude( bounds?.minX )
+                    eastBoundLongitude( bounds?.maxX )
+                    southBoundLatitude( bounds?.minY )
+                    northBoundLatitude( bounds?.maxY )
+                  }
+                }
+                else
+                {
+                  LatLonBoundingBox(
+                      minx: bounds?.minX,
+                      miny: bounds?.minY,
+                      maxx: bounds?.maxX,
+                      maxy: bounds?.maxY
+                  )
                 }
               }
             }
@@ -281,18 +225,42 @@ class WebMappingService implements InitializingBean
     [contentType: contentType, buffer: buffer]
   }
 
-  static String toCamelCase( String text, boolean capitalized = false ) 
+  static String toCamelCase(String text, boolean capitalized = false)
   {
     text = text.replaceAll( "(_)([A-Za-z0-9])", { Object[] it -> it[2].toUpperCase() } )
-    return capitalized ? capitalize(text) : text
+    return capitalized ? capitalize( text ) : text
   }
+
+  def testGeoScriptService(GetMapRequest wmsParams)
+  {
+    println wmsParams
+
+    def wmsLayers = wmsParams?.layers?.split( ',' )
+
+    wmsLayers?.each { wmsLayer ->
+      def m = wmsLayer =~ /(\w+):(\w+)([\.:](\d+))?/
+      if ( m )
+      {
+        def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
+
+        println geoscriptService.queryLayer(
+            "${prefix}:${name}",
+            [
+                filter: ( id ) ? "in(${id})" : wmsParams?.filter,
+                fields: ['id', 'filename', 'entry_id']
+            ]
+        )
+      }
+    }
+  }
+
   def getMap(GetMapRequest wmsParams)
   {
+    println wmsParams
 
     HashMap result = [status: HttpStatus.OK]
     String omsChipperUrl = grailsApplication.config.wms.oms.chipper.url
-    def otherParams = [startDate: new Date()
-                       ]
+    def otherParams = [startDate: new Date()]
     Integer imageListIdx = 0
     log.trace "getMap: Entered ................"
     otherParams.startTime = System.currentTimeMillis()
@@ -302,10 +270,14 @@ class WebMappingService implements InitializingBean
     def ostream = new ByteArrayOutputStream()
     def styles = [:]
 
-    if (wmsParams?.styles?.trim()) {
-      try {
-        styles = new JsonSlurper().parseText(wmsParams?.styles)
-      } catch ( e ) {
+    if ( wmsParams?.styles?.trim() )
+    {
+      try
+      {
+        styles = new JsonSlurper().parseText( wmsParams?.styles )
+      }
+      catch ( e )
+      {
         e.printStackTrace()
       }
     }
@@ -313,145 +285,157 @@ class WebMappingService implements InitializingBean
     // so change from snake to camelCase
     // if it's already camel it will not affect
     // the string
-    styles.each{k,v->
-      String newKey = toCamelCase(k)
+    styles.each { k, v ->
+      String newKey = toCamelCase( k )
       omsParams."${newKey}" = v
     }
 
     def layerNames = wmsParams?.layers?.split( ',' )
-    def layers = []
 
     layerNames?.each { layerName ->
-      def parts = layerName?.split( /[:\.]/ )
+      List images = fetchImages( layerName, wmsParams.filter )
 
-      def prefix, typeName, id
+      println "images: ${images}"
 
-      switch ( parts?.size() )
-      {
-      case 2:
-        (prefix, typeName) = parts
-        break
-      case 3:
-        (prefix, typeName, id) = parts
-        break
-      }
-// now setup the query and then setup the Chipper params for call
-      def layerInfo = LayerInfo.where {
-        name == typeName && workspaceInfo.namespaceInfo.prefix == prefix
-      }.get()
-      List images = null
-
-      HashMap workspaceParams = layerInfo.workspaceInfo.workspaceParams
-
-      Workspace.withWorkspace( geoscriptService.getWorkspace( workspaceParams ) ) { Workspace workspace ->
-        def layer = workspace[typeName]
-
-        images = layer?.collectFromFeature(
-            filter: ( id ) ? "in(${id})" : wmsParams?.filter,
-        //sorting: sorting,
-        //  max: maxCount, // will remove and change to have the wms plugin have defaults
-          //  fields: ['id', 'ground_geom', 'filename', 'entry_id'] as List<String>
-            fields: ['id','filename', 'entry_id'] as List<String>
-        ) {
-          [ id: it.get( 'id' ), imageFile: it.filename, entry: it.entry_id?.toInteger()]
-         // [id: it.get( 'id' ), imageFile: it.filename, groundGeom: it.ground_geom, entry: it.entry_id?.toInteger()]
-        }
-      }
-      // apply ordering for filters having:  in(1,2,3)
-      def ids = wmsParams?.filter?.find( /.*in[(](.*)[)].*/ ) { matcher, ids -> return ids }
-      if ( ids )
-      {
-        def orderedImages = []
-        ids.split( "," ).collect( { it as Integer } ).each() {
-          def idIndex = it
-          orderedImages << images.find { it.id == idIndex }
-
-        }
-        images = orderedImages
-      }
       // add image chipper files for the oms params
-      images.eachWithIndex{v,i->
-        omsParams."images[${i+imageListIdx}].file" = v.imageFile
-        omsParams."images[${i+imageListIdx}].entry" = v.entry
+      images.eachWithIndex { v, i ->
+        omsParams."images[${i + imageListIdx}].file" = v.imageFile
+        omsParams."images[${i + imageListIdx}].entry" = v.entry
         imageListIdx++
       }
     }
+
     def coords = wmsParams?.bbox?.split( ',' )?.collect { it.toDouble() }
-    def proj = new Projection( ( wmsParams.version == "1.3.0" ) ? wmsParams?.crs : wmsParams?.srs )
+    def proj = projections?.find {
+      def id = ( wmsParams.version == "1.3.0" ) ? wmsParams?.crs : wmsParams?.srs
+      it.id?.equalsIgnoreCase( id )
+    }
     def bbox
 
-    if ( wmsParams.version == "1.3.0" && proj?.crs?.unit?.toString() == '\u00b0' )
+    if ( wmsParams.version == "1.3.0" && proj?.units == '\u00b0' )
     {
-//      bbox = new Bounds( coords[1], coords[0], coords[3], coords[2], proj )
-      bbox = new Bounds( *coords, proj )
+      bbox = [
+          minX: coords[1],
+          minY: coords[0],
+          maxX: coords[3],
+          maxY: coords[2],
+          proj: proj
+      ]
     }
     else
     {
-      bbox = new Bounds( *coords, proj )
+      bbox = [
+          minX: coords[0],
+          minY: coords[1],
+          maxX: coords[2],
+          maxY: coords[3],
+          proj: proj
+      ]
     }
+
+//    println bbox
 
     // now add in the cut params for oms
-    omsParams.cutWmsBbox   = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
-    omsParams.cutWidth     = wmsParams.width
-    omsParams.cutHeight    = wmsParams.height
-    omsParams.srs          = bbox?.proj.id
+    omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+    omsParams.cutWidth = wmsParams.width
+    omsParams.cutHeight = wmsParams.height
+    omsParams.srs = bbox?.proj.id
     omsParams.outputFormat = wmsParams.format
-    omsParams.transparent  = wmsParams.transparent
-    omsParams.operation    = "ortho"
-    URL omsUrl             = new URL("${omsChipperUrl}")
-    omsParams              = omsParams+omsUrl.params
-
+    omsParams.transparent = wmsParams.transparent
+    omsParams.operation = "ortho"
+    omsParams.outputRadiometry = 'ossim_uint8'
+    URL omsUrl = new URL( "${omsChipperUrl}" )
+    omsParams = omsParams + omsUrl.params
 
     //omsParams.each{k,v->omsParams."${k}" = v?.encodeAsURL()}
-    omsUrl.setParams(omsParams)
+    omsUrl.setParams( omsParams )
 
-    try{
+    println omsUrl
+
+    try
+    {
       // call OMS and forward the response content and type
-        HttpURLConnection connection = (HttpURLConnection)omsUrl.openConnection();
-        Map responseMap = connection.headerFields;
-        String contentType =  responseMap."Content-Type"[0].split(";")[0]
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
-        result.status = connection.responseCode
-        outputStream << connection.inputStream
+      HttpURLConnection connection = (HttpURLConnection)omsUrl.openConnection();
+      Map responseMap = connection.headerFields;
+
+      println responseMap
+
+      String contentType = responseMap."Content-Type"[0].split( ";" )[0]
 
 
-        if(connection.responseCode >= 400)
-        {
-          String tempError           = new String(outputStream?.toByteArray(), "UTF-8")
-          HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse(wmsParams, "WMS server Error: ${tempError}" )
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+      result.status = connection.responseCode
+      outputStream << connection.inputStream
 
-          //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(wmsParams)
-          result.buffer      = ogcExceptionResult.buffer
-          result.contentType = ogcExceptionResult.contentType
-        }
-        else
-        {
-          // We later need to map to an OGC exception.  For now we will just carry
-          // the response on to this response
-          //
-          result.buffer      = outputStream?.toByteArray()
-          result.contentType = contentType
 
-        }
+      if ( connection.responseCode >= 400 )
+      {
+        String tempError = new String( outputStream?.toByteArray(), "UTF-8" )
+        HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( wmsParams, "WMS server Error: ${tempError}" )
+
+        //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(wmsParams)
+        result.buffer = ogcExceptionResult.buffer
+        result.contentType = ogcExceptionResult.contentType
+      }
+      else
+      {
+        // We later need to map to an OGC exception.  For now we will just carry
+        // the response on to this response
+        //
+        result.buffer = outputStream?.toByteArray()
+        result.contentType = contentType
+
+      }
     }
-    catch(e)
+    catch ( e )
     {
 
-      HashMap ogcExcpetionResult = OgcExceptionUtil.formatOgcExceptionForResponse(wmsParams, "WMS server Error: ${e}" )
+      e.printStackTrace()
+
+      HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( wmsParams, "WMS server Error: ${e}" )
 
       // need to test OGC exception style
-        result.status = HttpStatus.INTERNAL_SERVER_ERROR
-        result.buffer      = ogcExceptionResult.buffer
-        result.contentType = ogcExceptionResult.contentType
+      result.status = HttpStatus.INTERNAL_SERVER_ERROR
+      result.buffer = ogcExceptionResult.buffer
+      result.contentType = ogcExceptionResult.contentType
 
-        log.error e.message
+      log.error e.message
     }
     otherParams.internalTime = System.currentTimeMillis()
     //otherParams.endDate = new Date()
     result.metrics = otherParams
     log.trace "getMap: Leaving ................"
-    
+
     result
 
+  }
+
+  private List fetchImages(String layerName, String filter=null)
+  {
+    List images = null
+    def m = layerName =~ /(\w+):(\w+)([\.:](\d+))?/
+
+    if ( m )
+    {
+      def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
+
+      images = geoscriptService.queryLayer(
+          "${prefix}:${name}",
+          [
+              filter: ( id ) ? "in(${id})" : filter,
+              fields: ['id', 'filename', 'entry_id']
+          ]
+      )?.features?.inject([]) { a, b ->
+        a << [
+          id: b.id,
+          imageFile: b.filename  ?: b.properties?.filename,
+          entry: b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger()
+        ]
+
+        a
+      }
+    }
+
+    images
   }
 }
