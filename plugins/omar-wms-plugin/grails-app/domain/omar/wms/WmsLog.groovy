@@ -22,7 +22,7 @@ class WmsLog
 	String ip
 	String url
 	Double meanGsd
-	Geometry geometry
+//	Geometry geometry
 
 	static constraints = {
 		width( nullable: true )
@@ -49,6 +49,6 @@ class WmsLog
 		version false
 		url type: 'text'
 		layers type: 'text'
-		geometry /*type: GeometryType, */ sqlType: 'geometry(polygon, 4326)'
+//		geometry /*type: GeometryType, */ sqlType: 'geometry(polygon, 4326)'
 	}
 }
