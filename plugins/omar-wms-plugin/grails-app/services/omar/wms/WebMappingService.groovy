@@ -358,6 +358,10 @@ class WebMappingService implements InitializingBean
     {
       omsParams.histOp = autoHistogramMode?:"auto-minmax"
     }
+    if(!omsParams.bands)
+    {
+      omsParams.bands="default"
+    }
     URL omsUrl = new URL( "${omsChipperUrl}" )
     omsParams = omsParams + omsUrl.params
     //omsParams.each{k,v->omsParams."${k}" = v?.encodeAsURL()}
