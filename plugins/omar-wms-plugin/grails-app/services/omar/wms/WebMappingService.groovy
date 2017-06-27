@@ -20,12 +20,10 @@ class WebMappingService implements InitializingBean
 //  def layers
   def projections
 
-  String autoHistogramMode
 
   @Override
   void afterPropertiesSet() throws Exception
   {
-    autoHistogramMode = grailsApplication.config?.wms?.oms?.chipper?.histOp
     serverData        = grailsApplication.config?.geoscript?.serverData
 //    layers = grailsApplication.config.geoscript.layers
     projections = geoscriptService.listProjections()
@@ -261,8 +259,10 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
+    String autoHistogramMode = grailsApplication?.config?.wms?.oms?.chipper?.histOp
+
     HashMap result = [status: HttpStatus.OK]
-    String omsChipperUrl = grailsApplication.config.wms.oms.chipper.url
+    String omsChipperUrl = grailsApplication?.config?.omar?.wms?.oms?.chipper?.url
     def otherParams = [startDate: new Date()]
     Integer imageListIdx = 0
     log.trace "getMap: Entered ................"

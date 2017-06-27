@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 @Transactional( readOnly = true )
 class GeoscriptClientService
 {
-  @Value('${omar.wms.app.geoscript.url}')
+  @Value('${omar.wms.geoscript.url}')
   def geoscriptEndpoint
 
   def getCapabilitiesData()
