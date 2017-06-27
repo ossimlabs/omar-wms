@@ -80,7 +80,8 @@ class WmsController
      "sharpenMode" : "none",
      "contrast" : "1.0",
      "brightness" : "0.0",
-     "resamplerFilter": "bilinear"
+     "resamplerFilter": "bilinear",
+     "histCenterTile": "false"
      } 
             </pre>
             where <br/>
@@ -97,6 +98,7 @@ class WmsController
 	            <tab><b>resamplerFilter:</b>values supported nearest-neighbor, bilinear, </br>
 	            <tab>cubic, gaussian, blackman, bspline, hanning, hamming, hermite, mitchell, quadratic,<br/>
 	            <tab>sinc, magic</tab><br/>
+               <tab><b>histCenterTile:</b>Currently calculates the histogram from center of image.  Can be true|false<br/>
             </ul>
         </li>
         <br>
