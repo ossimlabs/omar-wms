@@ -27,8 +27,6 @@ class WebMappingService implements InitializingBean
     serverData        = grailsApplication.config?.geoscript?.serverData
 //    layers = grailsApplication.config.geoscript.layers
     projections = geoscriptService.listProjections()
-
-    if(!autoHistogramMode) autoHistogramMode = "auto-minmax"
   }
 
   enum RenderMode {
@@ -259,7 +257,7 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
-    String autoHistogramMode = grailsApplication?.config?.wms?.oms?.chipper?.histOp
+    String autoHistogramMode = grailsApplication?.config?.omar?.wms?.oms?.chipper?.histOp
 
     HashMap result = [status: HttpStatus.OK]
     String omsChipperUrl = grailsApplication?.config?.omar?.wms?.oms?.chipper?.url
