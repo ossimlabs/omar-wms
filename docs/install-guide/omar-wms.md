@@ -25,15 +25,12 @@ Additional configuration from [Common Config Settings](../../../omar-common/docs
 
 ```
 ---
-wms:
-  oms:
-    chipper:
-      url: http://omar-oms-app:8080/omar-oms/chipper
-      histOp: auto-minmax
----
 omar:
   wms:
-    app:
-      geoscript:
-        url: http://omar-geoscript-app:8080/omar-geoscript/geoscriptApi
+    geoscript:
+      url: http://omar-geoscript-app:8080/omar-geoscript/geoscriptApi
+    oms:
+      chipper:
+        url: http://omar-oms-app:8080/omar-oms/chipper
+        histOp: auto-minmax
 ```
