@@ -20,12 +20,17 @@ class WebMappingService implements InitializingBean
 //  def layers
   def projections
 
+  String autoHistogramMode
+
   @Override
   void afterPropertiesSet() throws Exception
   {
-    serverData = grailsApplication.config.geoscript.serverData
+    autoHistogramMode = grailsApplication.config?.wms?.oms?.chipper?.histOp
+    serverData        = grailsApplication.config?.geoscript?.serverData
 //    layers = grailsApplication.config.geoscript.layers
     projections = geoscriptService.listProjections()
+
+    if(!autoHistogramMode) autoHistogramMode = "auto-minmax"
   }
 
   enum RenderMode {
@@ -256,8 +261,6 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
-    println wmsParams
-
     HashMap result = [status: HttpStatus.OK]
     String omsChipperUrl = grailsApplication.config.wms.oms.chipper.url
     def otherParams = [startDate: new Date()]
@@ -287,7 +290,14 @@ class WebMappingService implements InitializingBean
     // the string
     styles.each { k, v ->
       String newKey = toCamelCase( k )
-      omsParams."${newKey}" = v
+      if(newKey.toLowerCase().contains("histcenter"))
+      {
+        omsParams."histCenter" = v
+      }
+      else
+      {
+        omsParams."${newKey}" = v
+      }
     }
 
     def layerNames = wmsParams?.layers?.split( ',' )
@@ -295,7 +305,7 @@ class WebMappingService implements InitializingBean
     layerNames?.each { layerName ->
       List images = fetchImages( layerName, wmsParams.filter )
 
-      println "images: ${images}"
+////      println "images: ${images}"
 
       // add image chipper files for the oms params
       images.eachWithIndex { v, i ->
@@ -344,13 +354,16 @@ class WebMappingService implements InitializingBean
     omsParams.transparent = wmsParams.transparent
     omsParams.operation = "ortho"
     omsParams.outputRadiometry = 'ossim_uint8'
+    // default histgram operation to auto-minmax
+    //
+    if(!omsParams.histOp)
+    {
+      omsParams.histOp = autoHistogramMode?:"auto-minmax"
+    }
     URL omsUrl = new URL( "${omsChipperUrl}" )
     omsParams = omsParams + omsUrl.params
-
     //omsParams.each{k,v->omsParams."${k}" = v?.encodeAsURL()}
     omsUrl.setParams( omsParams )
-
-    println omsUrl
 
     try
     {
@@ -358,14 +371,15 @@ class WebMappingService implements InitializingBean
       HttpURLConnection connection = (HttpURLConnection)omsUrl.openConnection();
       Map responseMap = connection.headerFields;
 
-      println responseMap
-
-      String contentType = responseMap."Content-Type"[0].split( ";" )[0]
+      String contentType
+      if(responseMap."Content-Type")
+      {
+        contentType = responseMap."Content-Type"[0].split( ";" )[0]
+      }
 
 
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
       result.status = connection.responseCode
-      outputStream << connection.inputStream
 
 
       if ( connection.responseCode >= 400 )
@@ -379,6 +393,7 @@ class WebMappingService implements InitializingBean
       }
       else
       {
+        outputStream << connection.inputStream
         // We later need to map to an OGC exception.  For now we will just carry
         // the response on to this response
         //
