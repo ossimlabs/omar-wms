@@ -234,8 +234,6 @@ class WebMappingService implements InitializingBean
 
   def testGeoScriptService(GetMapRequest wmsParams)
   {
-    println wmsParams
-
     def wmsLayers = wmsParams?.layers?.split( ',' )
 
     wmsLayers?.each { wmsLayer ->
@@ -310,8 +308,8 @@ class WebMappingService implements InitializingBean
 
       // add image chipper files for the oms params
       images.eachWithIndex { v, i ->
-        omsParams."images[${i + imageListIdx}].file" = v.imageFile
-        omsParams."images[${i + imageListIdx}].entry" = v.entry
+        omsParams."images[${imageListIdx}].file"  = v.imageFile
+        omsParams."images[${imageListIdx}].entry" = v.entry
         imageListIdx++
       }
     }
