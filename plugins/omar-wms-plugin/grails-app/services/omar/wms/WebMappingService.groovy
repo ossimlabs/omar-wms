@@ -290,7 +290,7 @@ class WebMappingService implements InitializingBean
       String newKey = toCamelCase( k )
       if(newKey.toLowerCase().contains("histcenter"))
       {
-        omsParams."histCenter" = v
+        omsParams."histCenterTile" = v
       }
       else
       {
