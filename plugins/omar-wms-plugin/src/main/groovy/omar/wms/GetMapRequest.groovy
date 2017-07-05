@@ -1,42 +1,50 @@
+/**
+ * @author  sbortman
+ * @date    December 2 2015
+ * @version 1.1.0
+ */
+
 package omar.wms
 
 import grails.validation.Validateable
 import groovy.transform.ToString
 
 /**
- * Created by sbortman on 12/2/15.
+ * @brief Holds the params used for the GetMap to the service
  */
 @ToString( includeNames = true )
 class GetMapRequest implements Validateable
 {
   static mapWith = 'none'
 
-  String service = "WMS"
-  String version = "1.1.1"
-  String request = "GetMap"
+  String service = "WMS"      /*!< OGC service type */
+  String version = "1.1.1"    /*!< Version of WMS to request (1.1.1 by default) */
+  String request = "GetMap"   /*!< Request type (must by GetMap) */
 
-  Integer width
-  Integer height
+  Integer width   /*!< The width of the BBOX in pixels */
+  Integer height  /*!< The height of the BBOX in pixels */
 
-  String srs  // used for 1.1.1
-  String crs  // used for 1.3.0
+  String srs  /*!< The spatial reference system of the form EPSG:code where code is a spatial reference code for and required by WMS verison 1.1.1 */
+  String crs  /*!< The spatial reference system of the form EPSG:code where code is a spatial reference code for and required by WMS verison 1.3.0 */
 
-  String bbox
+  String bbox /*!< The bounding box in the units of the srs or crs code. Of the form minx,miny,maxx,maxy */
 
-  String format
-  String layers
-  String styles
+  String format /*!< MIME Type of result image */
+  String layers /*!< Type name */
+  String styles /*!< Styling applied to the result image */
 
-  Boolean transparent
+  Boolean transparent /*!< Defines the transparency */
 
-  String filter
+  String filter /*!< Optional field to hold the where clause of the table we are querying */
 
-  String exceptions
+  String exceptions /*!< Defines the types of exceptions to be returned. Can be of the values application/vnd.ogc.se_xml, application/vnd.ogc.se_inimage, or application/vnd.ogc.se_blank */
   String bgcolor
   
   static mapping = {
     version false
   }
+
+  /*!< Defines proper grammar for the parameter values for an acceptable call. */
   static constraints = {
     service(nullable:true, blank:true)
     version(nullable:false, blank:false)
