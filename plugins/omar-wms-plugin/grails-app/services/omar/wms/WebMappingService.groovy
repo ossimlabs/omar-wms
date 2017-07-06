@@ -1,3 +1,6 @@
+/**
+ * @version 1.1.0
+ */
 package omar.wms
 
 import groovy.json.JsonSlurper

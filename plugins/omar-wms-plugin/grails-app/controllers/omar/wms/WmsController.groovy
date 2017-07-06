@@ -13,6 +13,12 @@ import omar.core.IpUtil
 import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 
+
+/**
+ * @brief Grails controller
+ *
+ *		Control flow of request to the WMS service
+ */
 @Api( value = "wms",
 		description = "WMS Support"
 )
@@ -27,8 +33,6 @@ class WmsController
 		def wmsParams = params - params.subMap( [ 'controller', 'format' ] )
 		def op = wmsParams.find { it.key.equalsIgnoreCase( 'request' ) }
 
-		//println wmsParams
-
 		switch ( op?.value?.toUpperCase() )
 		{
 		case "GETCAPABILITIES":
@@ -40,6 +44,11 @@ class WmsController
 		}
 	}
 
+	/**
+	 * 		Returns the capabilites of the given WMS version
+	 * 		
+	 * @param  wmsParams parameters to the WMS service request GetCapabilities
+	 */
 	@ApiOperation( value = "Get the capabilities of the server", produces = 'application/vnd.ogc.wms_xml' )
 	@ApiImplicitParams( [
 			@ApiImplicitParam( name = 'service', value = 'OGC Service type', allowableValues = "[WMS]", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
@@ -57,6 +66,9 @@ class WmsController
 
 	}
 
+	/**
+	 * 		Returns the images of the given WMS getMap request
+	 */
 	@ApiOperation( value = "Get image from the server", 
 		produces = 'application/xml,application/json',
 		notes = """

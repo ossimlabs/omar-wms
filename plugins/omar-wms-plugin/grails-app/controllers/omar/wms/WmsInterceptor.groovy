@@ -1,7 +1,6 @@
 /**
  * @version 1.1.0
  */
-
 package omar.wms
 
 import omar.core.BindUtil
