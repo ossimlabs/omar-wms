@@ -1,7 +1,16 @@
+/**
+ * @version 1.1.0
+ */
 package omar.wms
 
 import groovy.json.JsonOutput
 
+/**
+ * @brief creates compatibility for OldMAR parameters
+ *
+ *    Translates older versions of parameters to the current
+ *    one for getMap request.
+ */
 class OldMARCompatibility
 {
   static final STYLE_PARAM_NAMES = [
@@ -9,6 +18,11 @@ class OldMARCompatibility
     'BRIGHTNESS', 'CONTRAST'
   ]
 
+  /**
+   * @brief Translates OldMAR legacy parameters into O2 parameters
+   * @param params contains the paramters of the OldMAR request
+   * @return the parameters for the new O2 request
+   */
   static def translate( def params )
   {
     def styleParams = params?.findAll { it?.key?.toUpperCase() in STYLE_PARAM_NAMES }?.inject([:]) { a, b ->

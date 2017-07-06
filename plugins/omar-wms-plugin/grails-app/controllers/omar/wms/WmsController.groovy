@@ -1,3 +1,6 @@
+/**
+ * @version 1.1.0
+ */
 package omar.wms
 
 import com.wordnik.swagger.annotations.Api
@@ -161,8 +164,6 @@ class WmsController
 		}
 		catch ( e )
 		{
-//			println e
-			//e.printStackTrace()
 			log.error(e.toString())
 		}
 		finally{
