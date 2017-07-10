@@ -8,6 +8,9 @@ package omar.wms
 
 import grails.transaction.Transactional
 
+/**
+ * @brief Logs GetMap request made to the service to the WmsLog.
+ */
 @Transactional
 class WmsLogService
 {
