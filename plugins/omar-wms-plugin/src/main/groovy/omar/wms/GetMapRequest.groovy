@@ -10,7 +10,7 @@ import grails.validation.Validateable
 import groovy.transform.ToString
 
 /**
- * @brief Holds the params used for the GetMap to the service
+ * @brief Holds the parameters used for the GetMap request to the service
  */
 @ToString( includeNames = true )
 class GetMapRequest implements Validateable
