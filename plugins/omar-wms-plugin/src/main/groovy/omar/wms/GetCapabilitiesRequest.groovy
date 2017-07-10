@@ -10,7 +10,7 @@ import grails.validation.Validateable
 import groovy.transform.ToString
 
 /**
- * @brief	Holds the params used for the GetCapabilities to the service
+ * @brief	Holds the parameters used for the GetCapabilities request to the service
  */
 @ToString( includeNames = true )
 class GetCapabilitiesRequest implements Validateable
