@@ -9,6 +9,7 @@ import groovy.xml.StreamingMarkupBuilder
 import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
+import org.springframework.beans.factory.annotation.Value
 
 @Slf4j
 class WebMappingService implements InitializingBean
@@ -23,13 +24,22 @@ class WebMappingService implements InitializingBean
 //  def layers
   def projections
 
+  @Value( '${omar.wms.oms.chipper.histOp}' )
+  String autoHistogramMode
+
+
+  @Value( '${omar.wms.oms.chipper.url}' )
+  String omsChipperUrl
 
   @Override
   void afterPropertiesSet() throws Exception
   {
-    serverData        = grailsApplication.config?.geoscript?.serverData
+    serverData = grailsApplication.config?.geoscript?.serverData
 //    layers = grailsApplication.config.geoscript.layers
     projections = geoscriptService.listProjections()
+
+    println autoHistogramMode
+    println omsChipperUrl
   }
 
   enum RenderMode {
@@ -258,70 +268,132 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
-    String autoHistogramMode = grailsApplication?.config?.omar?.wms?.oms?.chipper?.histOp
-
-    HashMap result = [status: HttpStatus.OK]
-    String omsChipperUrl = grailsApplication?.config?.omar?.wms?.oms?.chipper?.url
     def otherParams = [startDate: new Date()]
-    Integer imageListIdx = 0
+
     log.trace "getMap: Entered ................"
     otherParams.startTime = System.currentTimeMillis()
     otherParams.internalTime = otherParams.startTime
-    HashMap omsParams = [:]
 
-    def ostream = new ByteArrayOutputStream()
-    def styles = [:]
+    def result = __getMap( wmsParams )
 
-    if ( wmsParams?.styles?.trim() )
+    otherParams.internalTime = System.currentTimeMillis()
+    //otherParams.endDate = new Date()
+    result.metrics = otherParams
+    log.trace "getMap: Leaving ................"
+
+
+    result
+  }
+
+  def __getMap(GetMapRequest wmsParams)
+  {
+    Map<String,Object> result = [status: HttpStatus.OK]
+
+    Map<String,Object> omsParams = [
+        cutWidth: wmsParams.width,
+        cutHeight: wmsParams.height,
+        outputFormat: wmsParams.format,
+        transparent: wmsParams.transparent,
+        operation: "ortho",
+        outputRadiometry: 'ossim_uint8'
+    ]
+
+
+    omsParams += parseStyles( wmsParams )
+    omsParams += parseLayers( wmsParams )
+
+    Map<String, Object> bbox = parseBbox( wmsParams )
+
+    // now add in the cut params for oms
+    omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+    omsParams.srs = bbox?.proj.id
+
+    // default histogram operation to auto-minmax
+    //
+    if ( !omsParams.histOp )
     {
-      try
-      {
-        styles = new JsonSlurper().parseText( wmsParams?.styles )
-      }
-      catch ( e )
-      {
-        e.printStackTrace()
-      }
+      omsParams.histOp = autoHistogramMode ?: "auto-minmax"
     }
-    // chipper requires to be camel case
-    // so change from snake to camelCase
-    // if it's already camel it will not affect
-    // the string
-    styles.each { k, v ->
-      String newKey = toCamelCase( k )
-      if(newKey.toLowerCase().contains("histcenter"))
+    if ( !omsParams.bands )
+    {
+      omsParams.bands = "default"
+    }
+
+    URL omsUrl = new URL( omsChipperUrl )
+
+    omsParams += omsUrl.params
+    omsUrl.setParams( omsParams )
+
+    println omsParams
+
+    try
+    {
+      // call OMS and forward the response content and type
+      HttpURLConnection connection = (HttpURLConnection)omsUrl.openConnection();
+      Map responseMap = connection.headerFields;
+
+      String contentType
+      if ( responseMap."Content-Type" )
       {
-        if(v.toBoolean())
-        {
-          omsParams."histCenter" = v
-        }
+        contentType = responseMap."Content-Type"[0].split( ";" )[0]
+      }
+
+
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+      result.status = connection.responseCode
+
+
+      if ( connection.responseCode >= 400 )
+      {
+        String tempError = new String( outputStream?.toByteArray(), "UTF-8" )
+        HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( wmsParams, "WMS server Error: ${tempError}" )
+
+        //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(wmsParams)
+        result.buffer = ogcExceptionResult.buffer
+        result.contentType = ogcExceptionResult.contentType
       }
       else
       {
-        omsParams."${newKey}" = v
+        outputStream << connection.inputStream
+        connection.inputStream.close()
+        outputStream.flush()
+        outputStream.close()
+        // We later need to map to an OGC exception.  For now we will just carry
+        // the response on to this response
+        //
+        result.buffer = outputStream?.toByteArray()
+        result.contentType = contentType
+
       }
     }
+    catch ( e )
+    {
 
-    def layerNames = wmsParams?.layers?.split( ',' )
+      e.printStackTrace()
 
-    layerNames?.each { layerName ->
-      List images = fetchImages( layerName, wmsParams.filter )
+      HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( wmsParams, "WMS server Error: ${e}" )
 
-////      println "images: ${images}"
+      // need to test OGC exception style
+      result.status = HttpStatus.INTERNAL_SERVER_ERROR
+      result.buffer = ogcExceptionResult.buffer
+      result.contentType = ogcExceptionResult.contentType
 
-      // add image chipper files for the oms params
-      images.eachWithIndex { v, i ->
-        omsParams."images[${imageListIdx}].file"  = v.imageFile
-        omsParams."images[${imageListIdx}].entry" = v.entry
-        imageListIdx++
-      }
+      log.error e.message
     }
 
+    result
+
+  }
+
+  private Map<java.lang.String, java.lang.Object> parseBbox(GetMapRequest wmsParams)
+  {
     def coords = wmsParams?.bbox?.split( ',' )?.collect { it.toDouble() }
+
     def proj = projections?.find {
       def id = ( wmsParams.version == "1.3.0" ) ? wmsParams?.crs : wmsParams?.srs
       it.id?.equalsIgnoreCase( id )
     }
+
     def bbox
 
     if ( wmsParams.version == "1.3.0" && proj?.units == '\u00b0' )
@@ -346,92 +418,69 @@ class WebMappingService implements InitializingBean
     }
 
 //    println bbox
+    bbox
+  }
 
-    // now add in the cut params for oms
-    omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
-    omsParams.cutWidth = wmsParams.width
-    omsParams.cutHeight = wmsParams.height
-    omsParams.srs = bbox?.proj.id
-    omsParams.outputFormat = wmsParams.format
-    omsParams.transparent = wmsParams.transparent
-    omsParams.operation = "ortho"
-    omsParams.outputRadiometry = 'ossim_uint8'
-    // default histgram operation to auto-minmax
-    //
-    if(!omsParams.histOp)
-    {
-      omsParams.histOp = autoHistogramMode?:"auto-minmax"
-    }
-    if(!omsParams.bands)
-    {
-      omsParams.bands="default"
-    }
-    URL omsUrl = new URL( "${omsChipperUrl}" )
-    omsParams = omsParams + omsUrl.params
-    //omsParams.each{k,v->omsParams."${k}" = v?.encodeAsURL()}
-    omsUrl.setParams( omsParams )
+  private Map<String,Object> parseLayers(GetMapRequest wmsParams)
+  {
+    HashMap omsParams = [:]
+    def layerNames = wmsParams?.layers?.split( ',' )
+    Integer imageListIdx = 0
 
-    try
-    {
-      // call OMS and forward the response content and type
-      HttpURLConnection connection = (HttpURLConnection)omsUrl.openConnection();
-      Map responseMap = connection.headerFields;
+    layerNames?.each { layerName ->
+      List images = fetchImages( layerName, wmsParams.filter )
 
-      String contentType
-      if(responseMap."Content-Type")
-      {
-        contentType = responseMap."Content-Type"[0].split( ";" )[0]
+////      println "images: ${images}"
+
+      // add image chipper files for the oms params
+      images.eachWithIndex { v, i ->
+        omsParams."images[${imageListIdx}].file" = v.imageFile
+        omsParams."images[${imageListIdx}].entry" = v.entry
+        imageListIdx++
       }
+    }
+    omsParams
+  }
 
+  private Map<String,Object> parseStyles(GetMapRequest wmsParams)
+  {
+    def styles = [:]
+    def newStyles = [:]
 
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
-      result.status = connection.responseCode
-
-
-      if ( connection.responseCode >= 400 )
+    if ( wmsParams?.styles?.trim() )
+    {
+      try
       {
-        String tempError = new String( outputStream?.toByteArray(), "UTF-8" )
-        HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( wmsParams, "WMS server Error: ${tempError}" )
-
-        //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(wmsParams)
-        result.buffer = ogcExceptionResult.buffer
-        result.contentType = ogcExceptionResult.contentType
+        styles = new JsonSlurper().parseText( wmsParams?.styles )
+      }
+      catch ( e )
+      {
+        e.printStackTrace()
+      }
+    }
+    // chipper requires to be camel case
+    // so change from snake to camelCase
+    // if it's already camel it will not affect
+    // the string
+    styles?.each { k, v ->
+      String newKey = toCamelCase( k )
+      if ( newKey.toLowerCase().contains( "histcenter" ) )
+      {
+        if ( v.toBoolean() )
+        {
+          newStyles."histCenter" = v
+        }
       }
       else
       {
-        outputStream << connection.inputStream
-        // We later need to map to an OGC exception.  For now we will just carry
-        // the response on to this response
-        //
-        result.buffer = outputStream?.toByteArray()
-        result.contentType = contentType
-
+        newStyles."${newKey}" = v
       }
     }
-    catch ( e )
-    {
 
-      e.printStackTrace()
-
-      HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( wmsParams, "WMS server Error: ${e}" )
-
-      // need to test OGC exception style
-      result.status = HttpStatus.INTERNAL_SERVER_ERROR
-      result.buffer = ogcExceptionResult.buffer
-      result.contentType = ogcExceptionResult.contentType
-
-      log.error e.message
-    }
-    otherParams.internalTime = System.currentTimeMillis()
-    //otherParams.endDate = new Date()
-    result.metrics = otherParams
-    log.trace "getMap: Leaving ................"
-
-    result
-
+    newStyles
   }
 
-  private List fetchImages(String layerName, String filter=null)
+  private List fetchImages(String layerName, String filter = null)
   {
     List images = null
     def m = layerName =~ /(\w+):(\w+)([\.:](\d+))?/
@@ -446,11 +495,11 @@ class WebMappingService implements InitializingBean
               filter: ( id ) ? "in(${id})" : filter,
               fields: ['id', 'filename', 'entry_id']
           ]
-      )?.features?.inject([]) { a, b ->
+      )?.features?.inject( [] ) { a, b ->
         a << [
-          id: b.id,
-          imageFile: b.filename  ?: b.properties?.filename,
-          entry: b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger()
+            id: b.id,
+            imageFile: b.filename ?: b.properties?.filename,
+            entry: b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger()
         ]
 
         a
