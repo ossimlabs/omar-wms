@@ -274,7 +274,25 @@ class WebMappingService implements InitializingBean
     otherParams.startTime = System.currentTimeMillis()
     otherParams.internalTime = otherParams.startTime
 
-    def result = __getMap( wmsParams )
+    Map<String,Object> omsParams = [
+        cutWidth: wmsParams.width,
+        cutHeight: wmsParams.height,
+        outputFormat: wmsParams.format,
+        transparent: wmsParams.transparent,
+        operation: "ortho",
+        outputRadiometry: 'ossim_uint8'
+    ]
+
+    omsParams += parseStyles( wmsParams )
+    omsParams += parseLayers( wmsParams )
+
+    Map<String, Object> bbox = parseBbox( wmsParams )
+
+    // now add in the cut params for oms
+    omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+    omsParams.srs = bbox?.proj.id
+    
+    def result = callOmsService( omsParams )
 
     otherParams.internalTime = System.currentTimeMillis()
     //otherParams.endDate = new Date()
@@ -285,28 +303,9 @@ class WebMappingService implements InitializingBean
     result
   }
 
-  def __getMap(GetMapRequest wmsParams)
+  def callOmsService(Map<String,Object> omsParams, def ogcParams=[:])
   {
     Map<String,Object> result = [status: HttpStatus.OK]
-
-    Map<String,Object> omsParams = [
-        cutWidth: wmsParams.width,
-        cutHeight: wmsParams.height,
-        outputFormat: wmsParams.format,
-        transparent: wmsParams.transparent,
-        operation: "ortho",
-        outputRadiometry: 'ossim_uint8'
-    ]
-
-
-    omsParams += parseStyles( wmsParams )
-    omsParams += parseLayers( wmsParams )
-
-    Map<String, Object> bbox = parseBbox( wmsParams )
-
-    // now add in the cut params for oms
-    omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
-    omsParams.srs = bbox?.proj.id
 
     // default histogram operation to auto-minmax
     //
@@ -314,6 +313,7 @@ class WebMappingService implements InitializingBean
     {
       omsParams.histOp = autoHistogramMode ?: "auto-minmax"
     }
+    
     if ( !omsParams.bands )
     {
       omsParams.bands = "default"
@@ -346,9 +346,9 @@ class WebMappingService implements InitializingBean
       if ( connection.responseCode >= 400 )
       {
         String tempError = new String( outputStream?.toByteArray(), "UTF-8" )
-        HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( wmsParams, "WMS server Error: ${tempError}" )
+        HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${tempError}" )
 
-        //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(wmsParams)
+        //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(ogcParams)
         result.buffer = ogcExceptionResult.buffer
         result.contentType = ogcExceptionResult.contentType
       }
@@ -371,7 +371,7 @@ class WebMappingService implements InitializingBean
 
       e.printStackTrace()
 
-      HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( wmsParams, "WMS server Error: ${e}" )
+      HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${e}" )
 
       // need to test OGC exception style
       result.status = HttpStatus.INTERNAL_SERVER_ERROR
