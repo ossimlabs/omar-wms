@@ -38,8 +38,8 @@ class WebMappingService implements InitializingBean
 //    layers = grailsApplication.config.geoscript.layers
     projections = geoscriptService.listProjections()
 
-    println autoHistogramMode
-    println omsChipperUrl
+    // println autoHistogramMode
+    // println omsChipperUrl
   }
 
   enum RenderMode {
@@ -291,7 +291,7 @@ class WebMappingService implements InitializingBean
     // now add in the cut params for oms
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
-    
+
     def result = callOmsService( omsParams )
 
     otherParams.internalTime = System.currentTimeMillis()
@@ -313,7 +313,7 @@ class WebMappingService implements InitializingBean
     {
       omsParams.histOp = autoHistogramMode ?: "auto-minmax"
     }
-    
+
     if ( !omsParams.bands )
     {
       omsParams.bands = "default"
@@ -324,7 +324,7 @@ class WebMappingService implements InitializingBean
     omsParams += omsUrl.params
     omsUrl.setParams( omsParams )
 
-    println omsParams
+    // println omsParams
 
     try
     {
