@@ -23,20 +23,6 @@ Ref: [omar-base](../../../omar-base/docs/install-guide/omar-base/)
 
 Additional configuration from [Common Config Settings](../../../omar-common/docs/install-guide/omar-common/#common-config-settings) can be added to the YAML.
 
-```
----
-omar:
-  wms:
-    geoscript:
-      url: http://omar-geoscript-app:8080/omar-geoscript/geoscriptApi
-    oms:
-      chipper:
-        url: http://omar-oms-app:8080/omar-oms/chipper
-        histOp: auto-minmax
-```
-
-where:
-
 * **wms**
  * **geoscript.url** Is the location of the geoscript API for the query service.  This is used to query the layers in the LAYERS parameter.
  * **oms.chipper.url** Is the location of the chipper endpoint for chipping imagery
