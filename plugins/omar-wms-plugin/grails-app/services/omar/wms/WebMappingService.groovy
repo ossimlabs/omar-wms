@@ -54,12 +54,15 @@ class WebMappingService implements InitializingBean
     def docTypeLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd" )
     def model = geoscriptService.capabilitiesData
 
+    def otherParams = [startTime: new Date(), internalTime: new Date(), procTime: new Date()]
+
+
     // log timestamp
     TimeZone.getTimeZone('UTC')
     Date date= new Date()
     String newdate=date.format("YYYY-MM-DD HH:mm:ss.Ms")
     log.info "getCapabilities timestamp" + newdate
-    def startTime = System.currentTimeMillis()
+    otherParams.startTime = System.currentTimeMillis()
 
 
     def x = {
@@ -245,11 +248,11 @@ class WebMappingService implements InitializingBean
 
     [contentType: contentType, buffer: buffer]
 
-    def internalTime = System.currentTimeMillis()
-    def totaltime = internalTime - startTime
+    otherParams.internalTime = System.currentTimeMillis()
+    otherParams.procTime = otherParams.internalTime - otherParams.startTime
 
 
-    log.info "processing time " + totaltime
+    log.info "startTime, endtime, proccessing time " + otherParams
     log.info "Call to getCapabilities was successful"
   }
 
