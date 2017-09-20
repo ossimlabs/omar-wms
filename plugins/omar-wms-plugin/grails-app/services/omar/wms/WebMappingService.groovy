@@ -54,6 +54,13 @@ class WebMappingService implements InitializingBean
     def docTypeLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd" )
     def model = geoscriptService.capabilitiesData
 
+    // log timestamp
+    TimeZone.getTimeZone('UTC')
+    Date date= new Date()
+    String newdate=date.format("YYYY-MM-DD HH:mm:ss.Ms")
+    log.info "getCapabilities timestamp" + newdate
+    def startTime = System.currentTimeMillis()
+
 
     def x = {
       mkp.xmlDeclaration()
@@ -237,6 +244,13 @@ class WebMappingService implements InitializingBean
     buffer = new StreamingMarkupBuilder( encoding: 'UTF-8' ).bind( x )?.toString()?.trim()
 
     [contentType: contentType, buffer: buffer]
+
+    def internalTime = System.currentTimeMillis()
+    def totaltime = internalTime - startTime
+
+
+    log.info "processing time " + totaltime
+    log.info "Call to getCapabilities was successful"
   }
 
   static String toCamelCase(String text, boolean capitalized = false)
@@ -273,6 +287,11 @@ class WebMappingService implements InitializingBean
     log.trace "getMap: Entered ................"
     otherParams.startTime = System.currentTimeMillis()
     otherParams.internalTime = otherParams.startTime
+    // log timestamp
+    TimeZone.getTimeZone('UTC')
+    Date date= new Date()
+    String newdate=date.format("YYYY-MM-DD HH:mm:ss.Ms")
+    log.info "getMap timestamp" + newdate
 
     Map<String,Object> omsParams = [
         cutWidth: wmsParams.width,
@@ -298,9 +317,13 @@ class WebMappingService implements InitializingBean
     //otherParams.endDate = new Date()
     result.metrics = otherParams
     log.trace "getMap: Leaving ................"
-
+    log.info "call to getMap successful"
 
     result
+
+    def procTime = otherParams.internalTime - otherParams.startTime
+    log.info "getMap processing time" + procTime
+
   }
 
   def callOmsService(Map<String,Object> omsParams, def ogcParams=[:])
@@ -417,7 +440,7 @@ class WebMappingService implements InitializingBean
       ]
     }
 
-//    println bbox
+    log.info("BBox of call: " + bbox)
     bbox
   }
 
