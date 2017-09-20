@@ -282,16 +282,17 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
-    def otherParams = [startDate: new Date()]
+    def otherParams = [startTime: new Date(), internalTime: new Date(), procTime: new Date()]
 
     log.trace "getMap: Entered ................"
     otherParams.startTime = System.currentTimeMillis()
     otherParams.internalTime = otherParams.startTime
-    // log timestamp
+
+    // log timestamp (can be added to otherParams if needed)
     TimeZone.getTimeZone('UTC')
     Date date= new Date()
     String newdate=date.format("YYYY-MM-DD HH:mm:ss.Ms")
-    log.info "getMap timestamp" + newdate
+    log.info "getMap timestamp " + newdate
 
     Map<String,Object> omsParams = [
         cutWidth: wmsParams.width,
@@ -306,6 +307,8 @@ class WebMappingService implements InitializingBean
     omsParams += parseLayers( wmsParams )
 
     Map<String, Object> bbox = parseBbox( wmsParams )
+    if(!bbox)
+      log.info "getMap failed, parseBbox returned null"
 
     // now add in the cut params for oms
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
@@ -314,6 +317,7 @@ class WebMappingService implements InitializingBean
     def result = callOmsService( omsParams )
 
     otherParams.internalTime = System.currentTimeMillis()
+    otherParams.procTime = otherParams.internalTime - otherParams.startTime
     //otherParams.endDate = new Date()
     result.metrics = otherParams
     log.trace "getMap: Leaving ................"
@@ -321,8 +325,7 @@ class WebMappingService implements InitializingBean
 
     result
 
-    def procTime = otherParams.internalTime - otherParams.startTime
-    log.info "getMap processing time" + procTime
+    log.info "getMap start, end, and processing times " + otherParams
 
   }
 
@@ -462,6 +465,8 @@ class WebMappingService implements InitializingBean
         imageListIdx++
       }
     }
+    if(!omsParams)
+      log.info "parseLayers returned null, getMap failed"
     omsParams
   }
 
@@ -500,6 +505,8 @@ class WebMappingService implements InitializingBean
       }
     }
 
+    if(!newStyles)
+      log.info "parseStyles returned null, getMap failed"
     newStyles
   }
 
@@ -512,11 +519,12 @@ class WebMappingService implements InitializingBean
     {
       def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
 
+      // added sensor_id, mission_id and file_type (for data type of source satellite image) and title for image ID
       images = geoscriptService.queryLayer(
           "${prefix}:${name}",
           [
               filter: ( id ) ? "in(${id})" : filter,
-              fields: ['id', 'filename', 'entry_id']
+              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title']
           ]
       )?.features?.inject( [] ) { a, b ->
         a << [
@@ -530,5 +538,6 @@ class WebMappingService implements InitializingBean
     }
 
     images
+    log.info images
   }
 }
