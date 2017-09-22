@@ -21,7 +21,6 @@ class WebMappingService implements InitializingBean
   def geoscriptService
 
   def serverData
-//  def layers
   def projections
 
   @Value( '${omar.wms.oms.chipper.histOp}' )
@@ -35,11 +34,8 @@ class WebMappingService implements InitializingBean
   void afterPropertiesSet() throws Exception
   {
     serverData = grailsApplication.config?.geoscript?.serverData
-//    layers = grailsApplication.config.geoscript.layers
     projections = geoscriptService.listProjections()
 
-    // println autoHistogramMode
-    // println omsChipperUrl
   }
 
   enum RenderMode {
@@ -53,8 +49,9 @@ class WebMappingService implements InitializingBean
     def schemaLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.3.0/capabilities_1_3_0.xsd" )
     def docTypeLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd" )
     def model = geoscriptService.capabilitiesData
-
-    def otherParams = [startTime: new Date(), internalTime: new Date(), procTime: new Date()]
+    def startTime = new Date()
+    def internalTime = new Date()
+    def procTime = new Date()
 
 
     // log timestamp
@@ -62,7 +59,7 @@ class WebMappingService implements InitializingBean
     Date date= new Date()
     String newdate=date.format("YYYY-MM-DD HH:mm:ss.Ms")
     log.info "getCapabilities timestamp" + newdate
-    otherParams.startTime = System.currentTimeMillis()
+    startTime = System.currentTimeMillis()
 
 
     def x = {
@@ -248,11 +245,13 @@ class WebMappingService implements InitializingBean
 
     [contentType: contentType, buffer: buffer]
 
-    otherParams.internalTime = System.currentTimeMillis()
-    otherParams.procTime = otherParams.internalTime - otherParams.startTime
+    internalTime = System.currentTimeMillis()
+    procTime = internalTime - startTime
 
 
-    log.info "startTime, endtime, proccessing time " + otherParams
+    log.info "startTime " + startTime
+    log.info "internalTime " + internalTime
+    log.info "procTime " + procTime
     log.info "Call to getCapabilities was successful"
   }
 
@@ -285,17 +284,16 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
-    def otherParams = [startTime: new Date(), internalTime: new Date(), procTime: new Date()]
+    def startTime = new Date()
+    def internalTime = new Date()
+    def procTime = new Date()
 
     log.trace "getMap: Entered ................"
-    otherParams.startTime = System.currentTimeMillis()
-    otherParams.internalTime = otherParams.startTime
+    startTime = System.currentTimeMillis()
+    internalTime = otherParams.startTime
 
-    // log timestamp (can be added to otherParams if needed)
-    TimeZone.getTimeZone('UTC')
-    Date date= new Date()
-    String newdate=date.format("YYYY-MM-DD HH:mm:ss.Ms")
-    log.info "getMap timestamp " + newdate
+    log.info("getMap timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms"))
+
 
     Map<String,Object> omsParams = [
         cutWidth: wmsParams.width,
@@ -319,16 +317,15 @@ class WebMappingService implements InitializingBean
 
     def result = callOmsService( omsParams )
 
-    otherParams.internalTime = System.currentTimeMillis()
-    otherParams.procTime = otherParams.internalTime - otherParams.startTime
-    //otherParams.endDate = new Date()
+    internalTime = System.currentTimeMillis()
+    procTime = internalTime - startTime
     result.metrics = otherParams
     log.trace "getMap: Leaving ................"
     log.info "call to getMap successful"
-
+    log.info "getMap start time " + startTime
+    log.info "getMap procTime time " + procTime
     result
 
-    log.info "getMap start, end, and processing times " + otherParams
 
   }
 
@@ -352,8 +349,6 @@ class WebMappingService implements InitializingBean
 
     omsParams += omsUrl.params
     omsUrl.setParams( omsParams )
-
-    // println omsParams
 
     try
     {
@@ -459,7 +454,6 @@ class WebMappingService implements InitializingBean
     layerNames?.each { layerName ->
       List images = fetchImages( layerName, wmsParams.filter )
 
-////      println "images: ${images}"
 
       // add image chipper files for the oms params
       images.eachWithIndex { v, i ->
@@ -468,8 +462,9 @@ class WebMappingService implements InitializingBean
         imageListIdx++
       }
     }
-    if(!omsParams)
+    if(!omsParams) {
       log.info "parseLayers returned null, getMap failed"
+    }
     omsParams
   }
 
