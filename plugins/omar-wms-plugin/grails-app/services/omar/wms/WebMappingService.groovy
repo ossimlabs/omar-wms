@@ -54,12 +54,13 @@ class WebMappingService implements InitializingBean
     def procTime = new Date()
 
 
-    // log timestamp
-    TimeZone.getTimeZone('UTC')
-    Date date= new Date()
-    String newdate=date.format("YYYY-MM-DD HH:mm:ss.Ms")
-    log.info "getCapabilities timestamp" + newdate
+    log.trace "getCapabilities: Entered ................"
     startTime = System.currentTimeMillis()
+    internalTime = otherParams.startTime
+
+    log.info("getCapabilities timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms"))
+
+
 
 
     def x = {
@@ -308,9 +309,9 @@ class WebMappingService implements InitializingBean
     omsParams += parseLayers( wmsParams )
 
     Map<String, Object> bbox = parseBbox( wmsParams )
-    if(!bbox)
+    if(!bbox) {
       log.info "getMap failed, parseBbox returned null"
-
+    }
     // now add in the cut params for oms
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
@@ -503,8 +504,9 @@ class WebMappingService implements InitializingBean
       }
     }
 
-    if(!newStyles)
+    if(!newStyles) {
       log.info "parseStyles returned null, getMap failed"
+    }
     newStyles
   }
 
