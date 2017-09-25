@@ -538,6 +538,6 @@ class WebMappingService implements InitializingBean
     }
 
     images
-    log.info images
+    log.info "images:  ${images}"
   }
 }
