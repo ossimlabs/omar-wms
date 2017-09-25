@@ -56,7 +56,7 @@ class WebMappingService implements InitializingBean
 
     log.trace "getCapabilities: Entered ................"
     startTime = System.currentTimeMillis()
-    internalTime = otherParams.startTime
+    internalTime = startTime
 
     log.info("getCapabilities timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms"))
 
@@ -291,7 +291,7 @@ class WebMappingService implements InitializingBean
 
     log.trace "getMap: Entered ................"
     startTime = System.currentTimeMillis()
-    internalTime = otherParams.startTime
+    internalTime = startTime
 
     log.info("getMap timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms"))
 
@@ -320,7 +320,7 @@ class WebMappingService implements InitializingBean
 
     internalTime = System.currentTimeMillis()
     procTime = internalTime - startTime
-    result.metrics = otherParams
+//    result.metrics = otherParams
     log.trace "getMap: Leaving ................"
     log.info "call to getMap successful"
     log.info "getMap start time " + startTime
