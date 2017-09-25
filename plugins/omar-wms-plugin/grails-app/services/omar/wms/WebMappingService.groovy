@@ -244,8 +244,6 @@ class WebMappingService implements InitializingBean
 
     buffer = new StreamingMarkupBuilder( encoding: 'UTF-8' ).bind( x )?.toString()?.trim()
 
-    [contentType: contentType, buffer: buffer]
-
     internalTime = System.currentTimeMillis()
     procTime = internalTime - startTime
 
@@ -254,6 +252,8 @@ class WebMappingService implements InitializingBean
     log.info "internalTime " + internalTime
     log.info "procTime " + procTime
     log.info "Call to getCapabilities was successful"
+    
+      [contentType: contentType, buffer: buffer]
   }
 
   static String toCamelCase(String text, boolean capitalized = false)
@@ -325,8 +325,6 @@ class WebMappingService implements InitializingBean
     log.info "getMap start time " + otherParams.startTime
     log.info "getMap procTime time " + otherParams.procTime
     result
-
-
   }
 
   def callOmsService(Map<String,Object> omsParams, def ogcParams=[:])
@@ -535,8 +533,7 @@ class WebMappingService implements InitializingBean
         a
       }
     }
-
-    images
     log.info "images:  ${images}"
+    images
   }
 }
