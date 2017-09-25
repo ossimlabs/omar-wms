@@ -285,15 +285,12 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
-    def startTime = new Date()
-    def internalTime = new Date()
-    def procTime = new Date()
+    def otherParams = [startDate: new Date()]
+    def procTime
+    otherParams.startTime = System.currentTimeMillis()
 
     log.trace "getMap: Entered ................"
-    startTime = System.currentTimeMillis()
-    internalTime = startTime
-
-    log.info("getMap timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms"))
+    log.info("getMap timestamp " + otherParams.startDate.format("YYYY-MM-DD HH:mm:ss.Ms"))
 
 
     Map<String,Object> omsParams = [
@@ -317,14 +314,16 @@ class WebMappingService implements InitializingBean
     omsParams.srs = bbox?.proj.id
 
     def result = callOmsService( omsParams )
+    
+    otherParams.internalTime = System.currentTimeMillis()
+    result.metrics = otherParams
 
-    internalTime = System.currentTimeMillis()
-    procTime = internalTime - startTime
-//    result.metrics = otherParams
+    procTime = otherParams.internalTime - otherParams.startTime
+    
     log.trace "getMap: Leaving ................"
     log.info "call to getMap successful"
-    log.info "getMap start time " + startTime
-    log.info "getMap procTime time " + procTime
+    log.info "getMap start time " + otherParams.startTime
+    log.info "getMap procTime time " + otherParams.procTime
     result
 
 
