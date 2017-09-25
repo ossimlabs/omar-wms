@@ -19,6 +19,6 @@ if (Environment.isDevelopmentMode() && targetDir) {
             pattern = "%level %logger - %msg%n"
         }
     }
-    logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
+ //   logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
     logger("omar.wms",INFO, ['STDOUT'],false)
 }
