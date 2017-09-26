@@ -20,5 +20,5 @@ if (Environment.isDevelopmentMode() && targetDir) {
         }
     }
     logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
- //   logger("omar.wms",INFO, ['STDOUT'],false)
+    logger("omar.wms",INFO, ['STDOUT'],false)
 }
