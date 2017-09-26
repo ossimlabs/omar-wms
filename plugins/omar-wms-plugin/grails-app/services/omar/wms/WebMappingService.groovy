@@ -288,7 +288,7 @@ class WebMappingService implements InitializingBean
     def getmap_status
 
     otherParams.startTime = System.currentTimeMillis()
-    getmap_timestamp = "getMap timestamp " + otherParams.startDate.format("YYYY-MM-DD HH:mm:ss.Ms")
+    getmap_timestamp = otherParams.startDate.format("YYYY-MM-DD HH:mm:ss.Ms")
 
 
 
@@ -325,7 +325,7 @@ class WebMappingService implements InitializingBean
     logoutput = new JsonBuilder(timestamp: getmap_timestamp, status: getmap_status, starttime: otherParams.startTime,
             proctime: procTime, bbox_ofcall: bbox)
 
-    log.info logoutput
+    log.info logoutput.toString()
 
 
 
