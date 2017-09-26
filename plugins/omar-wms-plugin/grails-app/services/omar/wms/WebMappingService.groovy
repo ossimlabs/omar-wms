@@ -4,6 +4,7 @@
 package omar.wms
 
 import groovy.json.JsonSlurper
+import groovy.json.JsonBuilder
 import groovy.util.logging.Slf4j
 import groovy.xml.StreamingMarkupBuilder
 import omar.core.HttpStatus
@@ -19,6 +20,7 @@ class WebMappingService implements InitializingBean
   def grailsLinkGenerator
   def grailsApplication
   def geoscriptService
+
 
   def serverData
   def projections
@@ -54,9 +56,10 @@ class WebMappingService implements InitializingBean
     def procTime = new Date()
 
 
-    log.trace "getCapabilities: Entered ................"
     startTime = System.currentTimeMillis()
     internalTime = startTime
+
+
 
     log.info("getCapabilities timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms"))
 
@@ -280,10 +283,17 @@ class WebMappingService implements InitializingBean
     def otherParams = [startDate: new Date()]
     def procTime
     def internalTime
-    otherParams.startTime = System.currentTimeMillis()
+    def JsonBuilder logoutput
+    def bbox_ofcall
+    def getmap_timestamp
+    def getmap_status
+    def getmap_starttime
+    def getmap_proctime
 
-    log.trace "getMap: Entered ................"
-    log.info("getMap timestamp " + otherParams.startDate.format("YYYY-MM-DD HH:mm:ss.Ms"))
+    otherParams.startTime = System.currentTimeMillis()
+    getmap_timestamp = "getMap timestamp " + otherParams.startDate.format("YYYY-MM-DD HH:mm:ss.Ms")
+
+    logoutput = new JsonBuilder()
 
 
     Map<String,Object> omsParams = [
@@ -300,8 +310,10 @@ class WebMappingService implements InitializingBean
 
     Map<String, Object> bbox = parseBbox( wmsParams )
     if(!bbox) {
-      log.info "getMap failed, parseBbox returned null"
+      getmap_status = "getMap failed, parseBbox returned null"
     }
+
+    bbox_ofcall = "BBox of call: " + bbox
     // now add in the cut params for oms
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
@@ -312,11 +324,18 @@ class WebMappingService implements InitializingBean
     result.metrics = otherParams
 
     procTime = internalTime - otherParams.startTime
-    
-    log.trace "getMap: Leaving ................"
-    log.info "call to getMap successful"
-    log.info "getMap start time " + otherParams.startTime
-    log.info "getMap procTime time " + procTime
+
+    getmap_status = "call to getMap successful"
+    getmap_starttime = "getMap start time " + otherParams.startTime
+    getmap_proctime = "getMap procTime time " + procTime
+
+    logoutput(getmap_timestamp: getmap_timestamp, getmap_status: getmap_status, getmap_starttime: getmap_starttime,
+            getmap_proctime: getmap_proctime, bbox_ofcall: bbox_ofcall)
+
+    log.info logoutput
+
+
+
     result
   }
 
@@ -432,7 +451,6 @@ class WebMappingService implements InitializingBean
       ]
     }
 
-    log.info("BBox of call: " + bbox)
     bbox
   }
 
