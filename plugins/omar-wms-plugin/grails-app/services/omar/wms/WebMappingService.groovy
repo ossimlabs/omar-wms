@@ -287,6 +287,7 @@ class WebMappingService implements InitializingBean
   {
     def otherParams = [startDate: new Date()]
     def procTime
+    def internalTime
     otherParams.startTime = System.currentTimeMillis()
 
     log.trace "getMap: Entered ................"
@@ -315,15 +316,15 @@ class WebMappingService implements InitializingBean
 
     def result = callOmsService( omsParams )
     
-    otherParams.internalTime = System.currentTimeMillis()
+    internalTime = System.currentTimeMillis()
     result.metrics = otherParams
 
-    procTime = otherParams.internalTime - otherParams.startTime
+    procTime = internalTime - otherParams.startTime
     
     log.trace "getMap: Leaving ................"
     log.info "call to getMap successful"
     log.info "getMap start time " + otherParams.startTime
-    log.info "getMap procTime time " + otherParams.procTime
+    log.info "getMap procTime time " + procTime
     result
   }
 
