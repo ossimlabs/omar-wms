@@ -271,14 +271,6 @@ class WebMappingService implements InitializingBean
       if ( m )
       {
         def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
-
-        println geoscriptService.queryLayer(
-            "${prefix}:${name}",
-            [
-                filter: ( id ) ? "in(${id})" : wmsParams?.filter,
-                fields: ['id', 'filename', 'entry_id']
-            ]
-        )
       }
     }
   }
