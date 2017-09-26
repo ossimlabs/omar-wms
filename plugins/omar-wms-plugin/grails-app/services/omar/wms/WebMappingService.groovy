@@ -283,17 +283,13 @@ class WebMappingService implements InitializingBean
     def otherParams = [startDate: new Date()]
     def procTime
     def internalTime
-    def JsonBuilder logoutput
-    def bbox_ofcall
+    JsonBuilder logoutput
     def getmap_timestamp
     def getmap_status
-    def getmap_starttime
-    def getmap_proctime
 
     otherParams.startTime = System.currentTimeMillis()
     getmap_timestamp = "getMap timestamp " + otherParams.startDate.format("YYYY-MM-DD HH:mm:ss.Ms")
 
-    logoutput = new JsonBuilder()
 
 
     Map<String,Object> omsParams = [
@@ -313,7 +309,6 @@ class WebMappingService implements InitializingBean
       getmap_status = "getMap failed, parseBbox returned null"
     }
 
-    bbox_ofcall = "BBox of call: " + bbox
     // now add in the cut params for oms
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
@@ -326,11 +321,9 @@ class WebMappingService implements InitializingBean
     procTime = internalTime - otherParams.startTime
 
     getmap_status = "call to getMap successful"
-    getmap_starttime = "getMap start time " + otherParams.startTime
-    getmap_proctime = "getMap procTime time " + procTime
 
-    logoutput(getmap_timestamp: getmap_timestamp, getmap_status: getmap_status, getmap_starttime: getmap_starttime,
-            getmap_proctime: getmap_proctime, bbox_ofcall: bbox_ofcall)
+    logoutput = new JsonBuilder(timestamp: getmap_timestamp, status: getmap_status, starttime: otherParams.startTime,
+            proctime: procTime, bbox_ofcall: bbox)
 
     log.info logoutput
 
