@@ -61,7 +61,7 @@ class WebMappingService implements InitializingBean
     getcaps_startTime = System.currentTimeMillis()
     getcaps_internalTime = getcaps_startTime
 
-    getcaps_timestamp = "getCapabilities timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms")
+    getcaps_timestamp = "timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms")
 
     def x = {
       mkp.xmlDeclaration()
