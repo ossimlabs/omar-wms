@@ -51,20 +51,17 @@ class WebMappingService implements InitializingBean
     def schemaLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.3.0/capabilities_1_3_0.xsd" )
     def docTypeLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd" )
     def model = geoscriptService.capabilitiesData
-    def startTime = new Date()
-    def internalTime = new Date()
-    def procTime = new Date()
+    def getcaps_startTime = new Date()
+    def getcaps_internalTime = new Date()
+    def getcaps_procTime = new Date()
+    def getcaps_timestamp
+    JsonBuilder log_getcaps
+    def getcaps_status
 
+    getcaps_startTime = System.currentTimeMillis()
+    getcaps_internalTime = getcaps_startTime
 
-    startTime = System.currentTimeMillis()
-    internalTime = startTime
-
-
-
-    log.info("getCapabilities timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms"))
-
-
-
+    getcaps_timestamp = "getCapabilities timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms")
 
     def x = {
       mkp.xmlDeclaration()
@@ -155,21 +152,6 @@ class WebMappingService implements InitializingBean
                 }
               }
             }
-/*
-            GetFeatureInfo {
-              serverData.Capability.Request.GetFeatureInfo.Format.each { format ->
-                Format( format )
-              }
-              DCPType {
-                HTTP {
-                  Get {
-                    OnlineResource( 'xlink:type': "simple",
-                        'xlink:href': grailsLinkGenerator.link( absolute: true, controller: 'wms', action: 'getFeatureInfo' ) )
-                  }
-                }
-              }
-            }
-*/
           }
           Exception {
             serverData.Capability.Exception.Format.each { format ->
@@ -247,16 +229,18 @@ class WebMappingService implements InitializingBean
 
     buffer = new StreamingMarkupBuilder( encoding: 'UTF-8' ).bind( x )?.toString()?.trim()
 
-    internalTime = System.currentTimeMillis()
-    procTime = internalTime - startTime
+    getcaps_internalTime = System.currentTimeMillis()
+    getcaps_procTime = getcaps_internalTime - getcaps_startTime
+
+    getcaps_status = "Call to getCapabilities was successful"
+
+    log_getcaps = new JsonBuilder(startTime: getcaps_startTime, internalTime: getcaps_internalTime,
+            procTime: getcaps_procTime, timestamp: getcaps_timestamp, status: getcaps_status)
+
+    log.info log_getcaps.toString()
 
 
-    log.info "startTime " + startTime
-    log.info "internalTime " + internalTime
-    log.info "procTime " + procTime
-    log.info "Call to getCapabilities was successful"
-    
-      [contentType: contentType, buffer: buffer]
+    [contentType: contentType, buffer: buffer]
   }
 
   static String toCamelCase(String text, boolean capitalized = false)
