@@ -521,7 +521,7 @@ class WebMappingService implements InitializingBean
         a
       }
     }
-    log.info "images:  ${images}"
+    log.info a
     images
   }
 }
