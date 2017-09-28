@@ -517,8 +517,6 @@ class WebMappingService implements InitializingBean
             imageFile: b.filename ?: b.properties?.filename,
             entry: b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger()
         ]
-        log.info a
-
         a
       }
     }
