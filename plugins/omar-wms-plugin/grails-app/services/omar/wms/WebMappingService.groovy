@@ -270,6 +270,7 @@ class WebMappingService implements InitializingBean
     JsonBuilder logoutput
     def getmap_timestamp
     def getmap_status
+    def getmap_filename
 
     otherParams.startTime = System.currentTimeMillis()
     getmap_timestamp = otherParams.startDate.format("YYYY-MM-DD HH:mm:ss.Ms")
@@ -299,11 +300,10 @@ class WebMappingService implements InitializingBean
 
     def result = callOmsService( omsParams )
 
-    log.info "omsParms" + omsParams
-    log.info "result" + result
+//    log.info "omsParms" + omsParams
+//    log.info "omsParms images" + omsParams.get("images[0].file")
 
-    log.info "result" + result.get("images[0].file")
-    log.info "omsParms images" + omsParams.get("images[0].file")
+    getmap_filename = omsParams.get("images[0].file")
 
 
 
@@ -319,7 +319,7 @@ class WebMappingService implements InitializingBean
     getmap_status = "call to getMap successful"
 
     logoutput = new JsonBuilder(timestamp: getmap_timestamp, status: getmap_status, starttime: otherParams.startTime,
-            proctime: procTime, bbox_ofcall: bbox)
+            proctime: procTime, filename: getmap_filename, bbox_ofcall: bbox)
 
     log.info logoutput.toString()
 
