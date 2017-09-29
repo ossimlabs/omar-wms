@@ -298,6 +298,10 @@ class WebMappingService implements InitializingBean
     omsParams.srs = bbox?.proj.id
 
     def result = callOmsService( omsParams )
+
+    if(!result) {
+      getmap_status = "callOmsService returned null, getMap failed"
+    }
     
     internalTime = System.currentTimeMillis()
     result.metrics = otherParams
@@ -448,9 +452,7 @@ class WebMappingService implements InitializingBean
         imageListIdx++
       }
     }
-    if(!omsParams) {
-      log.info "parseLayers returned null, getMap failed"
-    }
+
     omsParams
   }
 
@@ -489,9 +491,6 @@ class WebMappingService implements InitializingBean
       }
     }
 
-    if(!newStyles) {
-      log.info "parseStyles returned null, getMap failed"
-    }
     newStyles
   }
 
