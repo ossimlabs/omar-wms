@@ -299,6 +299,8 @@ class WebMappingService implements InitializingBean
 
     def result = callOmsService( omsParams )
 
+    log.info "omsParms" + omsParams
+
     if(!result) {
       getmap_status = "callOmsService returned null, getMap failed"
     }
