@@ -297,7 +297,9 @@ class WebMappingService implements InitializingBean
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
     
-    bbox_midpoint = [ lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2 ]
+    def bbox_midy = (bbox.minY + bbox.maxY) / 2
+    def bbox_midx = (bbox.minX + bbox.maxX) / 2
+    bbox_midpoint = "${bbox_midy},${bbox_midx}"
 
     def result = callOmsService( omsParams )
 
