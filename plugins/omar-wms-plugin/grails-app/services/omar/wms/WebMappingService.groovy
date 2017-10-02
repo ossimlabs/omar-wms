@@ -265,7 +265,7 @@ class WebMappingService implements InitializingBean
   def getMap(GetMapRequest wmsParams)
   {
     def otherParams = [startDate: new Date()]
-    JsonBuilder logoutput
+    JsonBuilder logOutput
     def processingTime
     def internalTime
     def getmap_timestamp
