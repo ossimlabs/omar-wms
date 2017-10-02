@@ -299,7 +299,7 @@ class WebMappingService implements InitializingBean
     
     def bbox_midy = (bbox.minY + bbox.maxY) / 2
     def bbox_midx = (bbox.minX + bbox.maxX) / 2
-    bbox_midpoint = "${bbox_midy},${bbox_midx}"
+    bbox_midpoint = [ bbox_midx, bbox_midy ]
 
     def result = callOmsService( omsParams )
 
