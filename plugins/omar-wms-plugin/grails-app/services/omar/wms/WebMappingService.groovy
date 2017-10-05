@@ -53,7 +53,7 @@ class WebMappingService implements InitializingBean
     def model = geoscriptService.capabilitiesData
     def getcaps_startTime = new Date()
     def getcaps_internalTime = new Date()
-    def getcaps_procTime = new Date()
+    def getcaps_processingTime
     def getcaps_timestamp
     JsonBuilder log_getcaps
     def getcaps_status
@@ -61,7 +61,7 @@ class WebMappingService implements InitializingBean
     getcaps_startTime = System.currentTimeMillis()
     getcaps_internalTime = getcaps_startTime
 
-    getcaps_timestamp = "timestamp " + new Date().format("YYYY-MM-DD HH:mm:ss.Ms")
+    getcaps_timestamp = new Date().format("YYYY-MM-DD HH:mm:ss.Ms")
 
     def x = {
       mkp.xmlDeclaration()
@@ -230,12 +230,12 @@ class WebMappingService implements InitializingBean
     buffer = new StreamingMarkupBuilder( encoding: 'UTF-8' ).bind( x )?.toString()?.trim()
 
     getcaps_internalTime = System.currentTimeMillis()
-    getcaps_procTime = getcaps_internalTime - getcaps_startTime
+    getcaps_processingTime = getcaps_internalTime - getcaps_startTime
 
     getcaps_status = "Call to getCapabilities was successful"
 
     log_getcaps = new JsonBuilder(startTime: getcaps_startTime, internalTime: getcaps_internalTime,
-            procTime: getcaps_procTime, timestamp: getcaps_timestamp, status: getcaps_status)
+            processingTime: getcaps_processingTime, timestamp: getcaps_timestamp, status: getcaps_status)
 
     log.info log_getcaps.toString()
 
@@ -265,11 +265,14 @@ class WebMappingService implements InitializingBean
   def getMap(GetMapRequest wmsParams)
   {
     def otherParams = [startDate: new Date()]
-    def procTime
+    JsonBuilder logOutput
+    def processingTime
     def internalTime
-    JsonBuilder logoutput
     def getmap_timestamp
     def getmap_status
+    def getmap_filename
+    def getmap_bbox_center
+    def bbox_midpoint
 
     otherParams.startTime = System.currentTimeMillis()
     getmap_timestamp = otherParams.startDate.format("YYYY-MM-DD HH:mm:ss.Ms")
@@ -289,29 +292,29 @@ class WebMappingService implements InitializingBean
     omsParams += parseLayers( wmsParams )
 
     Map<String, Object> bbox = parseBbox( wmsParams )
-    if(!bbox) {
-      getmap_status = "getMap failed, parseBbox returned null"
-    }
 
     // now add in the cut params for oms
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
+    
+    def bbox_midy = (bbox.minY + bbox.maxY) / 2
+    def bbox_midx = (bbox.minX + bbox.maxX) / 2
+    bbox_midpoint = [ bbox_midx, bbox_midy ]
 
     def result = callOmsService( omsParams )
+
+    getmap_status = result.status
+    getmap_filename = omsParams.get("images[0].file")
     
     internalTime = System.currentTimeMillis()
     result.metrics = otherParams
 
-    procTime = internalTime - otherParams.startTime
+    processingTime = internalTime - otherParams.startTime
 
-    getmap_status = "call to getMap successful"
+    logOutput = new JsonBuilder(timestamp: getmap_timestamp, status: getmap_status, processingTime: processingTime,
+                                filename: getmap_filename, bbox: bbox, location: bbox_midpoint)
 
-    logoutput = new JsonBuilder(timestamp: getmap_timestamp, status: getmap_status, starttime: otherParams.startTime,
-            proctime: procTime, bbox_ofcall: bbox)
-
-    log.info logoutput.toString()
-
-
+    log.info logOutput.toString()
 
     result
   }
@@ -448,9 +451,7 @@ class WebMappingService implements InitializingBean
         imageListIdx++
       }
     }
-    if(!omsParams) {
-      log.info "parseLayers returned null, getMap failed"
-    }
+
     omsParams
   }
 
@@ -489,9 +490,6 @@ class WebMappingService implements InitializingBean
       }
     }
 
-    if(!newStyles) {
-      log.info "parseStyles returned null, getMap failed"
-    }
     newStyles
   }
 
@@ -517,11 +515,9 @@ class WebMappingService implements InitializingBean
             imageFile: b.filename ?: b.properties?.filename,
             entry: b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger()
         ]
-
         a
       }
     }
-    log.info "images:  ${images}"
     images
   }
 }
