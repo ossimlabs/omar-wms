@@ -5,14 +5,12 @@ package omar.wms
 
 import groovy.json.JsonSlurper
 import groovy.json.JsonBuilder
-import groovy.util.logging.Slf4j
 import groovy.xml.StreamingMarkupBuilder
 import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 
-@Slf4j
 class WebMappingService implements InitializingBean
 {
   static transactional = false
