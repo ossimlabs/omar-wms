@@ -10,8 +10,8 @@ appender('STDOUT', ConsoleAppender) {
     }
 }
 
-root(ERROR, ['STDOUT'])
-logger("omar.wms",INFO, ['STDOUT'],false)
+root(INFO, ['STDOUT'])
+//logger("omar.wms",INFO, ['STDOUT'],false)
 
 
 def targetDir = BuildSettings.TARGET_DIR
