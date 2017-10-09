@@ -3,10 +3,7 @@
  */
 package omar.wms
 
-import com.wordnik.swagger.annotations.Api
-import com.wordnik.swagger.annotations.ApiImplicitParam
-import com.wordnik.swagger.annotations.ApiImplicitParams
-import com.wordnik.swagger.annotations.ApiOperation
+import io.swagger.annotations.*
 
 import omar.core.BindUtil
 import omar.core.IpUtil
@@ -46,7 +43,7 @@ class WmsController
 
 	/**
 	 * 		Returns the capabilites of the given WMS version
-	 * 		
+	 *
 	 * @param  wmsParams parameters to the WMS service request GetCapabilities
 	 */
 	@ApiOperation( value = "Get the capabilities of the server", produces = 'application/vnd.ogc.wms_xml' )
@@ -69,7 +66,7 @@ class WmsController
 	/**
 	 * 		Returns the images of the given WMS getMap request
 	 */
-	@ApiOperation( value = "Get image from the server", 
+	@ApiOperation( value = "Get image from the server",
 		produces = 'application/xml,application/json',
 		notes = """
 <style>
@@ -97,7 +94,7 @@ class WmsController
      "brightness" : "0.0",
      "resamplerFilter": "bilinear",
      "histCenterTile": "false"
-     } 
+     }
             </pre>
             where <br/>
             <ul>
@@ -105,10 +102,10 @@ class WmsController
 	            <tab><b>histOp:</b> values supported none, auto-minmax, </tab><br/>
 	            <tab>auto-percentile, std-stretch-1, std-stretch-2, or std-stretch-3</tab><br/>
 	            <tab><b>sharpenMode:</b> values supported  none, light, or heavy.</tab><br/>
-	            <tab><b>contrast:</b> Allows one to control the contrast of an<br/> 
+	            <tab><b>contrast:</b> Allows one to control the contrast of an<br/>
 	            <tab>image. This is a multiplier.</tab><br/>
 	            <tab><b>brightness:</b> Allows one to control the brightness of the image.<br/>
-	            <tab>This is expressed as a normalized value between -1 and 1.<br/>  
+	            <tab>This is expressed as a normalized value between -1 and 1.<br/>
 	            <tab>You can go higher values but just know it's a normalized and not absolute values.</tab><br/>
 	            <tab><b>resamplerFilter:</b>values supported nearest-neighbor, bilinear, </br>
 	            <tab>cubic, gaussian, blackman, bspline, hanning, hamming, hermite, mitchell, quadratic,<br/>
@@ -139,7 +136,7 @@ class WmsController
 	def getMap( )
 	{
 		GetMapRequest wmsParams =  new GetMapRequest()
-		
+
       bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
 
 		def outputStream = null
