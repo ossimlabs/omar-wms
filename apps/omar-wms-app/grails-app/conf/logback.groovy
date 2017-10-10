@@ -5,8 +5,8 @@ import grails.util.Environment
 appender('STDOUT', ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
         //pattern = "%level %logger - %msg%n"
-        pattern = "%msg%n"
-        
+        //pattern = "%msg%n"
+        pattern = "%clr(%5p) %clr(%logger,%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]){yellow} %msg%n"        
     }
 }
 
