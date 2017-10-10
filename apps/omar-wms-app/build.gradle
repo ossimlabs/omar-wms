@@ -14,8 +14,8 @@ buildscript {
   }
   dependencies {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.8.2"
-    classpath "org.grails.plugins:hibernate5:5.0.10"
+    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.2"
+    classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
   }
 }
 
@@ -109,7 +109,7 @@ dependencies {
   testCompile "org.grails.plugins:geb"
   testCompile "org.grails:grails-web-testing-support"
   testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
-  testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"  
+  testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
 }
 
 publishing {
