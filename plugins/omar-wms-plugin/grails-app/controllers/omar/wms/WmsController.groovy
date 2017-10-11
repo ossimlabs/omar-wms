@@ -9,6 +9,7 @@ import omar.core.BindUtil
 import omar.core.IpUtil
 import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
+import groovy.util.logging.Slf4j
 
 
 /**
@@ -19,6 +20,7 @@ import omar.core.OgcExceptionUtil
 @Api( value = "wms",
 		description = "WMS Support"
 )
+@Slf4j
 class WmsController
 {
 	def webMappingService
