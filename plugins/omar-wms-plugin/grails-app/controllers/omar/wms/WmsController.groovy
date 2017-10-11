@@ -17,7 +17,7 @@ import groovy.util.logging.Slf4j
  *
  *		Control flow of request to the WMS service
  */
-@Api( value = "wms",
+@Api( value = "/wms",
 		description = "WMS Support"
 )
 @Slf4j

@@ -147,3 +147,6 @@ omar:
       geoscript:
         url: http://localhost:8083/omar-geoscript/geoscriptApi
                       
+---
+logging:
+  config: grails-app/conf/logback.groovy
