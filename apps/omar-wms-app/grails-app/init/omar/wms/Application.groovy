@@ -1,4 +1,4 @@
-package wms.app
+package omar.wms
 
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration

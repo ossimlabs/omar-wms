@@ -16,7 +16,7 @@ import omar.core.OgcExceptionUtil
  *
  *		Control flow of request to the WMS service
  */
-@Api( value = "wms",
+@Api( value = "/wms",
 		description = "WMS Support"
 )
 class WmsController
