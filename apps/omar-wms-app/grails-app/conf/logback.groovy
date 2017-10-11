@@ -17,7 +17,7 @@ appender('SLEUTH', ConsoleAppender) {
 
 root(ERROR, ['STDOUT'])
 logger("omar.wms",INFO, ['SLEUTH'],false)
-logger("omar.wms",INFO, ['STDOUT'],false)
+logger("omar.wms.WebMappingService",INFO, ['STDOUT'],false)
 
 def targetDir = BuildSettings.TARGET_DIR
 if (Environment.isDevelopmentMode() && targetDir) {
