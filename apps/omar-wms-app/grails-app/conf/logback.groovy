@@ -17,7 +17,7 @@ appender('SLEUTH', ConsoleAppender) {
 
 root(ERROR, ['STDOUT'])
 logger("omar.wms",INFO, ['STDOUT'],false)
-logger("org.springframework.web.servlet.DispatcherServlet",DEBUG, ['SLEUTH'],false)
+logger("org.grails.web.servlet.mvc.GrailsDispatcherServlet",DEBUG, ['SLEUTH'],false)
 
 def targetDir = BuildSettings.TARGET_DIR
 if (Environment.isDevelopmentMode() && targetDir) {
