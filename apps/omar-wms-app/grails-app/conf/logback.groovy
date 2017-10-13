@@ -5,7 +5,6 @@ import grails.util.Environment
 appender('STDOUT', ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
         pattern = "%msg%n"
-//        pattern = "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%logger,%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}] %msg%n"
     }
 }
 
@@ -17,8 +16,8 @@ appender('SLEUTH', ConsoleAppender) {
 
 
 root(ERROR, ['STDOUT'])
-logger("omar.wms",INFO, ['SLEUTH'],false)
 logger("omar.wms",INFO, ['STDOUT'],false)
+logger("org.springframework.web.servlet.DispatcherServlet",DEBUG, ['SLEUTH'],false)
 
 def targetDir = BuildSettings.TARGET_DIR
 if (Environment.isDevelopmentMode() && targetDir) {

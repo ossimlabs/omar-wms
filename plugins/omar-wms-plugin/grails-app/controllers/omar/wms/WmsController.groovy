@@ -59,7 +59,7 @@ class WmsController
 		BindUtil.fixParamNames( GetCapabilitiesRequest, params )
         bindData( wmsParams, params )
 
-        log.info "GetCapabilities: ${wmsParams}"
+        //log.info "GetCapabilities: ${wmsParams}"
 
 		def results = webMappingService.getCapabilities( wmsParams )
 
@@ -142,7 +142,7 @@ class WmsController
         GetMapRequest wmsParams =  new GetMapRequest()
         bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
 
-        log.info "GetMap: ${wmsParams}"
+        //log.info "GetMap: ${wmsParams}"
 
 		def outputStream = null
 		try
