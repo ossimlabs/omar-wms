@@ -52,9 +52,9 @@ class WmsController
                   produces = 'application/vnd.ogc.wms_xml', 
                   httpMethod = "GET")
 	@ApiImplicitParams( [
-			@ApiImplicitParam( name = 'service', value = 'OGC Service type', allowableValues = "[WMS]", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
-			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "[1.1.1, 1.3.0]", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
-			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "[GetCapabilities]", defaultValue = 'GetCapabilities', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'service', value = 'OGC Service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1,1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetCapabilities", defaultValue = 'GetCapabilities', paramType = 'query', dataType = 'string', required = true ),
 	] )
 	def getCapabilities( GetCapabilitiesRequest wmsParams )
 	{
@@ -131,9 +131,9 @@ where:
     """
 		 )
 	@ApiImplicitParams( [
-			@ApiImplicitParam( name = 'service', value = 'OGC service type', allowableValues = "[WMS]", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
-			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "[1.1.1, 1.3.0]", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
-			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "[GetMap]", defaultValue = 'GetMap', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'service', value = 'OGC service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1, 1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetMap", defaultValue = 'GetMap', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'layers', value = 'Type name', defaultValue = "omar:raster_entry", paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'filter', value = 'Filter', paramType = 'query', dataType = 'string', required = false ),
 			@ApiImplicitParam( name = 'srs', value = 'Spatial Reference System (Version 1.1.1)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
@@ -141,10 +141,10 @@ where:
 			@ApiImplicitParam( name = 'bbox', value = 'Bounding box', defaultValue = "-180,-90,180,90", paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'width', value = 'Width of result image', defaultValue = "1024", paramType = 'query', dataType = 'int', required = true ),
 			@ApiImplicitParam( name = 'height', value = 'Height of result image', defaultValue = "512", paramType = 'query', dataType = 'int', required = true ),
-			@ApiImplicitParam( name = 'format', value = 'MIME Type of result image', defaultValue = "image/jpeg", allowableValues = "[image/jpeg, image/png, image/gif]", paramType = 'query', dataType = 'string', required = true ),
-			@ApiImplicitParam( name = 'transparent', value = 'Defines the transparency', defaultValue = "FALSE", allowableValues = "[TRUE,FALSE]", paramType = 'query', dataType = 'boolean', required = false ),
+			@ApiImplicitParam( name = 'format', value = 'MIME Type of result image', defaultValue = "image/jpeg", allowableValues = "image/jpeg, image/png, image/gif", paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'transparent', value = 'Defines the transparency', defaultValue = "FALSE", allowableValues = "TRUE,FALSE", paramType = 'query', dataType = 'boolean', required = false ),
 			@ApiImplicitParam( name = 'styles', value = 'Styles to apply to image ', defaultValue = "", paramType = 'query', dataType = 'string', required = false ),
-			@ApiImplicitParam( name = 'exceptions', value = 'Valid exceptions', defaultValue = "", allowableValues = "[application/vnd.ogc.se_xml,application/vnd.ogc.se_inimage,application/vnd.ogc.se_blank]", paramType = 'query', dataType = 'string', required = false ),
+			@ApiImplicitParam( name = 'exceptions', value = 'Valid exceptions', defaultValue = "", allowableValues = "application/vnd.ogc.se_xml,application/vnd.ogc.se_inimage,application/vnd.ogc.se_blank", paramType = 'query', dataType = 'string', required = false ),
 	] )
 	def getMap( )
 	{
