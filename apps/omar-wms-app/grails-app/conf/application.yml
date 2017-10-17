@@ -162,3 +162,8 @@ omar:
 
 #logging:
 #  config: grails-app/conf/logback.groovy
+
+swagger:
+  schemes:
+    - HTTPS
+    - HTTP
