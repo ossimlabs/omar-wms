@@ -120,10 +120,7 @@ publishing {
   }
 }
 
-/*
 bootRun {
     jvmArgs = [
-            "-Dlogging.config=${project.projectDir}/grails-app/conf/logback.groovy"
     ]
 }
-*/
