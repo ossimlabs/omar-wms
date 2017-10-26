@@ -43,7 +43,7 @@ class WebMappingService implements InitializingBean
     BLANK, GEOSCRIPT, FILTER
   }
 
-  @HystrixCommand(fallbackMethod = "getCapabilitiesDown")
+//  @HystrixCommand(fallbackMethod = "getCapabilitiesDown")
   def getCapabilities(GetCapabilitiesRequest wmsParams)
   {
     def contentType, buffer
@@ -261,7 +261,7 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  @HystrixCommand(fallbackMethod = "getMapDown")
+//  @HystrixCommand(fallbackMethod = "getMapDown")
   def getMap(GetMapRequest wmsParams)
   {
     def otherParams = [startDate: new Date()]
@@ -317,7 +317,7 @@ class WebMappingService implements InitializingBean
     result
   }
 
-  @HystrixCommand(fallbackMethod = "callOmsServiceDown")
+//  @HystrixCommand(fallbackMethod = "callOmsServiceDown")
   def callOmsService(Map<String,Object> omsParams, def ogcParams=[:])
   {
     Map<String,Object> result = [status: HttpStatus.OK]
