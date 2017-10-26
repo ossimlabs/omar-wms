@@ -25,4 +25,8 @@ class GetCapabilitiesRequest implements Validateable
     version false
   }
 
+  def getCapabilitiesDown()
+  {
+    log.error("WebMappingService getCapabilities is down")
+  }
 }

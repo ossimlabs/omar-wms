@@ -520,18 +520,8 @@ class WebMappingService implements InitializingBean
     images
   }
 
-  def getMapDown()
-  {
-    log.error("WebMappingService getMap is down")
-  }
-
   def callOmsServiceDown()
   {
     log.error("WebMappingService callOmsService is down")
-  }
-
-  def getCapabilitiesDown()
-  {
-    log.error("WebMappingService getCapabilities is down")
   }
 }

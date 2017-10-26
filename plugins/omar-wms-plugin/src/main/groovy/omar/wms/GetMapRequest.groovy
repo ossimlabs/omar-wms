@@ -39,7 +39,7 @@ class GetMapRequest implements Validateable
 
   String exceptions /*!< Defines the types of exceptions to be returned. Can be of the values application/vnd.ogc.se_xml, application/vnd.ogc.se_inimage, or application/vnd.ogc.se_blank */
   String bgcolor
-  
+
   static mapping = {
     version false
   }
@@ -53,7 +53,7 @@ class GetMapRequest implements Validateable
     width(nullable:false, blank:false)
     height(nullable:false, blank:false)
 
-    srs(nullable:true, blank:true, validator: { val, obj -> 
+    srs(nullable:true, blank:true, validator: { val, obj ->
       String result
       if(obj.version == "1.1.1")
       {
@@ -73,10 +73,10 @@ class GetMapRequest implements Validateable
              result = "srs field must be of the form EPSG:<code>"
           }
         }
-      } 
+      }
       result
-    }) 
-    crs(nullable:true, blank:true, validator: { val, obj -> 
+    })
+    crs(nullable:true, blank:true, validator: { val, obj ->
       String result
       if(obj.version == "1.3.0")
       {
@@ -95,10 +95,10 @@ class GetMapRequest implements Validateable
           {
              result = "crs field must be of the form EPSG:code where code is a numeric"
           }
-        } 
+        }
       }
       result
-    }) 
+    })
     bbox(nullable:false, blank:false, validator: {val, obj ->
       String result
 
@@ -121,5 +121,9 @@ class GetMapRequest implements Validateable
     exceptions(nullable:true, blank:true)
     bgcolor(nullable:true, blank:true)
   }
-
+  def getMapDown()
+  {
+    log.error("WebMappingService getMap is down")
+  }
 }
+
