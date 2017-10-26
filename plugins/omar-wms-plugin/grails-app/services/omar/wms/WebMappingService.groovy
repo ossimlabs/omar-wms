@@ -10,6 +10,7 @@ import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand
 
 class WebMappingService implements InitializingBean
 {
@@ -42,6 +43,7 @@ class WebMappingService implements InitializingBean
     BLANK, GEOSCRIPT, FILTER
   }
 
+  @HystrixCommand(fallbackMethod = "getCapabilitiesDown")
   def getCapabilities(GetCapabilitiesRequest wmsParams)
   {
     def contentType, buffer
@@ -49,15 +51,14 @@ class WebMappingService implements InitializingBean
     def schemaLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.3.0/capabilities_1_3_0.xsd" )
     def docTypeLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd" )
     def model = geoscriptService.capabilitiesData
-    def getcaps_startTime = new Date()
-    def getcaps_internalTime = new Date()
+    def getcaps_startTime
+    def getcaps_internalTime
     def getcaps_processingTime
     def getcaps_timestamp
     JsonBuilder log_getcaps
     def getcaps_status
 
     getcaps_startTime = System.currentTimeMillis()
-    getcaps_internalTime = getcaps_startTime
 
     getcaps_timestamp = new Date().format("YYYY-MM-DD HH:mm:ss.Ms")
 
@@ -260,6 +261,7 @@ class WebMappingService implements InitializingBean
     }
   }
 
+  @HystrixCommand(fallbackMethod = "getMapDown")
   def getMap(GetMapRequest wmsParams)
   {
     def otherParams = [startDate: new Date()]
@@ -294,14 +296,14 @@ class WebMappingService implements InitializingBean
     // now add in the cut params for oms
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
-    
+
     bbox_midpoint = [ lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2 ]
 
     def result = callOmsService( omsParams )
 
     getmap_status = result.status
     getmap_filename = omsParams.get("images[0].file")
-    
+
     internalTime = System.currentTimeMillis()
     result.metrics = otherParams
 
@@ -315,6 +317,7 @@ class WebMappingService implements InitializingBean
     result
   }
 
+  @HystrixCommand(fallbackMethod = "callOmsServiceDown")
   def callOmsService(Map<String,Object> omsParams, def ogcParams=[:])
   {
     Map<String,Object> result = [status: HttpStatus.OK]
@@ -515,5 +518,20 @@ class WebMappingService implements InitializingBean
       }
     }
     images
+  }
+
+  def getMapDown()
+  {
+    log.error("WebMappingService getMap is down")
+  }
+
+  def callOmsServiceDown()
+  {
+    log.error("WebMappingService callOmsService is down")
+  }
+
+  def getCapabilitiesDown()
+  {
+    log.error("WebMappingService getCapabilities is down")
   }
 }

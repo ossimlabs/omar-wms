@@ -1,9 +1,10 @@
-package omar.wms.app
+package omar.wms
 
 import grails.transaction.Transactional
 import groovy.json.JsonSlurper
 
 import org.springframework.beans.factory.annotation.Value
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand
 
 @Transactional( readOnly = true )
 class GeoscriptClientService
@@ -11,6 +12,7 @@ class GeoscriptClientService
   @Value('${omar.wms.geoscript.url}')
   def geoscriptEndpoint
 
+  @HystrixCommand(fallbackMethod = "getCapabilitiesDataDown")
   def getCapabilitiesData()
   {
     def url = "${geoscriptEndpoint}/getCapabilitiesData".toURL()
@@ -19,6 +21,7 @@ class GeoscriptClientService
 
   }
 
+  @HystrixCommand(fallbackMethod = "listProjectionsDown")
   def listProjections()
   {
     def url = "${geoscriptEndpoint}/listProjections".toURL()
@@ -26,6 +29,7 @@ class GeoscriptClientService
     new JsonSlurper().parse( url )
   }
 
+  @HystrixCommand(fallbackMethod = "queryLayerDown")
   def queryLayer(String typeName, Map<String,Object> options, String resultType='results', String featureFormat=null)
   {
     def params = [
@@ -57,16 +61,27 @@ class GeoscriptClientService
       params.sort = options.sort.collect { it.join(' ') }.join(',')
     }
 
-//    println params
-
     def newParams = params.collect {
       "${it.key}=${URLEncoder.encode( it.value as String, 'UTF-8' )}"
     }.join('&')
 
     def url = "${geoscriptEndpoint}/queryLayer?${newParams}".toURL()
 
-    // println url
-
     new JsonSlurper().parse( url )
   }
+
+    def getCapabilitiesDataDown()
+    {
+      log.error("GeoscriptClientService getCapabilities is down")
+    }
+
+    def listProjectionsDown()
+    {
+        log.error("GeoscriptClientService listProjections is down")
+    }
+
+    def queryLayerDown()
+    {
+        log.error("GeoscriptClientService queryLayer is down")
+    }
 }

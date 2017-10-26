@@ -1,4 +1,4 @@
-package wms.app
+package omar.wms
 
 class UrlMappings {
 
