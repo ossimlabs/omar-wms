@@ -24,9 +24,4 @@ class GetCapabilitiesRequest implements Validateable
   static mapping = {
     version false
   }
-
-  def getCapabilitiesDown()
-  {
-    println("WebMappingService getCapabilities is down")
-  }
 }

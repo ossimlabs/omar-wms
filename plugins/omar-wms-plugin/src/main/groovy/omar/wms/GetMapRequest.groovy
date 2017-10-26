@@ -122,9 +122,5 @@ class GetMapRequest implements Validateable
     exceptions(nullable:true, blank:true)
     bgcolor(nullable:true, blank:true)
   }
-  def getMapDown()
-  {
-    println("WebMappingService getMap is down")
-  }
 }
 
