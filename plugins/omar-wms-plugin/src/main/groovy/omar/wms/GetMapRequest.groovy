@@ -12,6 +12,7 @@ import groovy.transform.ToString
 /**
  * @brief Holds the parameters used for the GetMap request to the service
  */
+
 @ToString( includeNames = true )
 class GetMapRequest implements Validateable
 {
@@ -123,7 +124,7 @@ class GetMapRequest implements Validateable
   }
   def getMapDown()
   {
-    log.error("WebMappingService getMap is down")
+    println("WebMappingService getMap is down")
   }
 }
 

@@ -27,6 +27,6 @@ class GetCapabilitiesRequest implements Validateable
 
   def getCapabilitiesDown()
   {
-    log.error("WebMappingService getCapabilities is down")
+    println("WebMappingService getCapabilities is down")
   }
 }
