@@ -9,7 +9,7 @@ import grails.plugins.metadata.*
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient
 
-@EnableCircuitBreaker
+//@EnableCircuitBreaker
 @EnableDiscoveryClient
 @PluginSource
 class Application extends GrailsAutoConfiguration {

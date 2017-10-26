@@ -12,7 +12,7 @@ class GeoscriptClientService
   @Value('${omar.wms.geoscript.url}')
   def geoscriptEndpoint
 
-  @HystrixCommand(fallbackMethod = "getCapabilitiesDataDown")
+//  @HystrixCommand(fallbackMethod = "getCapabilitiesDataDown")
   def getCapabilitiesData()
   {
     def url = "${geoscriptEndpoint}/getCapabilitiesData".toURL()
@@ -21,7 +21,7 @@ class GeoscriptClientService
 
   }
 
-  @HystrixCommand(fallbackMethod = "listProjectionsDown")
+//  @HystrixCommand(fallbackMethod = "listProjectionsDown")
   def listProjections()
   {
     def url = "${geoscriptEndpoint}/listProjections".toURL()
@@ -29,7 +29,7 @@ class GeoscriptClientService
     new JsonSlurper().parse( url )
   }
 
-  @HystrixCommand(fallbackMethod = "queryLayerDown")
+//  @HystrixCommand(fallbackMethod = "queryLayerDown")
   def queryLayer(String typeName, Map<String,Object> options, String resultType='results', String featureFormat=null)
   {
     def params = [
