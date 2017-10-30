@@ -55,16 +55,12 @@ class WebMappingService implements InitializingBean
     def schemaLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.3.0/capabilities_1_3_0.xsd" )
     def docTypeLocation = grailsLinkGenerator.link( absolute: true, uri: "/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd" )
     def model = geoscriptService.capabilitiesData
-    def getcaps_startTime
-    def getcaps_internalTime
-    def getcaps_processingTime
-    def getcaps_timestamp
-    JsonBuilder log_getcaps
-    def getcaps_status
 
-    getcaps_startTime = System.currentTimeMillis()
-
-    getcaps_timestamp = new Date().format( "YYYY-MM-DD HH:mm:ss.Ms" )
+    def requestType = "GET"
+    def requestMethod = "GetCapabilities"
+    Date startTime = new Date()
+    def responseTime
+    def requestInfoLog
 
     def x = {
       mkp.xmlDeclaration()
@@ -232,16 +228,14 @@ class WebMappingService implements InitializingBean
 
     buffer = new StreamingMarkupBuilder( encoding: 'UTF-8' ).bind( x )?.toString()?.trim()
 
-    getcaps_internalTime = System.currentTimeMillis()
-    getcaps_processingTime = getcaps_internalTime - getcaps_startTime
+    Date endTime = new Date()
+    responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
-    getcaps_status = "Call to getCapabilities was successful"
+    requestInfoLog = new JsonBuilder(timestamp: startTime.format("YYYY-MM-DD HH:mm:ss.Ms"), requestType: requestType,
+            requestMethod: requestMethod, endTime: endTime.format("YYYY-MM-DD HH:mm:ss.Ms"), responseTime: responseTime,
+            responseSize: buffer.getBytes().length)
 
-    log_getcaps = new JsonBuilder( startTime: getcaps_startTime, internalTime: getcaps_internalTime,
-            processingTime: getcaps_processingTime, timestamp: getcaps_timestamp, status: getcaps_status )
-
-    log.info log_getcaps.toString()
-
+    log.info requestInfoLog.toString()
 
     [contentType: contentType, buffer: buffer]
   }
@@ -272,19 +266,16 @@ class WebMappingService implements InitializingBean
   def getMap(GetMapRequest wmsParams)
   {
     def otherParams = [startDate: new Date()]
-    JsonBuilder logOutput
-    def processingTime
-    def internalTime
-    def getmap_timestamp
-    def getmap_status
-    def getmap_filename
-    def getmap_bbox_center
-    def bbox_midpoint
+    def requestType = "GET"
+    def requestMethod = "GetMap"
+    Date startTime = new Date()
+    def responseTime
+    def requestInfoLog
+    def status
+    def filename
+    def bboxMidpoint
 
     otherParams.startTime = System.currentTimeMillis()
-    getmap_timestamp = otherParams.startDate.format( "YYYY-MM-DD HH:mm:ss.Ms" )
-
-
 
     Map<String, Object> omsParams = [
             cutWidth        : wmsParams.width,
@@ -304,30 +295,29 @@ class WebMappingService implements InitializingBean
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
 
-    bbox_midpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
+    bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
 
     def result = callOmsService( omsParams )
 
-    getmap_status = result.status
-    getmap_filename = omsParams.get( "images[0].file" )
+    status = result.status
+    filename = omsParams.get( "images[0].file" )
 
-    internalTime = System.currentTimeMillis()
+    Date endTime = new Date()
+
     result.metrics = otherParams
 
-    processingTime = internalTime - otherParams.startTime
+    responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
-    logOutput = new JsonBuilder( timestamp: getmap_timestamp, status: getmap_status, processingTime: processingTime,
-            filename: getmap_filename, bbox: bbox, location: bbox_midpoint )
+    requestInfoLog = new JsonBuilder(timestamp: startTime.format("YYYY-MM-DD HH:mm:ss.Ms"), requestType: requestType,
+            requestMethod: requestMethod, status: status, endTime: endTime.format("YYYY-MM-DD HH:mm:ss.Ms"),
+            responseTime: responseTime, responseSize: result.buffer.length, filename: filename, bbox: bbox,
+            location: bboxMidpoint)
 
-    log.info logOutput.toString()
+    log.info requestInfoLog.toString()
 
     result
   }
 
-  @HystrixCommand (commandProperties = [
-          @HystrixProperty (name = "fallback.enabled", value = "false"),
-          @HystrixProperty (name = "execution.timeout.enabled", value = "false")
-  ])
   def callOmsService(Map<String, Object> omsParams, def ogcParams = [:])
   {
     Map<String, Object> result = [status: HttpStatus.OK]
@@ -353,7 +343,7 @@ class WebMappingService implements InitializingBean
     {
       // call OMS and forward the response content and type
       HttpURLConnection connection = (HttpURLConnection) omsUrl.openConnection();
-      Map responseMap = connection.headerFields;
+      Map responseMap = connection.headerFields
 
       String contentType
       if ( responseMap."Content-Type" )
@@ -405,7 +395,6 @@ class WebMappingService implements InitializingBean
     }
 
     result
-
   }
 
   private Map<java.lang.String, java.lang.Object> parseBbox(GetMapRequest wmsParams)
