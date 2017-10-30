@@ -8,19 +8,12 @@ appender('STDOUT', ConsoleAppender) {
     }
 }
 
-//appender('SLEUTH', ConsoleAppender) {
-//    encoder(PatternLayoutEncoder) {
-//        pattern = "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%logger,%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}] %msg%n"
-//    }
-//}
-
-
 root(ERROR, ['STDOUT'])
-logger("omar.wms",INFO, ['STDOUT'],false)
-//logger("org.grails.web.servlet.mvc.GrailsDispatcherServlet",DEBUG, ['SLEUTH'],false)
+logger("omar.wms", INFO, ['STDOUT'], false)
 
 def targetDir = BuildSettings.TARGET_DIR
-if (Environment.isDevelopmentMode() && targetDir) {
+if (Environment.isDevelopmentMode() && targetDir)
+{
     appender("FULL_STACKTRACE", FileAppender) {
         file = "${targetDir}/stacktrace.log"
         append = true
