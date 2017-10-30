@@ -73,7 +73,7 @@ class WebMappingService implements InitializingBean
         mkp.yieldUnescaped """<!DOCTYPE WMT_MS_Capabilities SYSTEM "${docTypeLocation}">"""
       }
 
-      def rootTag = ( version == "1.1.1" ) ? "WMT_MS_Capabilities" : "WMS_Capabilities"
+      def rootTag = (version == "1.1.1") ? "WMT_MS_Capabilities" : "WMS_Capabilities"
       def rootAttributes = [version: version]
 
       mkp.declareNamespace(
@@ -126,7 +126,7 @@ class WebMappingService implements InitializingBean
         Capability {
           Request {
             GetCapabilities {
-              contentType = ( version == '1.1.1' ) ? "application/vnd.ogc.wms_xml" : "text/xml"
+              contentType = (version == '1.1.1') ? "application/vnd.ogc.wms_xml" : "text/xml"
               Format( contentType )
               DCPType {
                 HTTP {
@@ -163,7 +163,7 @@ class WebMappingService implements InitializingBean
           Layer {
             Title( serverData.Capability.Layer.Title )
             Abstract( serverData.Capability.Layer.Abstract )
-            def crsTag = ( version == '1.1.1' ) ? "SRS" : "CRS"
+            def crsTag = (version == '1.1.1') ? "SRS" : "CRS"
             projections?.each { crs ->
               "${crsTag}"( crs?.id )
             }
@@ -303,7 +303,7 @@ class WebMappingService implements InitializingBean
     omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
     omsParams.srs = bbox?.proj.id
 
-    bbox_midpoint = [lat: ( bbox.minY + bbox.maxY ) / 2, lon: ( bbox.minX + bbox.maxX ) / 2]
+    bbox_midpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
 
     def result = callOmsService( omsParams )
 
@@ -412,7 +412,7 @@ class WebMappingService implements InitializingBean
     def coords = wmsParams?.bbox?.split( ',' )?.collect { it.toDouble() }
 
     def proj = projections?.find {
-      def id = ( wmsParams.version == "1.3.0" ) ? wmsParams?.crs : wmsParams?.srs
+      def id = (wmsParams.version == "1.3.0") ? wmsParams?.crs : wmsParams?.srs
       it.id?.equalsIgnoreCase( id )
     }
 
@@ -513,7 +513,7 @@ class WebMappingService implements InitializingBean
       images = geoscriptService.queryLayer(
               "${prefix}:${name}",
               [
-                      filter: ( id ) ? "in(${id})" : filter,
+                      filter: (id) ? "in(${id})" : filter,
                       fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title']
               ]
       )?.features?.inject( [] ) { a, b ->
