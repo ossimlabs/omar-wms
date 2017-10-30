@@ -11,6 +11,7 @@ import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty
 
 class WebMappingService implements InitializingBean
 {
