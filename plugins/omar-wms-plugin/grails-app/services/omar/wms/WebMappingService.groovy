@@ -10,8 +10,6 @@ import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty
 
 class WebMappingService implements InitializingBean
 {
@@ -44,14 +42,6 @@ class WebMappingService implements InitializingBean
     BLANK, GEOSCRIPT, FILTER
   }
 
-  @HystrixCommand (commandProperties = [
-          @HystrixProperty (name = "fallback.enabled", value = "false"),
-          @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
-          @HystrixProperty (name = "circuitBreaker.enabled", value = "false")
-  ], threadPoolProperties = [
-          @HystrixProperty (name = "coreSize", value = "50"),
-          @HystrixProperty (name = "maxQueueSize", value = "20"),
-  ])
   def getCapabilities(GetCapabilitiesRequest wmsParams)
   {
     def contentType, buffer
@@ -263,14 +253,6 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  @HystrixCommand (commandProperties = [
-          @HystrixProperty (name = "fallback.enabled", value = "false"),
-          @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
-          @HystrixProperty (name = "circuitBreaker.enabled", value = "false")
-  ], threadPoolProperties = [
-          @HystrixProperty (name = "coreSize", value = "50"),
-          @HystrixProperty (name = "maxQueueSize", value = "20"),
-  ])
   def getMap(GetMapRequest wmsParams)
   {
     def otherParams = [startDate: new Date()]
