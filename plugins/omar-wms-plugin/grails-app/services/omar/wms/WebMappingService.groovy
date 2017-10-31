@@ -51,6 +51,7 @@ class WebMappingService implements InitializingBean
   ], threadPoolProperties = [
           @HystrixProperty (name = "coreSize", value = 10),
           @HystrixProperty (name = "maximumSize", value = 50),
+          @HystrixProperty (name = "maxQueueSize", value = 15),
           @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = true)
   ])
   def getCapabilities(GetCapabilitiesRequest wmsParams)
@@ -271,6 +272,7 @@ class WebMappingService implements InitializingBean
   ], threadPoolProperties = [
           @HystrixProperty (name = "coreSize", value = 10),
           @HystrixProperty (name = "maximumSize", value = 50),
+          @HystrixProperty (name = "maxQueueSize", value = 15),
           @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = true)
   ])
   def getMap(GetMapRequest wmsParams)
