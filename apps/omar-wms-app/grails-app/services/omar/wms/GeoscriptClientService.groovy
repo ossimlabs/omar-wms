@@ -17,7 +17,7 @@ class GeoscriptClientService
           @HystrixProperty (name = "fallback.enabled", value = "false"),
           @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
           @HystrixProperty (name = "circuitBreaker.enabled", value = "false"),
-          @HystrixProperty (name = "hystrix.threadpool.default.coreSize", value = "25")
+          @HystrixProperty (name = "coreSize", value = "25")
   ])
   def getCapabilitiesData()
   {
@@ -31,7 +31,7 @@ class GeoscriptClientService
           @HystrixProperty (name = "fallback.enabled", value = "false"),
           @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
           @HystrixProperty (name = "circuitBreaker.enabled", value = "false"),
-          @HystrixProperty (name = "hystrix.threadpool.default.coreSize", value = "25")
+          @HystrixProperty (name = "coreSize", value = "25")
   ])
   def listProjections()
   {
@@ -44,7 +44,7 @@ class GeoscriptClientService
           @HystrixProperty (name = "fallback.enabled", value = "false"),
           @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
           @HystrixProperty (name = "circuitBreaker.enabled", value = "false"),
-          @HystrixProperty (name = "hystrix.threadpool.default.coreSize", value = "25")
+          @HystrixProperty (name = "coreSize", value = "25")
   ])
   def queryLayer(String typeName, Map<String, Object> options, String resultType = 'results', String featureFormat = null)
   {
