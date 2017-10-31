@@ -18,10 +18,8 @@ class GeoscriptClientService
           @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
           @HystrixProperty (name = "circuitBreaker.enabled", value = "false")
   ], threadPoolProperties = [
-          @HystrixProperty (name = "coreSize", value = "10"),
-          @HystrixProperty (name = "maximumSize", value = "50"),
-          @HystrixProperty (name = "maxQueueSize", value = "15"),
-          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = "true")
+          @HystrixProperty (name = "coreSize", value = "50"),
+          @HystrixProperty (name = "maxQueueSize", value = "20"),
   ])
   def getCapabilitiesData()
   {
@@ -36,10 +34,8 @@ class GeoscriptClientService
           @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
           @HystrixProperty (name = "circuitBreaker.enabled", value = "false")
   ], threadPoolProperties = [
-          @HystrixProperty (name = "coreSize", value = "10"),
-          @HystrixProperty (name = "maximumSize", value = "50"),
-          @HystrixProperty (name = "maxQueueSize", value = "15"),
-          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = "true")
+          @HystrixProperty (name = "coreSize", value = "50"),
+          @HystrixProperty (name = "maxQueueSize", value = "20"),
   ])
   def listProjections()
   {
@@ -53,10 +49,8 @@ class GeoscriptClientService
           @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
           @HystrixProperty (name = "circuitBreaker.enabled", value = "false")
   ], threadPoolProperties = [
-          @HystrixProperty (name = "coreSize", value = "10"),
-          @HystrixProperty (name = "maximumSize", value = "50"),
-          @HystrixProperty (name = "maxQueueSize", value = "15"),
-          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = "true")
+          @HystrixProperty (name = "coreSize", value = "50"),
+          @HystrixProperty (name = "maxQueueSize", value = "20"),
   ])
   def queryLayer(String typeName, Map<String, Object> options, String resultType = 'results', String featureFormat = null)
   {
