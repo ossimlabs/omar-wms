@@ -21,7 +21,7 @@ class GeoscriptClientService
           @HystrixProperty (name = "coreSize", value = 10),
           @HystrixProperty (name = "maximumSize", value = 50),
           @HystrixProperty (name = "maxQueueSize", value = 15),
-          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = true)
+          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = "true")
   ])
   def getCapabilitiesData()
   {
@@ -39,7 +39,7 @@ class GeoscriptClientService
           @HystrixProperty (name = "coreSize", value = 10),
           @HystrixProperty (name = "maximumSize", value = 50),
           @HystrixProperty (name = "maxQueueSize", value = 15),
-          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = true)
+          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = "true")
   ])
   def listProjections()
   {
@@ -56,7 +56,7 @@ class GeoscriptClientService
           @HystrixProperty (name = "coreSize", value = 10),
           @HystrixProperty (name = "maximumSize", value = 50),
           @HystrixProperty (name = "maxQueueSize", value = 15),
-          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = true)
+          @HystrixProperty (name = "allowMaximumSizeToDivergeFromCoreSize", value = "true")
   ])
   def queryLayer(String typeName, Map<String, Object> options, String resultType = 'results', String featureFormat = null)
   {
