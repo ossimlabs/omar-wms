@@ -47,8 +47,7 @@ class WebMappingService implements InitializingBean
   @HystrixCommand (commandProperties = [
           @HystrixProperty (name = "fallback.enabled", value = "false"),
           @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
-          @HystrixProperty (name = "circuitBreaker.enabled", value = "false"),
-          @HystrixProperty (name = "coreSize", value = "25")
+          @HystrixProperty (name = "circuitBreaker.enabled", value = "false")
   ])
   def getCapabilities(GetCapabilitiesRequest wmsParams)
   {
@@ -264,8 +263,7 @@ class WebMappingService implements InitializingBean
   @HystrixCommand (commandProperties = [
           @HystrixProperty (name = "fallback.enabled", value = "false"),
           @HystrixProperty (name = "execution.timeout.enabled", value = "false"),
-          @HystrixProperty (name = "circuitBreaker.enabled", value = "false"),
-          @HystrixProperty (name = "coreSize", value = "25")
+          @HystrixProperty (name = "circuitBreaker.enabled", value = "false")
   ])
   def getMap(GetMapRequest wmsParams)
   {
