@@ -68,6 +68,9 @@ grails {
 }
 
 dependencies {
+
+  compile "de.codecentric:spring-boot-admin-starter-client:1.5.4"
+
   compile "org.grails:grails-core"
   compile "org.grails:grails-web-boot"
   compile "org.grails:grails-logging"
