@@ -255,7 +255,6 @@ class WebMappingService implements InitializingBean
 
   def getMap(GetMapRequest wmsParams)
   {
-    def otherParams = [startDate: new Date()]
     def requestType = "GET"
     def requestMethod = "GetMap"
     Date startTime = new Date()
@@ -264,8 +263,6 @@ class WebMappingService implements InitializingBean
     def status
     def filename
     def bboxMidpoint
-
-    otherParams.startTime = System.currentTimeMillis()
 
     Map<String, Object> omsParams = [
             cutWidth        : wmsParams.width,
@@ -293,8 +290,6 @@ class WebMappingService implements InitializingBean
     filename = omsParams.get( "images[0].file" )
 
     Date endTime = new Date()
-
-    result.metrics = otherParams
 
     responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 

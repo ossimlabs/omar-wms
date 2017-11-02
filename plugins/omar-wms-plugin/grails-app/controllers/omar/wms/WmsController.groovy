@@ -24,9 +24,6 @@ import groovy.util.logging.Slf4j
 class WmsController
 {
 	def webMappingService
-//	def springSecurityService
-	def wmsLogService
-
 	def index()
 	{
 		def wmsParams = params - params.subMap( [ 'controller', 'format' ] )
@@ -48,8 +45,8 @@ class WmsController
 	 *
 	 * @param  wmsParams parameters to the WMS service request GetCapabilities
 	 */
-	@ApiOperation( value = "Get the capabilities of the server", 
-                  produces = 'application/vnd.ogc.wms_xml', 
+	@ApiOperation( value = "Get the capabilities of the server",
+                  produces = 'application/vnd.ogc.wms_xml',
                   httpMethod = "GET")
 	@ApiImplicitParams( [
 			@ApiImplicitParam( name = 'service', value = 'OGC Service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
@@ -163,13 +160,6 @@ where:
 				{
 					outputStream << result.buffer
 				}
-
-				def otherParams = result.metrics
-
-				otherParams.ip = IpUtil.getClientIpAddr(request)
-				otherParams.endDate = new Date()
-				otherParams.endTime = System.currentTimeMillis()
-//				wmsLogService.logGetMapRequest( wmsParams, otherParams )
 			}
 			else
 			{
