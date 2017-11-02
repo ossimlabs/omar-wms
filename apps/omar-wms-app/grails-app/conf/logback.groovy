@@ -19,7 +19,6 @@ appender('JSON', ConsoleAppender) {
 }
 
 root(ERROR, ['STDOUT'])
-logger("omar.wms.GeoscriptClientService", INFO, ['JSON'], false)
 logger("omar.wms.WebMappingService", INFO, ['JSON'], false)
 
 def targetDir = BuildSettings.TARGET_DIR
