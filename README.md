@@ -14,7 +14,7 @@ Only required for Jenkins pipelines or if you are running Artifactory and/or Ope
 - ARTIFACTORY_PASSWORD
 
 ## About
-The omar-wms respository is OMAR's implementation of Web Mapping Service (WMS) based of the Open Geospatial Consortium (OGC) standard. Its purpose is to process request for georeferenced map images from OMAR's map server. It has two request types defined by the standard, *GetCapabilities* and *GetMap*.
+The omar-wms respository is OMAR's implementation of Web Mapping Service (WMS) based of the Open Geospatial Consortium (OGC) standard. Its purpose is to process request for georeferenced map images from OMAR's map server. It has two request types defined by the standard, *GetCapabilities* and *GetMap*. 
 
 ## How to Install omar-wms-app locally
 
