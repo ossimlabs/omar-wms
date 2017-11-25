@@ -1,3 +1,21 @@
+#---
+#server:
+#  contextPath: /omar-wms
+#
+#---
+#omar:
+#  wms:
+#    geoscript:
+#      # Define the path to the geoscript app so omar-wms can consume its services.
+#      url: http://omar-geoscript-app:8080/omar-geoscript/geoscriptApi
+#    oms:
+#      chipper:
+#	# Define the URL for omar-oms.
+#	# This is what will chip this images.
+#        url: http://omar-oms-app:8080/omar-oms/chipper
+#	# List any default image chain properties here.
+#        histOp: auto-minmax
+
 ---
 grails:
     cors:
