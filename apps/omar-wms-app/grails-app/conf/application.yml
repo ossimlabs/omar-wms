@@ -1,20 +1,31 @@
 ---
-server:
-  contextPath: /omar-wms
+logging:
+  config: classpath:logback.groovy
 
----
 omar:
   wms:
     geoscript:
-      # Define the path to the geoscript app so omar-wms can consume its services.
+      # Is the location of the geoscript API for the query service.  This is used to query the layers in the LAYERS parameter.
       url: http://omar-geoscript-app:8080/omar-geoscript/geoscriptApi
+
     oms:
       chipper:
-        # Define the URL for omar-oms.
-        # This is what will chip this images.
+        # Is the location of the chipper endpoint for chipping imagery.
         url: http://omar-oms-app:8080/omar-oms/chipper
-        # List any default image chain properties here.
+
+        # Is the default histogram operation that is applied if no argument is passed in the styles.
+        # e.g.: "none", "auto-minmax", "auto-percentile", "std-stretch-1", "std-stretch-2", or "std-stretch-3"
         histOp: auto-minmax
+
+# Set the context path for the application
+#server:
+#  contextPath: /omar-wms
+
+# Define the http protocols that swagger will use
+swagger:
+  schemes:
+    - HTTPS
+    - HTTP
 
 ---
 grails:
@@ -164,14 +175,3 @@ environments:
                 testOnReturn: false
                 jdbcInterceptors: ConnectionState
                 defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
-
-#logging:
-#  config: grails-app/conf/logback.groovy
-
-swagger:
-  schemes:
-    - HTTPS
-    - HTTP
-
-logging:
-  config: classpath:logback.groovy
