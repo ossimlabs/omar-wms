@@ -283,6 +283,7 @@ class WebMappingService implements InitializingBean
     omsParams.srs = bbox?.proj.id
 
     bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
+    def location = [location: bboxMidpoint]
 
     def result = callOmsService( omsParams )
 
@@ -296,7 +297,7 @@ class WebMappingService implements InitializingBean
     requestInfoLog = new JsonBuilder(timestamp: startTime.format("yyyy-MM-dd hh:mm:ss.ms"), requestType: requestType,
             requestMethod: requestMethod, status: status, endTime: endTime.format("yyyy-MM-dd hh:mm:ss.ms"),
             responseTime: responseTime, responseSize: result.buffer.length, filename: filename, bbox: bbox,
-            geoip.location: bboxMidpoint, params: wmsParams.toString())
+            geoip: location, params: wmsParams.toString())
 
     log.info requestInfoLog.toString()
 
