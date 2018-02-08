@@ -6,6 +6,7 @@ package omar.wms
 import groovy.json.JsonSlurper
 import groovy.json.JsonBuilder
 import groovy.xml.StreamingMarkupBuilder
+import omar.core.DateUtil
 import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
@@ -225,8 +226,8 @@ class WebMappingService implements InitializingBean
     Date endTime = new Date()
     responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
-    requestInfoLog = new JsonBuilder(timestamp: startTime.format("yyyy-MM-dd hh:mm:ss.ms"), requestType: requestType,
-            requestMethod: requestMethod, endTime: endTime.format("yyyy-MM-dd hh:mm:ss.ms"), responseTime: responseTime,
+    requestInfoLog = new JsonBuilder(timestamp: DateUtil.formatUTC(startTime), requestType: requestType,
+            requestMethod: requestMethod, endTime: DateUtil.formatUTC(endTime), responseTime: responseTime,
             responseSize: buffer.getBytes().length, params: wmsParams.toString())
 
     log.info requestInfoLog.toString()
@@ -260,7 +261,7 @@ class WebMappingService implements InitializingBean
     Date startTime = new Date()
     def responseTime
     def requestInfoLog
-    def status
+    def httpStatus
     def filename
     def bboxMidpoint
 
@@ -286,15 +287,15 @@ class WebMappingService implements InitializingBean
 
     def result = callOmsService( omsParams )
 
-    status = result.status
+    httpStatus = result.status
     filename = omsParams.get( "images[0].file" )
 
     Date endTime = new Date()
 
     responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
-    requestInfoLog = new JsonBuilder(timestamp: startTime.format("yyyy-MM-dd hh:mm:ss.ms"), requestType: requestType,
-            requestMethod: requestMethod, status: status, endTime: endTime.format("yyyy-MM-dd hh:mm:ss.ms"),
+    requestInfoLog = new JsonBuilder(timestamp: DateUtil.formatUTC(startTime), requestType: requestType,
+            requestMethod: requestMethod, httpStatus: httpStatus, endTime: DateUtil.formatUTC(endTime),
             responseTime: responseTime, responseSize: result.buffer.length, filename: filename, bbox: bbox,
             location: bboxMidpoint, params: wmsParams.toString())
 
