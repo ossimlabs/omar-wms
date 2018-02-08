@@ -296,7 +296,7 @@ class WebMappingService implements InitializingBean
     requestInfoLog = new JsonBuilder(timestamp: startTime.format("yyyy-MM-dd hh:mm:ss.ms"), requestType: requestType,
             requestMethod: requestMethod, status: status, endTime: endTime.format("yyyy-MM-dd hh:mm:ss.ms"),
             responseTime: responseTime, responseSize: result.buffer.length, filename: filename, bbox: bbox,
-            "location": bboxMidpoint, params: wmsParams.toString())
+            geo_location: bboxMidpoint, params: wmsParams.toString())
 
     log.info requestInfoLog.toString()
 
