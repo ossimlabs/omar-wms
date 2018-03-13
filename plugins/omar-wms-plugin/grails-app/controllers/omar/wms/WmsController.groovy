@@ -24,6 +24,7 @@ import groovy.util.logging.Slf4j
 class WmsController
 {
 	def webMappingService
+
 	def index()
 	{
 		def wmsParams = params - params.subMap( [ 'controller', 'format' ] )
@@ -36,6 +37,12 @@ class WmsController
 			break
 		case "GETMAP":
 			forward action: 'getMap'
+			break
+		case "GETSTYLES":
+			forward action: 'getStyles'
+			break
+		case "GETLEGENDGRAPHIC":
+			forward action: 'getLegendGraphic'
 			break
 		}
 	}
@@ -71,28 +78,28 @@ class WmsController
 		produces = 'application/xml,application/json',
       httpMethod="GET",
 		notes = """
-* **version** can be 1.1.1 or 1.3.0. If 1.3.0 is used **crs** 
-   must be specified and if version is 1.1.1 is used then **srs** 
-   field is used  
-* **request** must be GetMap  
-* **layers** can be either of the form omar:raster_entry or 
+* **version** can be 1.1.1 or 1.3.0. If 1.3.0 is used **crs**
+   must be specified and if version is 1.1.1 is used then **srs**
+   field is used
+* **request** must be GetMap
+* **layers** can be either of the form omar:raster_entry or
    omar:raster_entry.id where **id** is the record ID in the database
-* **filter** can contain the where clause of the table we are 
+* **filter** can contain the where clause of the table we are
    querying.
-* **srs** is the spatial reference system of the form EPSG:code 
-   where **code** is a spatial reference code such as 4326 or 3857, 
+* **srs** is the spatial reference system of the form EPSG:code
+   where **code** is a spatial reference code such as 4326 or 3857,
    .. etc
-* **crs** is the spatial reference system of the form EPSG:code 
-   where **code** is a spatial reference code such as 4326 or 3857, 
+* **crs** is the spatial reference system of the form EPSG:code
+   where **code** is a spatial reference code such as 4326 or 3857,
    .. etc
-* **bbox** cut box in the units of the srs or crs code. Is comma 
+* **bbox** cut box in the units of the srs or crs code. Is comma
    separated values of the form minx,miny,maxx,maxy
 * **width** defines the pixel width of the **bbox** cut.
 * **height** defines the pixel height of the **bbox** cut
-* **exceptions** defines the type of excpetions you can return. 
+* **exceptions** defines the type of excpetions you can return.
    values can be one of application/vnd.ogc.se_xml,application/vnd.ogc.se_inimage,application/vnd.ogc.se_blank
-* **styles** Is a JSON formated string. That allows one to have 
-   added control over the pixel return of the image(s). Here is an 
+* **styles** Is a JSON formated string. That allows one to have
+   added control over the pixel return of the image(s). Here is an
    example call:
 ```
    {
@@ -105,7 +112,7 @@ class WmsController
       "histCenterTile": "false"
    }
 ```
-where: 
+where:
 
 * **bands:** is a one based band selection list. First band starts at 1.
 
@@ -114,15 +121,15 @@ where:
 
 * **sharpenMode:** values supported none, light, or heavy.
 
-* **contrast:** Allows one to control the contrast of an  
-   image. This is a multiplier. 
-* **brightness:** Allows one to control the brightness of the image.  
-    This is expressed as a normalized value between -1 and 1.  
+* **contrast:** Allows one to control the contrast of an
+   image. This is a multiplier.
+* **brightness:** Allows one to control the brightness of the image.
+    This is expressed as a normalized value between -1 and 1.
     You can go higher values but just know it's a normalized and not absolute values.
-* **resamplerFilter:** values supported nearest-neighbor, bilinear,  
-    cubic, gaussian, blackman, bspline, hanning, hamming, hermite, mitchell, quadratic,  
-    sinc, magic  
-* **histCenterTile:**Currently calculates the histogram from center of image. Can be true|false  
+* **resamplerFilter:** values supported nearest-neighbor, bilinear,
+    cubic, gaussian, blackman, bspline, hanning, hamming, hermite, mitchell, quadratic,
+    sinc, magic
+* **histCenterTile:**Currently calculates the histogram from center of image. Can be true|false
     """
 		 )
 	@ApiImplicitParams( [
@@ -187,5 +194,15 @@ where:
 				}
 			}
 		}
+	}
+
+	def getStyles()
+	{
+		render webMappingService.getStyles(params)
+	}
+
+	def getLegendGraphic()
+	{
+		render webMappingService.getLegendGraphic(params)
 	}
 }
