@@ -542,9 +542,6 @@ class WebMappingService implements InitializingBean
     // def url = "http://localhost:8081/footprints/getFootprintsLegend?style=bySensorType".toURL()
     // def legendData = new JsonSlurper().parseText(url.text)
 
-
-
-
     legendData.eachWithIndex { legendItem, index ->
         def y1 = (index * lineSize) + yOffset
         def y2 = (index * lineSize) + (2 * yOffset)
