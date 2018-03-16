@@ -31,23 +31,23 @@ The omar-wms respository is OMAR's implementation of Web Mapping Service (WMS) b
 4. Install omar-hibernate-spatial-plugin
 ```
  cd omar-wms/plugins/omar-hibernate-spatial-plugin
- ./gradlew clean install
+ gradle clean install
 ```
 
 5. Install omar-wms-plugin
 ```
  cd omar-wms/plugin/omar-wms-plugin
- ./gradlew clean install
+ gradle clean install
 ```
 
 6. Build/Install omar-wms-app
 #### Build:
 ```
  cd omar-wms/apps/omar-wms-app
- ./gradlew clean build
+ gradle clean build
  ```
 #### Install:
 ```
  cd omar-wms/apps/omar-wms-app
- ./gradlew clean install
+ gradle clean install
 ```
