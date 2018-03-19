@@ -12,6 +12,11 @@ import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 
+import java.awt.Color
+import java.awt.Font
+import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
+
 class WebMappingService implements InitializingBean
 {
   static transactional = false
@@ -19,7 +24,7 @@ class WebMappingService implements InitializingBean
   def grailsLinkGenerator
   def grailsApplication
   def geoscriptService
-
+  def footprintService
 
   def serverData
   def projections
@@ -502,5 +507,57 @@ class WebMappingService implements InitializingBean
       }
     }
     images
+  }
+
+  def getStyles()
+  {
+
+  }
+
+  def getLegendGraphic(def params)
+  {
+    def legendData = new JsonSlurper().parseText(footprintService.getFootprintsLegend(params))?.collect { style ->
+        [label: style.label, color: Color.decode(style.color)]
+    }
+
+    def xOffset = 10
+    def yOffset = 10
+    def lineSize = 20
+    def rectSize = 10
+
+    def imageHeight = (legendData.size() * lineSize) + (2 * yOffset)
+    def charSize = (legendData*.label*.length()).max() * yOffset
+    def imageWidth = Math.min( charSize +  yOffset, 256 )
+
+    // println "imageWidth: ${imageWidth}"
+    // println "imageHeight: ${imageHeight}"
+
+    def image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB)
+    def ostream = new ByteArrayOutputStream()
+    def g2d = image.createGraphics()
+
+    g2d.color = Color.white
+    g2d.fillRect(0, 0, image.width, image.height)
+
+    // def url = "http://localhost:8081/footprints/getFootprintsLegend?style=bySensorType".toURL()
+    // def legendData = new JsonSlurper().parseText(url.text)
+
+    legendData.eachWithIndex { legendItem, index ->
+        def y1 = (index * lineSize) + yOffset
+        def y2 = (index * lineSize) + (2 * yOffset)
+
+        g2d.color = legendItem.color
+        g2d.fillRect(xOffset, y1, rectSize, rectSize)
+        g2d.color = Color.black
+        g2d.drawRect(xOffset, y1, rectSize, rectSize)
+        g2d.setFont(new Font("Sans Serif", Font.BOLD, 12))
+        g2d.drawString(legendItem.label, xOffset + rectSize + xOffset, y2)
+    }
+
+    g2d.dispose()
+
+    ImageIO.write(image, 'png', ostream)
+
+    return [contentType: 'image/png', file: ostream.toByteArray()]
   }
 }
