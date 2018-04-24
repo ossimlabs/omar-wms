@@ -269,7 +269,7 @@ class WebMappingService implements InitializingBean
     def httpStatus
     def filename
     def bboxMidpoint
-
+    def result
     Map<String, Object> omsParams = [
             cutWidth        : wmsParams.width,
             cutHeight       : wmsParams.height,
@@ -284,17 +284,26 @@ class WebMappingService implements InitializingBean
 
     Map<String, Object> bbox = parseBbox( wmsParams )
 
-    // now add in the cut params for oms
-    omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
-    omsParams.srs = bbox?.proj.id
-
-    bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
-
-    def result = callOmsService( omsParams )
+    if(bbox.proj?.id == null || bbox.proj?.id == "EPSG:99999")
+    {
+      omsParams.operation = "chip"
+      double scaleX = wmsParams.width.toDouble()/(bbox.maxX-bbox.minX)
+      double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
+      bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
+      omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
+    }
+    else
+    {
+      // now add in the cut params for oms
+      omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+      omsParams.srs = bbox?.proj.id
+    
+      bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
+    }
+    result = callOmsService( omsParams )
 
     httpStatus = result.status
     filename = omsParams.get( "images[0].file" )
-
     Date endTime = new Date()
 
     responseTime = Math.abs(startTime.getTime() - endTime.getTime())
