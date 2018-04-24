@@ -286,6 +286,7 @@ class WebMappingService implements InitializingBean
 
     if(bbox.proj?.id == null || bbox.proj?.id == "EPSG:99999")
     {
+      requestMethod = "getTile"
       omsParams.operation = "chip"
       double scaleX = wmsParams.width.toDouble()/(bbox.maxX-bbox.minX)
       double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
