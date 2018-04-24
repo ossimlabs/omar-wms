@@ -270,6 +270,7 @@ class WebMappingService implements InitializingBean
     def filename
     def bboxMidpoint
     def result
+    Boolean addLocation = true
     Map<String, Object> omsParams = [
             cutWidth        : wmsParams.width,
             cutHeight       : wmsParams.height,
@@ -292,6 +293,7 @@ class WebMappingService implements InitializingBean
       double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
       bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
       omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
+      addLocation = false
     }
     else
     {
@@ -308,11 +310,22 @@ class WebMappingService implements InitializingBean
     Date endTime = new Date()
 
     responseTime = Math.abs(startTime.getTime() - endTime.getTime())
+    HashMap logParams = [timestamp: DateUtil.formatUTC(startTime), 
+                         requestType: requestType,
+                         requestMethod: requestMethod, 
+                         httpStatus: httpStatus, 
+                         endTime: DateUtil.formatUTC(endTime),
+                         responseTime: responseTime, 
+                         responseSize: result.buffer.length, 
+                         filename: filename, 
+                         bbox: bbox,
+                         params: wmsParams.toString()]
+    if(addLocation)
+    {
+      logParams.location = bboxMidpoint
+    }
 
-    requestInfoLog = new JsonBuilder(timestamp: DateUtil.formatUTC(startTime), requestType: requestType,
-            requestMethod: requestMethod, httpStatus: httpStatus, endTime: DateUtil.formatUTC(endTime),
-            responseTime: responseTime, responseSize: result.buffer.length, filename: filename, bbox: bbox,
-            location: bboxMidpoint, params: wmsParams.toString())
+    requestInfoLog = new JsonBuilder(logParams)
 
     log.info requestInfoLog.toString()
 
