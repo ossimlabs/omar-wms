@@ -17,6 +17,9 @@ import java.awt.Font
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
+import org.springframework.util.FastByteArrayOutputStream
+
+
 class WebMappingService implements InitializingBean
 {
   static transactional = false
@@ -343,13 +346,13 @@ class WebMappingService implements InitializingBean
       }
 
 
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+      FastByteArrayOutputStream outputStream = new FastByteArrayOutputStream()
       result.status = connection.responseCode
 
 
       if ( connection.responseCode >= 400 )
       {
-        String tempError = new String( outputStream?.toByteArray(), "UTF-8" )
+        String tempError = new String( outputStream?.toByteArrayUnsafe(), "UTF-8" )
         HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${tempError}" )
 
         //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(ogcParams)
@@ -365,7 +368,7 @@ class WebMappingService implements InitializingBean
         // We later need to map to an OGC exception.  For now we will just carry
         // the response on to this response
         //
-        result.buffer = outputStream?.toByteArray()
+        result.buffer = outputStream?.toByteArrayUnsafe()
         result.contentType = contentType
 
       }
@@ -430,7 +433,7 @@ class WebMappingService implements InitializingBean
     Integer imageListIdx = 0
 
     layerNames?.each { layerName ->
-      List images = fetchImages( layerName, wmsParams.filter )
+      List images = fetchImages( layerName, wmsParams,  )
 
       // add image chipper files for the oms params
       images.eachWithIndex { v, i ->
@@ -481,7 +484,7 @@ class WebMappingService implements InitializingBean
     newStyles
   }
 
-  private List fetchImages(String layerName, String filter = null)
+  private List fetchImages(String layerName, GetMapRequest wmsParams)
   {
     List images = null
     def m = layerName =~ /(\w+):(\w+)([\.:](\d+))?/
@@ -494,8 +497,9 @@ class WebMappingService implements InitializingBean
       images = geoscriptService.queryLayer(
               "${prefix}:${name}",
               [
-                      filter: (id) ? "in(${id})" : filter,
-                      fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title']
+                      filter: (id) ? "in(${id})" : wmsParams.filter,
+                      fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title'],
+                      bbox: parseBbox(wmsParams)
               ]
       )?.features?.inject( [] ) { a, b ->
         a << [
@@ -533,7 +537,11 @@ class WebMappingService implements InitializingBean
     // println "imageHeight: ${imageHeight}"
 
     def image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB)
-    def ostream = new ByteArrayOutputStream()
+
+    def ostream = new FastByteArrayOutputStream(
+      (image.sampleModel.sampleSize.sum() / 8 * image.width * image.height).intValue()
+    )
+
     def g2d = image.createGraphics()
 
     g2d.color = Color.white
@@ -558,6 +566,6 @@ class WebMappingService implements InitializingBean
 
     ImageIO.write(image, 'png', ostream)
 
-    return [contentType: 'image/png', file: ostream.toByteArray()]
+    return [contentType: 'image/png', file: ostream.toByteArrayUnsafe()]
   }
 }
