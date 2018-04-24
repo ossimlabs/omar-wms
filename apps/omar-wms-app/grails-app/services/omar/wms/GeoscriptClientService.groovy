@@ -2,6 +2,7 @@ package omar.wms
 
 import grails.transaction.Transactional
 import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
 
 import org.springframework.beans.factory.annotation.Value
 
@@ -61,6 +62,11 @@ class GeoscriptClientService
     if ( options.sort )
     {
       params.sort = options.sort.collect { it.join( ' ' ) }.join( ',' )
+    }
+
+    if ( options.bbox )
+    {
+        params.bbox = JsonOutput.toJson(options.bbox)
     }
 
     def newParams = params.collect {
