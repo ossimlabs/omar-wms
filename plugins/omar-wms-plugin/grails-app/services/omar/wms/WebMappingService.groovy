@@ -531,7 +531,7 @@ class WebMappingService implements InitializingBean
               max: mosaicLimit?.toInteger()
       ]
 
-      if ( bbox.proj.id != IMAGE_SPACE_PROJECTION_ID )
+      if ( bbox.proj )
       {
         queryParams.bbox = bbox
       }
