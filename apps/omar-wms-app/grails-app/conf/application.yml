@@ -16,6 +16,8 @@ omar:
         # Is the default histogram operation that is applied if no argument is passed in the styles.
         # e.g.: "none", "auto-minmax", "auto-percentile", "std-stretch-1", "std-stretch-2", or "std-stretch-3"
         histOp: auto-minmax
+    mosaic:
+      limit: 10  
 
 # Set the context path for the application
 #server:

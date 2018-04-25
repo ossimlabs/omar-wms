@@ -518,6 +518,9 @@ class WebMappingService implements InitializingBean
     if ( m )
     {
       def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
+      def mosaicLimit = grailsApplication.config.omar.wms.mosaic.limit ?: "10"
+
+// println "mosaicLimit: ${mosaicLimit}"
 
       // added sensor_id, mission_id and file_type (for data type of source satellite image) and title for image ID
       images = geoscriptService.queryLayer(
@@ -525,7 +528,8 @@ class WebMappingService implements InitializingBean
               [
                       filter: (id) ? "in(${id})" : wmsParams.filter,
                       fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title'],
-                      bbox: parseBbox(wmsParams)
+                      bbox: parseBbox(wmsParams),
+                      max: mosaicLimit?.toInteger()
               ]
       )?.features?.inject( [] ) { a, b ->
         a << [
