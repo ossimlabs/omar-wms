@@ -290,7 +290,7 @@ class WebMappingService implements InitializingBean
 
     Map<String, Object> bbox = parseBbox( wmsParams )
 
-    if(bbox.proj?.id == null || bbox.proj?.id == IMAGE_SPACE_PROJECTION_ID)
+    if(!bbox.proj)
     {
       requestMethod = "getTile"
       omsParams.operation = "chip"
