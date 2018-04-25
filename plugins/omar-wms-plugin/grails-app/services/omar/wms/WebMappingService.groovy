@@ -303,7 +303,7 @@ class WebMappingService implements InitializingBean
       // now add in the cut params for oms
       omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
       omsParams.srs = bbox?.proj.id
-    
+
       bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
     }
     result = callOmsService( omsParams )
@@ -313,14 +313,14 @@ class WebMappingService implements InitializingBean
     Date endTime = new Date()
 
     responseTime = Math.abs(startTime.getTime() - endTime.getTime())
-    HashMap logParams = [timestamp: DateUtil.formatUTC(startTime), 
+    HashMap logParams = [timestamp: DateUtil.formatUTC(startTime),
                          requestType: requestType,
-                         requestMethod: requestMethod, 
-                         httpStatus: httpStatus, 
+                         requestMethod: requestMethod,
+                         httpStatus: httpStatus,
                          endTime: DateUtil.formatUTC(endTime),
-                         responseTime: responseTime, 
-                         responseSize: result.buffer.length, 
-                         filename: filename, 
+                         responseTime: responseTime,
+                         responseSize: result.buffer.length,
+                         filename: filename,
                          bbox: bbox,
                          params: wmsParams.toString()]
     if(addLocation)
@@ -400,6 +400,9 @@ class WebMappingService implements InitializingBean
     {
 
       e.printStackTrace()
+      // log.error '*' * 40
+      // log.error "${omsParams} ${ogcParams}"
+      // log.error '*' * 40
 
       HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${e}" )
 
@@ -456,7 +459,7 @@ class WebMappingService implements InitializingBean
     Integer imageListIdx = 0
 
     layerNames?.each { layerName ->
-      List images = fetchImages( layerName, wmsParams,  )
+      List images = fetchImages( layerName, wmsParams  )
 
       // add image chipper files for the oms params
       images.eachWithIndex { v, i ->
