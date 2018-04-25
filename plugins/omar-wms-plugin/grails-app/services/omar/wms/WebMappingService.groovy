@@ -24,6 +24,8 @@ class WebMappingService implements InitializingBean
 {
   static transactional = false
 
+  static final IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
+
   def grailsLinkGenerator
   def grailsApplication
   def geoscriptService
@@ -288,7 +290,7 @@ class WebMappingService implements InitializingBean
 
     Map<String, Object> bbox = parseBbox( wmsParams )
 
-    if(bbox.proj?.id == null || bbox.proj?.id == "EPSG:99999")
+    if(bbox.proj?.id == null || bbox.proj?.id == IMAGE_SPACE_PROJECTION_ID)
     {
       requestMethod = "getTile"
       omsParams.operation = "chip"
@@ -521,17 +523,21 @@ class WebMappingService implements InitializingBean
       def mosaicLimit = grailsApplication.config.omar.wms.mosaic.limit ?: "10"
 
 // println "mosaicLimit: ${mosaicLimit}"
+      def bbox = parseBbox(wmsParams)
+
+      def queryParams = [
+              filter: (id) ? "in(${id})" : wmsParams.filter,
+              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title'],
+              max: mosaicLimit?.toInteger()
+      ]
+
+      if ( bbox.proj.id != IMAGE_SPACE_PROJECTION_ID )
+      {
+        queryParams.bbox = bbox
+      }
 
       // added sensor_id, mission_id and file_type (for data type of source satellite image) and title for image ID
-      images = geoscriptService.queryLayer(
-              "${prefix}:${name}",
-              [
-                      filter: (id) ? "in(${id})" : wmsParams.filter,
-                      fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title'],
-                      bbox: parseBbox(wmsParams),
-                      max: mosaicLimit?.toInteger()
-              ]
-      )?.features?.inject( [] ) { a, b ->
+      images = geoscriptService.queryLayer( "${prefix}:${name}", queryParams )?.features?.inject( [] ) { a, b ->
         a << [
                 id       : b.id,
                 imageFile: b.filename ?: b.properties?.filename,
