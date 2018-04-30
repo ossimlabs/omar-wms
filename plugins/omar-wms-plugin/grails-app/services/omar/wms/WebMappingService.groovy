@@ -276,65 +276,91 @@ class WebMappingService implements InitializingBean
     def bboxMidpoint
     def result
     Boolean addLocation = true
-    Map<String, Object> omsParams = [
-            cutWidth        : wmsParams.width,
-            cutHeight       : wmsParams.height,
-            outputFormat    : wmsParams.format,
-            transparent     : wmsParams.transparent,
-            operation       : "ortho",
-            outputRadiometry: 'ossim_uint8'
-    ]
 
-    omsParams += parseStyles( wmsParams )
-    omsParams += parseLayers( wmsParams )
+    Map<String, Object> omsParams = parseLayers( wmsParams )
 
-    Map<String, Object> bbox = parseBbox( wmsParams )
-
-    if(!bbox.proj)
+    if ( omsParams )
     {
-      requestMethod = "getTile"
-      omsParams.operation = "chip"
-      double scaleX = wmsParams.width.toDouble()/(bbox.maxX-bbox.minX)
-      double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
-      bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
-      omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
-      addLocation = false
+      Map<String, Object> bbox = parseBbox( wmsParams )
+
+      omsParams += [
+              cutWidth        : wmsParams.width,
+              cutHeight       : wmsParams.height,
+              outputFormat    : wmsParams.format,
+              transparent     : wmsParams.transparent,
+              operation       : "ortho",
+              outputRadiometry: 'ossim_uint8'
+      ]
+
+      omsParams += parseStyles( wmsParams )
+
+      if(!bbox.proj)
+      {
+        requestMethod = "getTile"
+        omsParams.operation = "chip"
+        double scaleX = wmsParams.width.toDouble()/(bbox.maxX-bbox.minX)
+        double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
+        bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
+        omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
+        addLocation = false
+      }
+      else
+      {
+        // now add in the cut params for oms
+        omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+        omsParams.srs = bbox?.proj.id
+
+        bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
+      }
+
+      result = callOmsService( omsParams )
+      httpStatus = result.status
+      filename = omsParams.get( "images[0].file" )
+
+      Date endTime = new Date()
+
+      responseTime = Math.abs(startTime.getTime() - endTime.getTime())
+
+      Map logParams = [
+         timestamp: DateUtil.formatUTC(startTime),
+         requestType: requestType,
+         requestMethod: requestMethod,
+         httpStatus: httpStatus,
+         endTime: DateUtil.formatUTC(endTime),
+         responseTime: responseTime,
+         responseSize: result.buffer.length,
+         filename: filename,
+         bbox: bbox,
+         params: wmsParams.toString()
+      ]
+
+      if(addLocation)
+      {
+        logParams.location = bboxMidpoint
+      }
+
+      requestInfoLog = new JsonBuilder(logParams)
+      log.info requestInfoLog.toString()
     }
     else
     {
-      // now add in the cut params for oms
-      omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
-      omsParams.srs = bbox?.proj.id
-
-      bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
+        result = [
+          buffer: createBlankImage(wmsParams),
+          contentType: 'image/png',
+          status: HttpStatus.OK
+        ]
     }
-    result = callOmsService( omsParams )
-
-    httpStatus = result.status
-    filename = omsParams.get( "images[0].file" )
-    Date endTime = new Date()
-
-    responseTime = Math.abs(startTime.getTime() - endTime.getTime())
-    HashMap logParams = [timestamp: DateUtil.formatUTC(startTime),
-                         requestType: requestType,
-                         requestMethod: requestMethod,
-                         httpStatus: httpStatus,
-                         endTime: DateUtil.formatUTC(endTime),
-                         responseTime: responseTime,
-                         responseSize: result.buffer.length,
-                         filename: filename,
-                         bbox: bbox,
-                         params: wmsParams.toString()]
-    if(addLocation)
-    {
-      logParams.location = bboxMidpoint
-    }
-
-    requestInfoLog = new JsonBuilder(logParams)
-
-    log.info requestInfoLog.toString()
 
     result
+  }
+
+  def createBlankImage(GetMapRequest wmsParams)
+  {
+    def image = new BufferedImage(wmsParams.width, wmsParams.height, BufferedImage.TYPE_INT_ARGB)
+    def buffer = new FastByteArrayOutputStream()
+
+    ImageIO.write(image, 'png', buffer)
+    buffer.toByteArrayUnsafe()
   }
 
   def callOmsService(Map<String, Object> omsParams, def ogcParams = [:])
@@ -471,7 +497,14 @@ class WebMappingService implements InitializingBean
       }
     }
 
-    omsParams
+    if ( imageListIdx )
+    {
+      omsParams
+    }
+    else
+    {
+      [:]
+    }
   }
 
   private Map<String, Object> parseStyles(GetMapRequest wmsParams)
