@@ -17,9 +17,14 @@ import java.awt.Font
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
+import org.springframework.util.FastByteArrayOutputStream
+
+
 class WebMappingService implements InitializingBean
 {
   static transactional = false
+
+  static final IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
 
   def grailsLinkGenerator
   def grailsApplication
@@ -271,65 +276,91 @@ class WebMappingService implements InitializingBean
     def bboxMidpoint
     def result
     Boolean addLocation = true
-    Map<String, Object> omsParams = [
-            cutWidth        : wmsParams.width,
-            cutHeight       : wmsParams.height,
-            outputFormat    : wmsParams.format,
-            transparent     : wmsParams.transparent,
-            operation       : "ortho",
-            outputRadiometry: 'ossim_uint8'
-    ]
 
-    omsParams += parseStyles( wmsParams )
-    omsParams += parseLayers( wmsParams )
+    Map<String, Object> omsParams = parseLayers( wmsParams )
 
-    Map<String, Object> bbox = parseBbox( wmsParams )
-
-    if(bbox.proj?.id == null || bbox.proj?.id == "EPSG:99999")
+    if ( omsParams )
     {
-      requestMethod = "getTile"
-      omsParams.operation = "chip"
-      double scaleX = wmsParams.width.toDouble()/(bbox.maxX-bbox.minX)
-      double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
-      bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
-      omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
-      addLocation = false
+      Map<String, Object> bbox = parseBbox( wmsParams )
+
+      omsParams += [
+              cutWidth        : wmsParams.width,
+              cutHeight       : wmsParams.height,
+              outputFormat    : wmsParams.format,
+              transparent     : wmsParams.transparent,
+              operation       : "ortho",
+              outputRadiometry: 'ossim_uint8'
+      ]
+
+      omsParams += parseStyles( wmsParams )
+
+      if(!bbox.proj)
+      {
+        requestMethod = "getTile"
+        omsParams.operation = "chip"
+        double scaleX = wmsParams.width.toDouble()/(bbox.maxX-bbox.minX)
+        double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
+        bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
+        omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
+        addLocation = false
+      }
+      else
+      {
+        // now add in the cut params for oms
+        omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+        omsParams.srs = bbox?.proj.id
+
+        bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
+      }
+
+      result = callOmsService( omsParams )
+      httpStatus = result.status
+      filename = omsParams.get( "images[0].file" )
+
+      Date endTime = new Date()
+
+      responseTime = Math.abs(startTime.getTime() - endTime.getTime())
+
+      Map logParams = [
+         timestamp: DateUtil.formatUTC(startTime),
+         requestType: requestType,
+         requestMethod: requestMethod,
+         httpStatus: httpStatus,
+         endTime: DateUtil.formatUTC(endTime),
+         responseTime: responseTime,
+         responseSize: result.buffer.length,
+         filename: filename,
+         bbox: bbox,
+         params: wmsParams.toString()
+      ]
+
+      if(addLocation)
+      {
+        logParams.location = bboxMidpoint
+      }
+
+      requestInfoLog = new JsonBuilder(logParams)
+      log.info requestInfoLog.toString()
     }
     else
     {
-      // now add in the cut params for oms
-      omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
-      omsParams.srs = bbox?.proj.id
-    
-      bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
+        result = [
+          buffer: createBlankImage(wmsParams),
+          contentType: 'image/png',
+          status: HttpStatus.OK
+        ]
     }
-    result = callOmsService( omsParams )
-
-    httpStatus = result.status
-    filename = omsParams.get( "images[0].file" )
-    Date endTime = new Date()
-
-    responseTime = Math.abs(startTime.getTime() - endTime.getTime())
-    HashMap logParams = [timestamp: DateUtil.formatUTC(startTime), 
-                         requestType: requestType,
-                         requestMethod: requestMethod, 
-                         httpStatus: httpStatus, 
-                         endTime: DateUtil.formatUTC(endTime),
-                         responseTime: responseTime, 
-                         responseSize: result.buffer.length, 
-                         filename: filename, 
-                         bbox: bbox,
-                         params: wmsParams.toString()]
-    if(addLocation)
-    {
-      logParams.location = bboxMidpoint
-    }
-
-    requestInfoLog = new JsonBuilder(logParams)
-
-    log.info requestInfoLog.toString()
 
     result
+  }
+
+  def createBlankImage(GetMapRequest wmsParams)
+  {
+    def image = new BufferedImage(wmsParams.width, wmsParams.height, BufferedImage.TYPE_INT_ARGB)
+    def buffer = new FastByteArrayOutputStream()
+
+    ImageIO.write(image, 'png', buffer)
+    buffer.toByteArrayUnsafe()
   }
 
   def callOmsService(Map<String, Object> omsParams, def ogcParams = [:])
@@ -366,13 +397,13 @@ class WebMappingService implements InitializingBean
       }
 
 
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+      FastByteArrayOutputStream outputStream = new FastByteArrayOutputStream()
       result.status = connection.responseCode
 
 
       if ( connection.responseCode >= 400 )
       {
-        String tempError = new String( outputStream?.toByteArray(), "UTF-8" )
+        String tempError = new String( outputStream?.toByteArrayUnsafe(), "UTF-8" )
         HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${tempError}" )
 
         //def ogcExcpetionResult = OgcExceptionUtil.formatWmsException(ogcParams)
@@ -388,7 +419,7 @@ class WebMappingService implements InitializingBean
         // We later need to map to an OGC exception.  For now we will just carry
         // the response on to this response
         //
-        result.buffer = outputStream?.toByteArray()
+        result.buffer = outputStream?.toByteArrayUnsafe()
         result.contentType = contentType
 
       }
@@ -397,6 +428,9 @@ class WebMappingService implements InitializingBean
     {
 
       e.printStackTrace()
+      // log.error '*' * 40
+      // log.error "${omsParams} ${ogcParams}"
+      // log.error '*' * 40
 
       HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${e}" )
 
@@ -453,7 +487,7 @@ class WebMappingService implements InitializingBean
     Integer imageListIdx = 0
 
     layerNames?.each { layerName ->
-      List images = fetchImages( layerName, wmsParams.filter )
+      List images = fetchImages( layerName, wmsParams  )
 
       // add image chipper files for the oms params
       images.eachWithIndex { v, i ->
@@ -463,7 +497,14 @@ class WebMappingService implements InitializingBean
       }
     }
 
-    omsParams
+    if ( imageListIdx )
+    {
+      omsParams
+    }
+    else
+    {
+      [:]
+    }
   }
 
   private Map<String, Object> parseStyles(GetMapRequest wmsParams)
@@ -504,7 +545,7 @@ class WebMappingService implements InitializingBean
     newStyles
   }
 
-  private List fetchImages(String layerName, String filter = null)
+  private List fetchImages(String layerName, GetMapRequest wmsParams)
   {
     List images = null
     def m = layerName =~ /(\w+):(\w+)([\.:](\d+))?/
@@ -512,15 +553,24 @@ class WebMappingService implements InitializingBean
     if ( m )
     {
       def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
+      def mosaicLimit = grailsApplication.config.omar.wms.mosaic.limit ?: "10"
+
+// println "mosaicLimit: ${mosaicLimit}"
+      def bbox = parseBbox(wmsParams)
+
+      def queryParams = [
+              filter: (id) ? "in(${id})" : wmsParams.filter,
+              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title'],
+              max: mosaicLimit?.toInteger()
+      ]
+
+      if ( bbox.proj )
+      {
+        queryParams.bbox = bbox
+      }
 
       // added sensor_id, mission_id and file_type (for data type of source satellite image) and title for image ID
-      images = geoscriptService.queryLayer(
-              "${prefix}:${name}",
-              [
-                      filter: (id) ? "in(${id})" : filter,
-                      fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title']
-              ]
-      )?.features?.inject( [] ) { a, b ->
+      images = geoscriptService.queryLayer( "${prefix}:${name}", queryParams )?.features?.inject( [] ) { a, b ->
         a << [
                 id       : b.id,
                 imageFile: b.filename ?: b.properties?.filename,
@@ -556,7 +606,11 @@ class WebMappingService implements InitializingBean
     // println "imageHeight: ${imageHeight}"
 
     def image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB)
-    def ostream = new ByteArrayOutputStream()
+
+    def ostream = new FastByteArrayOutputStream(
+      (image.sampleModel.sampleSize.sum() / 8 * image.width * image.height).intValue()
+    )
+
     def g2d = image.createGraphics()
 
     g2d.color = Color.white
@@ -581,6 +635,6 @@ class WebMappingService implements InitializingBean
 
     ImageIO.write(image, 'png', ostream)
 
-    return [contentType: 'image/png', file: ostream.toByteArray()]
+    return [contentType: 'image/png', file: ostream.toByteArrayUnsafe()]
   }
 }
