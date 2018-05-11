@@ -560,7 +560,7 @@ class WebMappingService implements InitializingBean
 
       def queryParams = [
               filter: (id) ? "in(${id})" : wmsParams.filter,
-              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title'],
+              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title', 'access_date'],
               max: mosaicLimit?.toInteger()
       ]
 
