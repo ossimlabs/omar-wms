@@ -578,11 +578,19 @@ class WebMappingService implements InitializingBean
                 access_date: b.access_date
         ]
         println "DEBUG: Access date: ${a.access_date}"
-        println "DEBUG: b: $b}"
+        println "DEBUG: b: $b"
         a
       }
     }
-    images
+    println "DEBUG: Images = ${images}"
+  }
+
+  private void updateAccessDate(int recordId) {
+
+  }
+
+  private boolean accessDateShouldBeUpdated(Date lastAccess) {
+
   }
 
   def getStyles()
