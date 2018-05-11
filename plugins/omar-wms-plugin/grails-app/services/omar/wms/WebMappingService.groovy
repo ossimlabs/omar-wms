@@ -581,16 +581,22 @@ class WebMappingService implements InitializingBean
         println "DEBUG: b: $b"
         a
       }
+      images.forEach {
+          Date lastAccess = DateUtil.parseDate(it.access_date)
+          if (accessDateShouldBeUpdated(lastAccess)) {
+              updateAccessDate(it.id)
+          }
+      }
     }
-    println "DEBUG: Images = ${images}"
   }
 
-  private void updateAccessDate(int recordId) {
-
+  private void updateAccessDate(String recordId) {
+      println "DEBUG: Updating last access for record: $recordId"
   }
 
   private boolean accessDateShouldBeUpdated(Date lastAccess) {
-
+      println "DEBUG: Should update access date = $lastAccess"
+      return lastAccess == null
   }
 
   def getStyles()
