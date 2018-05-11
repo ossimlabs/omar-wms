@@ -588,6 +588,7 @@ class WebMappingService implements InitializingBean
           }
       }
     }
+    return images
   }
 
   private void updateAccessDate(String recordId) {
