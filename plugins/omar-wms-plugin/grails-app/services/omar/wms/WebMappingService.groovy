@@ -582,7 +582,9 @@ class WebMappingService implements InitializingBean
         a
       }
       images.forEach {
-          Date lastAccess = it.properties.access_date != null ? DateUtil.parseDate(it.properties.access_date) : null
+          println "$it"
+          def accessDate = it?.properties?.access_date
+          Date lastAccess = accessDate != null ? DateUtil.parseDate(accessDate) : null
           if (accessDateShouldBeUpdated(lastAccess)) {
               updateAccessDate(it.properties.id)
           }
