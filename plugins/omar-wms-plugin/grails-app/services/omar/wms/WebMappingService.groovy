@@ -582,9 +582,9 @@ class WebMappingService implements InitializingBean
         a
       }
       images.forEach {
-          Date lastAccess = it.access_date != null ? DateUtil.parseDate(it.access_date) : null
+          Date lastAccess = it.properties.access_date != null ? DateUtil.parseDate(it.properties.access_date) : null
           if (accessDateShouldBeUpdated(lastAccess)) {
-              updateAccessDate(it.id)
+              updateAccessDate(it.properties.id)
           }
       }
     }
