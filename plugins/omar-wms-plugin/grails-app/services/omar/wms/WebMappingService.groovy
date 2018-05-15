@@ -560,7 +560,7 @@ class WebMappingService implements InitializingBean
 
       def queryParams = [
               filter: (id) ? "in(${id})" : wmsParams.filter,
-              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title'],
+              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title', 'access_date'],
               max: mosaicLimit?.toInteger()
       ]
 
@@ -574,12 +574,32 @@ class WebMappingService implements InitializingBean
         a << [
                 id       : b.id,
                 imageFile: b.filename ?: b.properties?.filename,
-                entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger()
+                entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
+                access_date: b.access_date
         ]
+        println "DEBUG: Access date: ${a.access_date}"
+        println "DEBUG: b: $b"
         a
       }
+      images.forEach {
+          println "$it"
+          def accessDate = it.access_date
+          Date lastAccess = accessDate != null ? DateUtil.parseDate(accessDate) : null
+          if (accessDateShouldBeUpdated(lastAccess)) {
+              updateAccessDate(it.id)
+          }
+      }
     }
-    images
+    return images
+  }
+
+  private void updateAccessDate(String recordId) {
+      println "DEBUG: Updating last access for record: $recordId"
+  }
+
+  private boolean accessDateShouldBeUpdated(Date lastAccess) {
+      println "DEBUG: Should update access date = $lastAccess"
+      return lastAccess == null
   }
 
   def getStyles()
