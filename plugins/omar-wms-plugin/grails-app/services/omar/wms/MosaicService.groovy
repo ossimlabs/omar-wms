@@ -82,10 +82,6 @@ class MosaicService
           break
         }
       }
-      else
-      {
-        tileImage = blank
-      }
 
       def outputImage = ( tileImage ?: blank)
       def g2d = outputImage?.createGraphics()
@@ -100,7 +96,7 @@ class MosaicService
         def tileMetadata = queryResults?.features[0]
 
         println tileMetadata
-        
+
         def title = tileMetadata?.title ?: tileMetadata?.properties?.title
         def filename = tileMetadata?.filename ?: tileMetadata?.properties?.filename
 //        def label = title ?: new File(filename)?.name
@@ -116,6 +112,8 @@ class MosaicService
       def ostream = new FastByteArrayOutputStream(
         (outputImage.width * outputImage.height * 4).intValue()
       )
+
+println ([outputImage, imageType, ostream])
 
       ImageIO.write(outputImage, imageType, ostream)
 
