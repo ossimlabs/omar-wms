@@ -95,10 +95,10 @@ class MosaicService
 
       // def label = "${queryResults.numberMatched}"
 
-      if ( queryResults?.features )
+      if ( tileImage )
       {
         def label = queryResults?.features[0]?.title ?:
-          new File(queryResults?.features[0]?.filename as String)?.name
+          new File(queryResults?.features[0]?.filename)?.name
 
         drawCenteredString(g2d, label,
           new Rectangle(outputImage.width, wmsParams.height),
