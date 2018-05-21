@@ -97,8 +97,10 @@ class MosaicService
 
       if ( tileImage )
       {
-        def label = queryResults?.features[0]?.title ?:
-          new File(queryResults?.features[0]?.filename)?.name
+        def tileMetadata = queryResults?.features[0]
+        def title = tileMetadata?.title ?: tileMetadata?.properties?.title
+        def filename = tileMetadata?.filename ?: tileMetadata?.properties?.filename        
+        def label = title ?: new File(filename)?.name
 
         drawCenteredString(g2d, label,
           new Rectangle(outputImage.width, wmsParams.height),
