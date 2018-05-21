@@ -19,7 +19,7 @@ class MosaicService
 
   def render(GetMapRequest wmsParams)
   {
-      // println wmsParams
+//      println wmsParams
 
       def bbox = webMappingService.parseBbox( wmsParams )
       def blank = new BufferedImage(wmsParams.width, wmsParams.height, BufferedImage.TYPE_INT_ARGB)
@@ -36,8 +36,10 @@ class MosaicService
           ]
       )
 
-      def contentType = 'image/gif'
-      def imageType = 'gif'
+//      println queryResults
+
+      def contentType = 'image/png'
+      def imageType = 'png'
       def tileImage = null
 
       if ( queryResults?.numberOfFeatures == 1 )
@@ -45,14 +47,17 @@ class MosaicService
         contentType = 'image/jpeg'
         imageType = 'jpeg'
 
+        def filename = queryResults?.features[0]?.filename ?: queryResults?.features[0]?.properties?.filename
+        def entry_id =  queryResults.features[0]?.entry_id ?:  queryResults.features[0]?.properties?.entry_id
+
         Map<String,String>  omsParams = [
           cutWidth        : wmsParams.width,
           cutHeight       : wmsParams.height,
           outputFormat    : contentType,
           transparent     : false,
           operation       : "ortho",
-          'images[0].file'   : queryResults.features[0].filename,
-          'images[0].entry'   : queryResults.features[0].entry_id,
+          'images[0].file'   : filename,
+          'images[0].entry'   :entry_id,
           cutWmsBbox: "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}",
           srs: bbox?.proj.id,
           outputRadiometry: 'ossim_uint8'
@@ -63,6 +68,8 @@ class MosaicService
         // println "*"*20
 
         def tileResults = webMappingService.callOmsService(omsParams)
+
+// println tileResults.httpStatus
 
         switch(tileResults.status)
         {
@@ -95,7 +102,7 @@ class MosaicService
       {
         def tileMetadata = queryResults?.features[0]
 
-        println tileMetadata
+        // println tileMetadata
 
         def title = tileMetadata?.title ?: tileMetadata?.properties?.title
         def filename = tileMetadata?.filename ?: tileMetadata?.properties?.filename
@@ -113,7 +120,7 @@ class MosaicService
         (outputImage.width * outputImage.height * 4).intValue()
       )
 
-println ([outputImage, imageType, ostream])
+//println ([outputImage, imageType, ostream])
 
       ImageIO.write(outputImage, imageType, ostream)
 
