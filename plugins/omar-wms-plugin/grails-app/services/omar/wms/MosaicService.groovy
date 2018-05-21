@@ -98,7 +98,7 @@ class MosaicService
       if ( queryResults?.features )
       {
         def label = queryResults?.features[0]?.title ?:
-          new File(queryResults?.features[0]?.filename)?.name
+          new File(queryResults?.features[0]?.filename as String)?.name
 
         drawCenteredString(g2d, label,
           new Rectangle(outputImage.width, wmsParams.height),
