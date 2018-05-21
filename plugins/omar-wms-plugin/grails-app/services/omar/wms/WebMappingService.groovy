@@ -445,7 +445,7 @@ class WebMappingService implements InitializingBean
     result
   }
 
-  private Map<java.lang.String, java.lang.Object> parseBbox(GetMapRequest wmsParams)
+  Map<java.lang.String, java.lang.Object> parseBbox(GetMapRequest wmsParams)
   {
     def coords = wmsParams?.bbox?.split( ',' )?.collect { it.toDouble() }
 
