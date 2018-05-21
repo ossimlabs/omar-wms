@@ -95,12 +95,15 @@ class MosaicService
 
       // def label = "${queryResults.numberMatched}"
 
-      def label = queryResults.features[0].title ?:
-        new File(queryResults.features[0].filename).name
+      if ( queryResults?.features )
+      {
+        def label = queryResults?.features[0]?.title ?:
+          new File(queryResults?.features[0]?.filename)?.name
 
-      drawCenteredString(g2d, label,
-        new Rectangle(outputImage.width, wmsParams.height),
-        new Font("Sans Serif", Font.BOLD, 12) )
+        drawCenteredString(g2d, label,
+          new Rectangle(outputImage.width, wmsParams.height),
+          new Font("Sans Serif", Font.BOLD, 12) )
+      }
 
       g2d.dispose()
 
