@@ -582,7 +582,7 @@ class WebMappingService implements InitializingBean
         a
       }
       List<String> imageEntries = new ArrayList<String>(images.size)
-      images.forEach { imageEntries.add(it.entry.toString()) }
+      images.forEach { imageEntries.add(it.id.toString()) }
       println "DEBUG: Entries = $imageEntries"
       updateAccessDates(imageEntries)
     }
