@@ -1,4 +1,4 @@
-package services.omar.wms
+package omar.wms
 
 import grails.transaction.Transactional
 import groovy.json.JsonSlurper
