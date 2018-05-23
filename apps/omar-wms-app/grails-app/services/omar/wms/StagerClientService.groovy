@@ -3,10 +3,11 @@ package services.omar.wms
 import grails.transaction.Transactional
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
+import org.springframework.beans.factory.annotation.Value
 
 @Transactional (readOnly = true)
 class StagerClientService {
-    @Value ('${omar.wms.geoscript.url}')
+    @Value ('${omar.wms.stager.url}')
     String stagerEndpoint
 
     def updateLastAccessDates(List<String> rasterEntryIds) {
