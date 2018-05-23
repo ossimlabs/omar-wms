@@ -11,6 +11,7 @@ import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
+import services.omar.wms.StagerClientService
 
 import java.awt.Color
 import java.awt.Font
@@ -30,6 +31,7 @@ class WebMappingService implements InitializingBean
   def grailsApplication
   def geoscriptService
   def footprintService
+  StagerClientService stagerService
 
   def serverData
   def projections
@@ -584,13 +586,9 @@ class WebMappingService implements InitializingBean
       List<String> imageEntries = new ArrayList<String>(images.size)
       images.forEach { imageEntries.add(it.id.toString().replaceFirst("raster_entry.", "")) }
       println "DEBUG: Entries = $imageEntries"
-      updateAccessDates(imageEntries)
+      stagerService.updateLastAccessDates(entryIds)
     }
     return images
-  }
-
-  private static void updateAccessDates(List<String> entryIds) {
-      println "DEBUG: Updating last access: $entryIds"
   }
 
   def getStyles()
