@@ -12,7 +12,7 @@ class StagerClientService {
 
     def updateLastAccessDates(List<String> rasterEntryIds) {
         String idCsv = rasterEntryIds.join(",")
-        def url = "${stagerEndpoint}/updateAccessDates?rasterEntries=$idCsv"
+        def url = "${stagerEndpoint}/updateAccessDates?rasterEntries=$idCsv".toURI()
         println "DEBUG: URL results = $url"
         new JsonSlurper().parse(url)
     }
