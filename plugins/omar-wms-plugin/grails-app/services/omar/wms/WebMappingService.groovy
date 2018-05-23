@@ -585,7 +585,7 @@ class WebMappingService implements InitializingBean
       List<String> imageEntries = new ArrayList<String>(images.size)
       images.forEach { imageEntries.add(it.id.toString().replaceFirst("raster_entry.", "")) }
       println "DEBUG: Entries = $imageEntries"
-      stagerService.updateLastAccessDates(entryIds)
+      stagerService.updateLastAccessDates(imageEntries)
     }
     return images
   }
