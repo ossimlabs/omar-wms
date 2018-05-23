@@ -11,7 +11,6 @@ import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
-import services.omar.wms.StagerClientService
 
 import java.awt.Color
 import java.awt.Font
@@ -31,7 +30,7 @@ class WebMappingService implements InitializingBean
   def grailsApplication
   def geoscriptService
   def footprintService
-  StagerClientService stagerService
+  def stagerService
 
   def serverData
   def projections
