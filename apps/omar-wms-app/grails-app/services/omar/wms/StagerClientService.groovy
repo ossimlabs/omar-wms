@@ -1,5 +1,9 @@
 package services.omar.wms
 
+import grails.transaction.Transactional
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+
 @Transactional (readOnly = true)
 class StagerClientService {
     @Value ('${omar.wms.geoscript.url}')
