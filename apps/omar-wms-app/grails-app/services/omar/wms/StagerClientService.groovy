@@ -14,7 +14,7 @@ class StagerClientService {
             String idCsv = rasterEntryIds.join(",")
             URL url = "${stagerEndpoint}/updateAccessDates?rasterEntries=$idCsv".toURL()
             println "DEBUG: URL results = $url"
-            new JsonSlurper().parse(url)
+            url.text()
         }
     }
 }
