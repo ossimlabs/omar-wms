@@ -13,10 +13,8 @@ class StagerClientService {
         if (!rasterEntryIds.isEmpty()) {
             String idCsv = rasterEntryIds.join(",")
             URL url = "${stagerEndpoint}/updateAccessDates?rasterEntries=$idCsv".toURL()
-            def connection = url.openConnection()
-            connection.setRequestMethod("POST")
-            connection.connect()
             println "DEBUG: URL results = $url"
+            new JsonSlurper().parse(url)
         }
     }
 }

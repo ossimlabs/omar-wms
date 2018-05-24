@@ -578,8 +578,6 @@ class WebMappingService implements InitializingBean
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
                 access_date: b.access_date
         ]
-        println "DEBUG: Access date: ${a.access_date}"
-        println "DEBUG: b: $b"
         a
       }
       List<String> imageEntries = new ArrayList<String>(images.size)
