@@ -9,12 +9,14 @@ class StagerClientService {
     @Value('${omar.wms.stager.url}')
     String stagerEndpoint
 
-    def updateLastAccessDates(List<String> rasterEntryIds) {
+    List<String> updateLastAccessDates(List<String> rasterEntryIds) {
+        List<String> updatedRasters = []
         if (!rasterEntryIds.isEmpty()) {
             String idCsv = rasterEntryIds.join(",")
             URL url = "${stagerEndpoint}/updateAccessDates?rasterEntries=$idCsv".toURL()
             println "DEBUG: URL results = $url"
-            url.getText()
+            updatedRasters = url.getText().split(",")
         }
+        return updatedRasters
     }
 }
