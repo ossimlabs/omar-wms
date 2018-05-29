@@ -4,6 +4,9 @@ logging:
 
 omar:
   wms:
+    stager:
+      # Is the location of the stager API.  This is used to update the last access date for images.
+      url: http://omar-stager-app:8080/omar-stager/dataManager
     geoscript:
       # Is the location of the geoscript API for the query service.  This is used to query the layers in the LAYERS parameter.
       url: http://omar-geoscript-app:8080/omar-geoscript/geoscriptApi

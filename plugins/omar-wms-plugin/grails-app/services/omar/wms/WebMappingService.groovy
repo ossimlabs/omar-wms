@@ -30,6 +30,7 @@ class WebMappingService implements InitializingBean
   def grailsApplication
   def geoscriptService
   def footprintService
+  def stagerService
 
   def serverData
   def projections
@@ -445,7 +446,7 @@ class WebMappingService implements InitializingBean
     result
   }
 
-  private Map<java.lang.String, java.lang.Object> parseBbox(GetMapRequest wmsParams)
+  Map<java.lang.String, java.lang.Object> parseBbox(GetMapRequest wmsParams)
   {
     def coords = wmsParams?.bbox?.split( ',' )?.collect { it.toDouble() }
 
@@ -560,7 +561,7 @@ class WebMappingService implements InitializingBean
 
       def queryParams = [
               filter: (id) ? "in(${id})" : wmsParams.filter,
-              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title'],
+              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title', 'access_date'],
               max: mosaicLimit?.toInteger()
       ]
 
@@ -574,12 +575,16 @@ class WebMappingService implements InitializingBean
         a << [
                 id       : b.id,
                 imageFile: b.filename ?: b.properties?.filename,
-                entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger()
+                entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
+                access_date: b.access_date
         ]
         a
       }
+      List<String> imageEntries = new ArrayList<String>(images.size)
+      images.forEach { imageEntries.add(it.id.toString().replaceFirst("raster_entry.", "")) }
+      stagerService.updateLastAccessDates(imageEntries)
     }
-    images
+    return images
   }
 
   def getStyles()
