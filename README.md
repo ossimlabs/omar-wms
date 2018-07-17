@@ -2,6 +2,10 @@
 
 [![Build Status](https://jenkins.radiantbluecloud.com/buildStatus/icon?job=omar-wms-dev)]()
 
+## Description
+
+THe OMAR Web Map Service provides OGC capabilities for the WMS standard, serving out image chips from O2's raster data holdings. 
+
 ### Required environment variable
 - OMAR_COMMON_PROPERTIES
 
