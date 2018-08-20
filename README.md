@@ -10,12 +10,12 @@ The OMAR Web Map Service provides OGC capabilities for the WMS standard, serving
 - OMAR_COMMON_PROPERTIES
 
 ### Optional environment variables
-Only required for Jenkins pipelines or if you are running Artifactory and/or Openshift locally
+Only required for Jenkins pipelines or if you are running Nexus and/or Openshift locally
 
 - OPENSHIFT_USERNAME
 - OPENSHIFT_PASSWORD
-- ARTIFACTORY_USER
-- ARTIFACTORY_PASSWORD
+- REPOSITORY_MANAGER_USER
+- REPOSITORY_MANAGER_PASSWORD
 
 ## About
 The omar-wms respository is OMAR's implementation of Web Mapping Service (WMS) based of the Open Geospatial Consortium (OGC) standard. Its purpose is to process request for georeferenced map images from OMAR's map server. It has two request types defined by the standard, *GetCapabilities* and *GetMap*.
