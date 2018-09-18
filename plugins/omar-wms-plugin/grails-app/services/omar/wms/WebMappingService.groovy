@@ -332,7 +332,8 @@ class WebMappingService implements InitializingBean
          responseSize: result.buffer.length,
          filename: filename,
          bbox: bbox,
-         params: wmsParams.toString()
+         params: wmsParams.toString(),
+         location: bboxMidpoint
       ]
 
       if(addLocation)
