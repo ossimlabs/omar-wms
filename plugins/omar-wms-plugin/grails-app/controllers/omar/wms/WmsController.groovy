@@ -55,7 +55,7 @@ class WmsController
 	@ApiOperation( value = "Get the capabilities of the server",
                   produces = 'application/vnd.ogc.wms_xml',
                   httpMethod = "GET",
-						nickname = "wmsGetCapabilities")
+						nickname = "getCapabilities")
 	@ApiImplicitParams( [
 			@ApiImplicitParam( name = 'service', value = 'OGC Service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1,1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
