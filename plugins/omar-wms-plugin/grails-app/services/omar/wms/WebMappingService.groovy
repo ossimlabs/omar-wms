@@ -583,7 +583,8 @@ class WebMappingService implements InitializingBean
       }
       List<String> imageEntries = new ArrayList<String>(images.size)
       images.forEach { imageEntries.add(it.id.toString().replaceFirst("raster_entry.", "")) }
-      stagerService.updateLastAccessDates(imageEntries)
+      // Remove updateLateAccessDates to test fix to WMS calls sometimes not returning
+      //stagerService.updateLastAccessDates(imageEntries)
     }
     return images
   }
