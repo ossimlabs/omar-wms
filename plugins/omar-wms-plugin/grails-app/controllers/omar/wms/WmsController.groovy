@@ -10,6 +10,8 @@ import omar.core.IpUtil
 import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
 import groovy.util.logging.Slf4j
+import org.grails.web.util.WebUtils
+import java.util.zip.GZIPOutputStream
 
 
 /**
@@ -68,7 +70,16 @@ class WmsController
 
 		def results = webMappingService.getCapabilities( wmsParams )
 
-		render contentType: results.contentType, text: results.buffer
+		String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
+		def outputBuffer
+		if (acceptEncoding != null && acceptEncoding == 'gzip'){
+			outputBuffer = gzippify(results.buffer)
+			response.setHeader 'Content-Encoding', acceptEncoding
+		} else {
+			outputBuffer = results.buffer
+		}
+
+		render contentType: results.contentType, text: outputBuffer
 
 	}
 
@@ -205,5 +216,15 @@ where:
 	def getLegendGraphic()
 	{
 		render webMappingService.getLegendGraphic(params)
+	}
+
+	static String gzippify(String buffer){
+		def targetStream = new ByteArrayOutputStream()
+		def gzipStream = new GZIPOutputStream(targetStream)
+		gzipStream.write(buffer.getBytes('UTF-8'))
+		gzipStream.close()
+		def zippedBytes = targetStream.toByteArray()
+		targetStream.close()
+		return zippedBytes.encodeBase64().toString()
 	}
 }
