@@ -4,13 +4,9 @@ pluginManagement {
     gradlePluginPortal()
   }
 }
-def final O2_DEV_HOME = System.getenv('O2_DEV_HOME')
-
-if ( O2_DEV_HOME ) {
 
 include 'omar-wms-app',
         'omar-wms-plugin'
 
-project(':omar-wms-app').projectDir = "${O2_DEV_HOME}/omar-wms/apps/omar-wms-app" as File
-project(':omar-wms-plugin').projectDir = "${O2_DEV_HOME}/omar-wms/plugins/omar-wms-plugin" as File
-}
+project(':omar-wms-app').projectDir = "${rootProject.projectDir}/apps/omar-wms-app" as File
+project(':omar-wms-plugin').projectDir = "${rootProject.projectDir}/plugins/omar-wms-plugin" as File
