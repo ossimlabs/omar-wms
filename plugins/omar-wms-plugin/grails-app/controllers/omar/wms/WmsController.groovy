@@ -12,6 +12,8 @@ import omar.core.OmarWebUtils
 import groovy.util.logging.Slf4j
 import org.grails.web.util.WebUtils
 
+import java.nio.charset.StandardCharsets
+
 
 /**
  * @brief Grails controller
@@ -219,7 +221,7 @@ where:
 		String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
 
 		if (acceptEncoding?.equals(OmarWebUtils.GZIP_ENCODE_HEADER_PARAM)){
-			responseText = OmarWebUtils.gzippify(resultsText)
+			responseText = OmarWebUtils.gzippify(resultsText, StandardCharsets.UTF_8.name())
 			response.setHeader 'Content-Encoding', acceptEncoding
 		} else {
 			responseText = resultsText
