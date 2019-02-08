@@ -34,7 +34,7 @@ io.ossim.gradleDefaults.Variables.setAdditionalVariables(project)
 io.ossim.gradleDefaults.Variables.setVersionVariables(project)
 dockerBuildDir="${rootProject.projectDir}/docker"
 version "${buildVersion}-${buildVersionTag}"
-jarDestination = "./build/libs/${project.name}-${version}.jar"
+jarDestination = "${projectDir}/build/libs/${project.name}-${version}.jar"
 io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
 io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)
 io.ossim.gradleDefaults.Docker.addDockerTasks(project, dockerRegistryUrl, dockerRegistryUsername, dockerRegistryPassword, name, dockerTag, dockerBuildDir, jarDestination, ["BASE_IMAGE": dockerBaseImage])
