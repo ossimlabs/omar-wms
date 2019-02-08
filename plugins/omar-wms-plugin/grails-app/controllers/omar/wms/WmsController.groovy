@@ -198,12 +198,12 @@ where:
 		}
 	}
 
-	private void getStyles()
+	private def getStyles()
 	{
 		render webMappingService.getStyles(params)
 	}
 
-	private void getLegendGraphic()
+	private def getLegendGraphic()
 	{
 		render webMappingService.getLegendGraphic(params)
 	}
