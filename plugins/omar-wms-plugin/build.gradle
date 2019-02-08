@@ -1,19 +1,15 @@
 buildscript {
   ext {
     grailsVersion = project.grailsVersion
-    baseImage = ""
-  }
-  if ( System.env.OMAR_COMMON_PROPERTIES )
-  {
-    apply from: System.env.OMAR_COMMON_PROPERTIES
   }
   repositories {
     mavenLocal()
-    maven { url "${ossimMavenProxy}" }
+    maven { url ossimMavenProxy }
   }
   dependencies {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:${assetPipelineGradleV}"
+    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.10"
+    classpath 'io.ossim:gradleDefaults:1.0-SNAPSHOT'
   }
 }
 
@@ -34,6 +30,14 @@ apply plugin: "maven-publish"
 
 group "io.ossim.omar.plugins"
 
+
+io.ossim.gradleDefaults.Variables.setAdditionalVariables(project)
+io.ossim.gradleDefaults.Variables.setVersionVariables(project)
+version "${buildVersion}-${buildVersionTag}"
+jarDestination = "./build/libs/${project.name}-${version}.jar"
+io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
+io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)
+
 ext {
   grailsVersion = project.grailsVersion
   gradleWrapperVersion = project.gradleWrapperVersion
@@ -52,8 +56,8 @@ dependencyManagement {
 }
 
 dependencies {
-  compile "io.ossim.omar.plugins:omar-core-plugin:+"
-  compile "io.ossim.omar.plugins:omar-hibernate-spatial-plugin:+"
+  compile "io.ossim.omar.plugins:omar-core-plugin:${latestGradleIdentifier}"
+  compile "io.ossim.omar.plugins:omar-hibernate-spatial-plugin:${latestGradleIdentifier}"
   compile "org.grails:grails-core"
   compile "org.grails:grails-web-boot"
   compile "org.grails:grails-logging"
@@ -80,7 +84,7 @@ dependencies {
   testCompile "org.grails:grails-gorm-testing-support"
   testCompile "org.grails:grails-plugin-testing"
   testCompile "org.grails.plugins:geb"
-  testCompile "org.grails:grails-web-testing-support"
+  testCompile "org.grails:grails-web-testing-support:3.2.7"
   testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:${seleniumHtmlUnitDriverV}"
   testRuntime "net.sourceforge.htmlunit:htmlunit:${htmlUnitV}"
 }

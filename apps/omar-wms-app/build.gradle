@@ -1,20 +1,16 @@
 buildscript {
   ext {
     grailsVersion = project.grailsVersion
-    baseImage = "omar-base"
-  }
-  if (System.env.OMAR_COMMON_PROPERTIES)
-  {
-    apply from: System.env.OMAR_COMMON_PROPERTIES
   }
   repositories {
     mavenLocal()
-    maven { url "${ossimMavenProxy}" }
+    maven { url ossimMavenProxy }
   }
   dependencies {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:${assetPipelineGradleV}"
+    classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.10"
     classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
+    classpath 'io.ossim:gradleDefaults:1.0-SNAPSHOT'
   }
 }
 
@@ -34,6 +30,15 @@ apply plugin: "maven-publish"
 
 group "io.ossim.omar.apps"
 
+io.ossim.gradleDefaults.Variables.setAdditionalVariables(project)
+io.ossim.gradleDefaults.Variables.setVersionVariables(project)
+dockerBuildDir="${rootProject.projectDir}/docker"
+version "${buildVersion}-${buildVersionTag}"
+jarDestination = "./build/libs/${project.name}-${version}.jar"
+io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
+io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)
+io.ossim.gradleDefaults.Docker.addDockerTasks(project, dockerRegistryUrl, dockerRegistryUsername, dockerRegistryPassword, name, dockerTag, dockerBuildDir, jarDestination, ["BASE_IMAGE": dockerBaseImage])
+
 ext {
   grailsVersion = project.grailsVersion
   gradleWrapperVersion = project.gradleWrapperVersion
@@ -49,7 +54,7 @@ assets {
 
 repositories {
   mavenLocal()
-  maven { url "${ossimMavenProxy}" }
+  maven { url ossimMavenProxy }
 }
 
 dependencyManagement {
@@ -92,7 +97,6 @@ dependencies {
   compile "org.springframework.boot:spring-boot-starter-tomcat"
   compile "org.springframework.cloud:spring-cloud-starter-config"
   compile "org.springframework.cloud:spring-cloud-starter-eureka"
-  //compile "org.springframework.cloud:spring-cloud-starter-zipkin"
 
   console "org.grails:grails-console"
   profile "org.grails.profiles:web"
@@ -102,7 +106,7 @@ dependencies {
   runtime "com.bertramlabs.plugins:asset-pipeline-grails:${assetPipelineGrailsV}"
   testCompile "org.grails:grails-gorm-testing-support"
   testCompile "org.grails.plugins:geb"
-  testCompile "org.grails:grails-web-testing-support"
+  testCompile "org.grails:grails-web-testing-support:3.2.7"
   testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:${seleniumHtmlUnitDriverV}"
   testRuntime "net.sourceforge.htmlunit:htmlunit:${htmlUnitV}"
 }
