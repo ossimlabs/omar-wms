@@ -28,8 +28,6 @@ apply plugin: "asset-pipeline"
 apply plugin: "java"
 apply plugin: "maven-publish"
 
-group "io.ossim.omar.plugins"
-
 io.ossim.gradleDefaults.Variables.setAdditionalVariables(project)
 io.ossim.gradleDefaults.Variables.setVersionVariables(project)
 version "${buildVersion}-${buildVersionTag}"
@@ -105,12 +103,4 @@ grailsPublish {
   developers = [johndoe: "John Doe"]
   portalUser = ""
   portalPassword = ""
-}
-
-publishing {
-  publications {
-    mavenJava( MavenPublication ) {
-      from components.java
-    }
-  }
 }

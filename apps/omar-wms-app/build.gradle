@@ -111,14 +111,6 @@ dependencies {
   testRuntime "net.sourceforge.htmlunit:htmlunit:${htmlUnitV}"
 }
 
-publishing {
-  publications {
-    mavenJava(MavenPublication) {
-      from components.java
-    }
-  }
-}
-
 bootRun {
   jvmArgs = [
   ]
