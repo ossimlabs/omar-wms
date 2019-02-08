@@ -6,10 +6,13 @@ package omar.wms
 import io.swagger.annotations.*
 
 import omar.core.BindUtil
-import omar.core.IpUtil
 import omar.core.HttpStatus
 import omar.core.OgcExceptionUtil
+import omar.core.OmarWebUtils
 import groovy.util.logging.Slf4j
+import org.grails.web.util.WebUtils
+
+import java.nio.charset.StandardCharsets
 
 
 /**
@@ -66,10 +69,11 @@ class WmsController
 		BindUtil.fixParamNames( GetCapabilitiesRequest, params )
         bindData( wmsParams, params )
 
-		def results = webMappingService.getCapabilities( wmsParams )
+		Map<String, String> results = webMappingService.getCapabilities( wmsParams )
 
-		render contentType: results.contentType, text: results.buffer
+		String outputBuffer = encodeResponse(results.buffer)
 
+		render contentType: results.contentType, text: outputBuffer
 	}
 
 	/**
@@ -184,26 +188,42 @@ where:
 			log.error(e.toString())
 		}
 		finally{
-			if(outputStream!=null)
+			try{
+				outputStream?.close()
+			}
+			catch(e)
 			{
-				try{
-					outputStream.close()
-				}
-				catch(e)
-				{
-					log.error(e.toString())
-				}
+				log.error(e.toString())
 			}
 		}
 	}
 
-	def getStyles()
+	private void getStyles()
 	{
 		render webMappingService.getStyles(params)
 	}
 
-	def getLegendGraphic()
+	private void getLegendGraphic()
 	{
 		render webMappingService.getLegendGraphic(params)
+	}
+
+	/**
+	 * Encodes the response to gzip if requested
+	 * @param inputText The original, unencoded response
+	 * @return The encoded response
+	 */
+	private String encodeResponse(String inputText) {
+		String outputText
+		String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
+
+		if (acceptEncoding?.equals(OmarWebUtils.GZIP_ENCODE_HEADER_PARAM)){
+			outputText = OmarWebUtils.gzippify(inputText, StandardCharsets.UTF_8.name())
+			response.setHeader 'Content-Encoding', acceptEncoding
+		} else {
+			outputText = inputText
+		}
+
+		return outputText
 	}
 }
