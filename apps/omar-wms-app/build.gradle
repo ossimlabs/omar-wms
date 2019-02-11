@@ -10,7 +10,8 @@ buildscript {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
     classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.10"
     classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
-    classpath 'io.ossim:gradleDefaults:1.0-SNAPSHOT'
+    classpath 'com.bmuschko:gradle-docker-plugin:3.0.12'
+    classpath 'io.ossim:gradleDefaults:1.3-SNAPSHOT'
   }
 }
 
@@ -38,6 +39,7 @@ jarDestination = "${projectDir}/build/libs/${project.name}-${version}.jar"
 io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
 io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)
 io.ossim.gradleDefaults.Docker.addDockerTasks(project, dockerRegistryUrl, dockerRegistryUsername, dockerRegistryPassword, name, dockerTag, dockerBuildDir, jarDestination, ["BASE_IMAGE": dockerBaseImage])
+io.ossim.gradleDefaults.Openshift.addOpenshiftTasks(project, openshiftUrl, openshiftUsername, openshiftPassword, openshiftProjectName, openshiftServiceName,  dockerRegistryUrl, name, dockerTag)
 
 ext {
   grailsVersion = project.grailsVersion
