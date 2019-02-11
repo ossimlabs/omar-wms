@@ -11,9 +11,9 @@
 //==================================================================================================
 
 properties([
-    parameters {
+    parameters ([
         string(defaultValue: 'omar-build', description: 'The build node to run on', name: 'BUILD_NODE')
-    }
+    ])
 ])
 
 node("${BUILD_NODE}"){
