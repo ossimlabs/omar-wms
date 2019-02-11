@@ -10,10 +10,12 @@
 //    DOCKER_REGISTRY_PASSWORD: The password to use logging into the docker registry
 //==================================================================================================
 
+parameters {
+    string(defaultValue: 'omar-build', description: 'The build node to run on', name: 'BUILD_NODE')
+}
+
 node("${BUILD_NODE}"){
-    parameters {
-        string(defaultValue: 'omar-build', description: 'The build node to run on', name: 'BUILD_NODE')
-    }
+
 
     stage("Load Variables"){
         dir("ossim-ci"){
