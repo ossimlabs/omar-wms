@@ -12,7 +12,7 @@
 
 node("${BUILD_NODE}"){
     parameters {
-        stringParam(defaultValue: 'omar-build', description: 'The build node to run on', name: 'BUILD_NODE')
+        string(defaultValue: 'omar-build', description: 'The build node to run on', name: 'BUILD_NODE')
     }
 
     stage("Load Variables"){
