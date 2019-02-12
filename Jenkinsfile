@@ -15,6 +15,8 @@ properties([
         string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on')
         string(name: 'OSSIM_CI_GIT_BRANCH', defaultValue: 'dev', description: 'The branch of ossimci to clone')
         booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run')
+        string(name: 'GIT_PRIVATE_SERVER_URL', defaultValue: '', description: 'The private git url for the server')
+        string(name: 'CREDENTIALS_ID', defaultValue: '', description: 'The credentials ID to use for CI checkout')
     ])
 ])
 
