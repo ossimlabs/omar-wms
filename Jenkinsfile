@@ -12,17 +12,22 @@
 
 properties([
     parameters ([
-        string(defaultValue: 'omar-build', description: 'The build node to run on', name: 'BUILD_NODE')
+        string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on')
+        string(name: 'OSSIM_CI_GIT_BRANCH', defaultValue: 'dev', description: 'The branch of ossimci to clone')
+        booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run')
     ])
 ])
 
 node("${BUILD_NODE}"){
 
+    stage("Checkout branch $BRANCH_NAME") {
+        checkout(scm)
+    }
 
     stage("Load Variables"){
         dir("ossim-ci"){
-            git branch: "${OSSIM_GIT_BRANCH}", 
-            url: "${GIT_PRIVATE_SERVER_URL}/ossim-ci.git", 
+            git branch: "${OSSIM_CI_GIT_BRANCH}",
+            url: "${GIT_PRIVATE_SERVER_URL}/ossim-ci.git",
             credentialsId: "${CREDENTIALS_ID}"
         }
 
@@ -31,9 +36,7 @@ node("${BUILD_NODE}"){
 
     stage ("Assemble") {
         sh """
-        pushd ./${appName}
         gradle assemble
-        popd
         """
     }
 
@@ -45,11 +48,9 @@ node("${BUILD_NODE}"){
                         passwordVariable: 'MAVEN_REPO_PASSWORD']])
         {
             sh """
-            pushd ./${appName}
             gradle publish \
                 -PmavenRepoUsername=${MAVEN_REPO_USERNAME} \
                 -PmavenRepoPassword=${MAVEN_REPO_PASSWORD}
-            popd
             """
         }
     }
@@ -63,11 +64,9 @@ node("${BUILD_NODE}"){
         {
             // Run all tasks on the app. This includes pushing to OpenShift and S3.
             sh """
-            pushd ${workspaceDir}/${appName}
             gradle pushDockerImage \
                 -PdockerRegistryUsername=${DOCKER_REGISTRY_USERNAME} \
                 -PdockerRegistryPassword=${DOCKER_REGISTRY_PASSWORD}
-            popd
             """
         }
     }
@@ -81,9 +80,7 @@ node("${BUILD_NODE}"){
                 {
                     // Run all tasks on the app. This includes pushing to OpenShift and S3.
                     sh """
-                        pushd ${workspaceDir}/${appName}
                         gradle tagImage
-                        popd
                     """
                 }
         }
@@ -94,9 +91,7 @@ node("${BUILD_NODE}"){
                 // requires SonarQube Scanner for Gradle 2.1+
                 // It's important to add --info because of SONARJNKNS-281
                 sh """
-                  pushd ${workspaceDir}/${appName}/
                   gradle --info sonarqube
-                  popd
                 """
             }
         }
