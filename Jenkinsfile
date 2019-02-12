@@ -13,10 +13,7 @@
 properties([
     parameters ([
         string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
-        string(name: 'OSSIM_CI_GIT_BRANCH', defaultValue: 'dev', description: 'The branch of ossimci to clone'),
-        booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run'),
-        string(name: 'GIT_PRIVATE_SERVER_URL', defaultValue: '', description: 'The private git url for the server'),
-        string(name: 'CREDENTIALS_ID', defaultValue: '', description: 'The credentials ID to use for CI checkout')
+        booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run')
     ])
 ])
 
@@ -27,13 +24,14 @@ node("${BUILD_NODE}"){
     }
 
     stage("Load Variables"){
-        dir("ossim-ci"){
-            git branch: "${OSSIM_CI_GIT_BRANCH}",
-            url: "${GIT_PRIVATE_SERVER_URL}/ossim-ci.git",
-            credentialsId: "${CREDENTIALS_ID}"
+        dir("${env.WORKSPACE}") {
+            step ([$class: "CopyArtifact",
+            projectName: "ossim-ci",
+               filter: "common-variables.groovy",
+               flatten: true])
         }
 
-        load "ossim-ci/jenkins/variables/common-variables.groovy"
+        load "ossim-ci/common-variables.groovy"
     }
 
     stage ("Assemble") {
@@ -83,8 +81,8 @@ node("${BUILD_NODE}"){
                     // Run all tasks on the app. This includes pushing to OpenShift and S3.
                     sh """
                         gradle tagImage \
-                                -PopenshiftUsername=${OPENSHIFT_USERNAME} \
-                                -PopenshiftPassword=${OPENSHIFT_PASSWORD}
+                            -PopenshiftUsername=${OPENSHIFT_USERNAME} \
+                            -PopenshiftPassword=${OPENSHIFT_PASSWORD}
 
                     """
                 }
@@ -96,7 +94,7 @@ node("${BUILD_NODE}"){
                 // requires SonarQube Scanner for Gradle 2.1+
                 // It's important to add --info because of SONARJNKNS-281
                 sh """
-                  gradle --info sonarqube
+                    gradle --info sonarqube
                 """
             }
         }
