@@ -9,7 +9,7 @@ buildscript {
   dependencies {
     classpath "org.grails:grails-gradle-plugin:$grailsVersion"
     classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.10"
-    classpath 'io.ossim:gradleDefaults:1.0-SNAPSHOT'
+    classpath 'io.ossim:gradleDefaults:1.3-SNAPSHOT'
   }
 }
 
