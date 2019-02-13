@@ -81,7 +81,7 @@ node("${BUILD_NODE}"){
                 {
                     // Run all tasks on the app. This includes pushing to OpenShift and S3.
                     sh """
-                        gradle tagImage \
+                        gradle openshiftTagImage \
                             -PossimMavenProxy=${OSSIM_MAVEN_PROXY} \
                             -PopenshiftUsername=${OPENSHIFT_USERNAME} \
                             -PopenshiftPassword=${OPENSHIFT_PASSWORD}
