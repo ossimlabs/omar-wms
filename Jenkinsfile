@@ -1,15 +1,3 @@
-//==================================================================================================
-// This is the Jenkins pipeline script for building the OMAR WMS application.
-// Environment varialbes that MUST be passed in by Jenkins:
-//    OSSIM_GIT_BRANCH: The tag of the branch to be built. Typically dev or master.
-//
-// Environment variables that MUST be set in the Jenkins global environment (manage jenkins -> configure system -> environment varaibles)
-//    REPOSITORY_MANAGER_USER: The user to use when pushing artifacts
-//    REPOSITORY_MANAGER_PASSWORD: The password to use when pushing artifacts
-//    DOCKER_REGISTRY_USERNAME: The user to use logging into the docker registry
-//    DOCKER_REGISTRY_PASSWORD: The password to use logging into the docker registry
-//==================================================================================================
-
 properties([
     parameters ([
         string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
@@ -39,6 +27,8 @@ node("${BUILD_NODE}"){
         gradle assemble \
             -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
         """
+        archiveArtifacts "plugins/*/build/libs/*.jar"
+        archiveArtifacts "apps/*/build/libs/*.jar"
     }
 
     stage ("Publish Nexus")
