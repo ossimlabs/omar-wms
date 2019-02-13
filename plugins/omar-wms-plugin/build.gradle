@@ -42,7 +42,7 @@ ext {
 
 repositories {
   mavenLocal()
-  maven { url "${ossimMavenProxy}" }
+  maven { url ossimMavenProxy }
 }
 
 dependencyManagement {

@@ -24,19 +24,18 @@ node("${BUILD_NODE}"){
     }
 
     stage("Load Variables"){
-        dir("${env.WORKSPACE}") {
-            step ([$class: "CopyArtifact",
-            projectName: "ossim-ci",
-               filter: "common-variables.groovy",
-               flatten: true])
-        }
+        step ([$class: "CopyArtifact",
+        projectName: "ossim-ci",
+           filter: "common-variables.groovy",
+           flatten: true])
 
-        load "ossim-ci/common-variables.groovy"
+        load "common-variables.groovy"
     }
 
     stage ("Assemble") {
         sh """
-        gradle assemble
+        gradle assemble \
+            -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
         """
     }
 
@@ -49,6 +48,7 @@ node("${BUILD_NODE}"){
         {
             sh """
             gradle publish \
+                -PossimMavenProxy=${OSSIM_MAVEN_PROXY} \
                 -PmavenRepoUsername=${MAVEN_REPO_USERNAME} \
                 -PmavenRepoPassword=${MAVEN_REPO_PASSWORD}
             """
@@ -65,6 +65,7 @@ node("${BUILD_NODE}"){
             // Run all tasks on the app. This includes pushing to OpenShift and S3.
             sh """
             gradle pushDockerImage \
+                -PossimMavenProxy=${OSSIM_MAVEN_PROXY} \
                 -PdockerRegistryUsername=${DOCKER_REGISTRY_USERNAME} \
                 -PdockerRegistryPassword=${DOCKER_REGISTRY_PASSWORD}
             """
@@ -81,6 +82,7 @@ node("${BUILD_NODE}"){
                     // Run all tasks on the app. This includes pushing to OpenShift and S3.
                     sh """
                         gradle tagImage \
+                            -PossimMavenProxy=${OSSIM_MAVEN_PROXY} \
                             -PopenshiftUsername=${OPENSHIFT_USERNAME} \
                             -PopenshiftPassword=${OPENSHIFT_PASSWORD}
 

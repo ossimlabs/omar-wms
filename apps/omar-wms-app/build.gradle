@@ -29,8 +29,6 @@ apply plugin: "asset-pipeline"
 apply plugin: "java"
 apply plugin: "maven-publish"
 
-group "io.ossim.omar.apps"
-
 io.ossim.gradleDefaults.Variables.setAdditionalVariables(project)
 io.ossim.gradleDefaults.Variables.setVersionVariables(project)
 dockerBuildDir="${rootProject.projectDir}/docker"
