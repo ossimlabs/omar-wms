@@ -208,7 +208,6 @@ where:
 	// This is used. Can we add an annotation to make it part of our explicit contract?
 	def getLegendGraphic()
 	{
-		println "DEBUGGING -- REMOVE ME"
 		render webMappingService.getLegendGraphic(params)
 	}
 
