@@ -19,11 +19,13 @@ properties([
 
 node("${BUILD_NODE}"){
 
-    stage("Checkout branch $BRANCH_NAME") {
+    stage("Checkout branch $BRANCH_NAME")
+    {
         checkout(scm)
     }
 
-    stage("Load Variables"){
+    stage("Load Variables")
+    {
         step ([$class: "CopyArtifact",
         projectName: "ossim-ci",
            filter: "common-variables.groovy",
@@ -48,9 +50,7 @@ node("${BUILD_NODE}"){
         {
             sh """
             gradle publish \
-                -PossimMavenProxy=${OSSIM_MAVEN_PROXY} \
-                -PmavenRepoUsername=${MAVEN_REPO_USERNAME} \
-                -PmavenRepoPassword=${MAVEN_REPO_PASSWORD}
+                -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
             """
         }
     }
@@ -65,45 +65,27 @@ node("${BUILD_NODE}"){
             // Run all tasks on the app. This includes pushing to OpenShift and S3.
             sh """
             gradle pushDockerImage \
-                -PossimMavenProxy=${OSSIM_MAVEN_PROXY} \
-                -PdockerRegistryUsername=${DOCKER_REGISTRY_USERNAME} \
-                -PdockerRegistryPassword=${DOCKER_REGISTRY_PASSWORD}
+                -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
             """
         }
     }
 
     stage ("Trigger OpenShift Pull")
+    {
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                          credentialsId: 'openshiftCredentials',
+                          usernameVariable: 'OPENSHIFT_USERNAME',
+                          passwordVariable: 'OPENSHIFT_PASSWORD']])
         {
-            withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                              credentialsId: 'openshiftCredentials',
-                              usernameVariable: 'OPENSHIFT_USERNAME',
-                              passwordVariable: 'OPENSHIFT_PASSWORD']])
-                {
-                    // Run all tasks on the app. This includes pushing to OpenShift and S3.
-                    sh """
-                        gradle openshiftTagImage \
-                            -PossimMavenProxy=${OSSIM_MAVEN_PROXY} \
-                            -PopenshiftUsername=${OPENSHIFT_USERNAME} \
-                            -PopenshiftPassword=${OPENSHIFT_PASSWORD}
+            // Run all tasks on the app. This includes pushing to OpenShift and S3.
+            sh """
+                gradle openshiftTagImage \
+                    -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
 
-                    """
-                }
-        }
-
-    try {
-        stage('SonarQube analysis') {
-            withSonarQubeEnv("${SONARQUBE_NAME}") {
-                // requires SonarQube Scanner for Gradle 2.1+
-                // It's important to add --info because of SONARJNKNS-281
-                sh """
-                    gradle --info sonarqube
-                """
-            }
+            """
         }
     }
-    catch (e) {
-        echo e.toString()
-    }
+
         
    stage("Clean Workspace")
    {
