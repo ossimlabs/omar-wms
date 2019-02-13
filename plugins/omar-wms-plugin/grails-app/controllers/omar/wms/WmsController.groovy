@@ -198,14 +198,13 @@ where:
 		}
 	}
 
-	// This is used. Can we add an annotation to make it part of our explicit contract?
-	// For example, this isn't used and we don't provide anything....
+	// Keep as endpoint
 	def getStyles()
 	{
 		render webMappingService.getStyles(params)
 	}
 
-	// This is used. Can we add an annotation to make it part of our explicit contract?
+	// Keep as endpoint
 	def getLegendGraphic()
 	{
 		render webMappingService.getLegendGraphic(params)
