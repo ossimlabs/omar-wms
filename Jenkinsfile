@@ -70,7 +70,7 @@ node("${BUILD_NODE}"){
         }
     }
 
-    stage ("Trigger OpenShift Pull")
+    stage ("OpenShift Tag Image")
     {
         withCredentials([[$class: 'UsernamePasswordMultiBinding',
                           credentialsId: 'openshiftCredentials',
