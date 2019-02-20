@@ -1,13 +1,10 @@
 # omar-wms
 
-[![Build Status](https://jenkins.ossim.io/buildStatus/icon?job=omar-wms-dev)]()
+[![Build Status](https://jenkins.ossim.io/buildStatus/icon?job=omar-wms-multi/dev)]()
 
 ## Description
 
 The OMAR Web Map Service provides OGC capabilities for the WMS standard, serving out image chips from O2's raster data holdings. 
-
-### Required environment variable
-- OMAR_COMMON_PROPERTIES
 
 ### Optional environment variables
 Only required for Jenkins pipelines or if you are running Nexus and/or Openshift locally
