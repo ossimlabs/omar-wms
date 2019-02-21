@@ -64,6 +64,8 @@ dependencies {
   compile "io.swagger:swagger-models:1.5.15"
   compile "org.grails.plugins:actuator-ui:1.1"
 
+  compile "org.webjars:swagger-ui:3.20.5"
+
   compile "org.grails:grails-core"
   compile "org.grails:grails-web-boot"
   compile "org.grails:grails-logging"
