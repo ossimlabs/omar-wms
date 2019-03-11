@@ -318,12 +318,14 @@ class WebMappingService implements InitializingBean
         bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
 
-      if ( omsParams.outputFormat.equalsIgnoreCase("image/jpeg-png") )
+      // if no output format is specified, default to omptimized auto png/jpeg
+      if ( !omsParams.outputFormat )
       {
         def tileGeom
         def imageGeom
-        def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), 4326 )
+        def sourceESPG = omsParams?.srs.equalsIgnoreCase("ESPG:3857") ? 3857 : 4326
         def rawCoords = omsParams.get( "images[0].coords" )[0]
+        def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
 
         def tileCoords = [
           new Coordinate( bbox.minX, bbox.minY ),
@@ -344,14 +346,7 @@ class WebMappingService implements InitializingBean
         tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
         imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords ), null )
 
-        if ( !imageGeom.contains( tileGeom ) )
-        {
-          omsParams.outputFormat = "image/png"
-        }
-        else 
-        {
-          omsParams.outputFormat = "image/jpeg"
-        }
+        omsParams.outputFormat = imageGeom.contains( tileGeom ) ? "image/jpeg" : "image/png"
       }
 
       omsParams.remove( "images[0].coords" )
