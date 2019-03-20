@@ -324,7 +324,7 @@ class WebMappingService implements InitializingBean
         def tileGeom
         def imageGeom
         def sourceESPG = omsParams?.srs.equalsIgnoreCase("ESPG:3857") ? 3857 : 4326
-        def rawCoords = omsParams.get( "images[0].coords" )[0]
+        def rawCoords = omsParams.get( "images[0].coords" )[0][0]
         def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
 
         def tileCoords = [
@@ -616,7 +616,7 @@ class WebMappingService implements InitializingBean
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
                 access_date: b.access_date,
-                imageCoords: b?.geometry?.coords ?:  b.ground_geom
+                imageCoords: b?.geometry?.coordinates ?:  b.ground_geom
         ]
         a
       }
