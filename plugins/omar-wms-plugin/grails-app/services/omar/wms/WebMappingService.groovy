@@ -12,6 +12,10 @@ import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 
+import com.vividsolutions.jts.geom.Coordinate
+import com.vividsolutions.jts.geom.GeometryFactory
+import com.vividsolutions.jts.geom.PrecisionModel
+
 import java.awt.Color
 import java.awt.Font
 import java.awt.image.BufferedImage
@@ -314,6 +318,39 @@ class WebMappingService implements InitializingBean
         bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
 
+      // if no output format is specified, default to omptimized auto png/jpeg
+      if ( !omsParams.outputFormat )
+      {
+        def tileGeom
+        def imageGeom
+        def sourceESPG = omsParams?.srs.equalsIgnoreCase("ESPG:3857") ? 3857 : 4326
+        def rawCoords = omsParams.get( "images[0].coords" )[0]
+        def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
+
+        def tileCoords = [
+          new Coordinate( bbox.minX, bbox.minY ),
+          new Coordinate( bbox.minX, bbox.maxY ),
+          new Coordinate( bbox.maxX, bbox.maxY ),
+          new Coordinate( bbox.maxX, bbox.minY ),
+          new Coordinate( bbox.minX, bbox.minY )
+          ] as Coordinate[]
+
+        def imageCoords = [
+          new Coordinate( rawCoords[0][0], rawCoords[0][1] ),
+          new Coordinate( rawCoords[1][0], rawCoords[1][1] ),
+          new Coordinate( rawCoords[2][0], rawCoords[2][1] ),
+          new Coordinate( rawCoords[3][0], rawCoords[3][1] ),
+          new Coordinate( rawCoords[4][0], rawCoords[4][1] )
+          ] as Coordinate[]
+
+        tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
+        imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords ), null )
+
+        omsParams.outputFormat = imageGeom.contains( tileGeom ) ? "image/jpeg" : "image/png"
+      }
+
+      omsParams.remove( "images[0].coords" )
+
       result = callOmsService( omsParams )
       httpStatus = result.status
       filename = omsParams.get( "images[0].file" )
@@ -495,6 +532,7 @@ class WebMappingService implements InitializingBean
       images.eachWithIndex { v, i ->
         omsParams."images[${imageListIdx}].file" = v.imageFile
         omsParams."images[${imageListIdx}].entry" = v.entry
+        omsParams."images[${imageListIdx}].coords" = v.imageCoords
         imageListIdx++
       }
     }
@@ -577,7 +615,8 @@ class WebMappingService implements InitializingBean
                 id       : b.id,
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
-                access_date: b.access_date
+                access_date: b.access_date,
+                imageCoords: b?.geometry?.coords ?:  b.ground_geom
         ]
         a
       }
