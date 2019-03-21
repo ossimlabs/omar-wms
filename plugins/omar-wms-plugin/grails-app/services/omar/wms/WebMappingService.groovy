@@ -323,7 +323,7 @@ class WebMappingService implements InitializingBean
       {
         def tileGeom
         def imageGeom
-        def sourceESPG = omsParams?.srs.equalsIgnoreCase("ESPG:3857") ? 3857 : 4326
+        def sourceESPG = (omsParams?.srs && omsParams?.srs.equalsIgnoreCase("ESPG:3857")) ? 3857 : 4326
         def rawCoords = omsParams.get( "images[0].coords" )[0][0]
         def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
 
@@ -335,16 +335,13 @@ class WebMappingService implements InitializingBean
           new Coordinate( bbox.minX, bbox.minY )
           ] as Coordinate[]
 
-        def imageCoords = [
-          new Coordinate( rawCoords[0][0], rawCoords[0][1] ),
-          new Coordinate( rawCoords[1][0], rawCoords[1][1] ),
-          new Coordinate( rawCoords[2][0], rawCoords[2][1] ),
-          new Coordinate( rawCoords[3][0], rawCoords[3][1] ),
-          new Coordinate( rawCoords[4][0], rawCoords[4][1] )
-          ] as Coordinate[]
+        def imageCoords = []
+        rawCoords.each {
+          imageCoords.push(new Coordinate( it[0], it[1] ))
+        }
 
         tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
-        imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords ), null )
+        imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
 
         omsParams.outputFormat = imageGeom.contains( tileGeom ) ? "image/jpeg" : "image/png"
       }
@@ -616,7 +613,7 @@ class WebMappingService implements InitializingBean
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
                 access_date: b.access_date,
-                imageCoords: b?.geometry?.coordinates ?:  b.ground_geom
+                imageCoords: b?.geometry?.coordinates ?: b.ground_geom
         ]
         a
       }
