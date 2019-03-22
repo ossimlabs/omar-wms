@@ -597,7 +597,6 @@ class WebMappingService implements InitializingBean
 
       def queryParams = [
               filter: (id) ? "in(${id})" : wmsParams.filter,
-              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title', 'access_date'],
               max: mosaicLimit?.toInteger()
       ]
 
@@ -613,7 +612,7 @@ class WebMappingService implements InitializingBean
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
                 access_date: b.access_date,
-                imageCoords: b?.geometry?.coordinates ?: b.ground_geom
+                imageCoords: b.geometry?.coordinates ?: b.ground_geom
         ]
         a
       }
