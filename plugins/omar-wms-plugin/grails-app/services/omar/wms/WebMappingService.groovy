@@ -345,12 +345,8 @@ class WebMappingService implements InitializingBean
 
         omsParams.outputFormat = imageGeom.contains( tileGeom ) ? "image/jpeg" : "image/png"
       }
+      omsParams.remove( "images[0].coords" )
 
-      0.upto(omsParams.imageCount, {
-        omsParams.remove( "images[${it}].coords" )
-      })
-      omsParams.remove( "imageCount" )
-      
       result = callOmsService( omsParams )
       httpStatus = result.status
       filename = omsParams.get( "images[0].file" )
@@ -536,7 +532,6 @@ class WebMappingService implements InitializingBean
         imageListIdx++
       }
     }
-    omsParams.imageCount = imageListIdx
 
     if ( imageListIdx )
     {
