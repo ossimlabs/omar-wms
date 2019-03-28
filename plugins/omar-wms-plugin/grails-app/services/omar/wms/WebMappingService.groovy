@@ -336,10 +336,18 @@ class WebMappingService implements InitializingBean
           ] as Coordinate[]
 
         def imageCoords = []
-        rawCoords.each {
-          imageCoords.push(new Coordinate( it[0], it[1] ))
+        
+        if (wmsParams.version.equalsIgnoreCase("1.3.0")) {
+          rawCoords.each {
+            imageCoords.push(new Coordinate( it[1], it[0] ))
+          }
         }
-
+        else {
+          rawCoords.each {
+            imageCoords.push(new Coordinate( it[0], it[1] ))
+          }
+        }
+        
         tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
         imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
 
