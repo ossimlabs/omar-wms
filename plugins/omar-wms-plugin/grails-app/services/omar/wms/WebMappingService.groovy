@@ -337,7 +337,7 @@ class WebMappingService implements InitializingBean
 
         def imageCoords = []
         
-        if (wmsParams.version.equalsIgnoreCase("1.3.0")) {
+        if (wmsParams.version.equalsIgnoreCase("1.3.0") && bbox?.proj?.units == '\u00b0') {
           rawCoords.each {
             imageCoords.push(new Coordinate( it[1], it[0] ))
           }
