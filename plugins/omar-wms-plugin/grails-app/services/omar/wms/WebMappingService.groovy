@@ -273,6 +273,7 @@ class WebMappingService implements InitializingBean
   {
     def requestType = "GET"
     def requestMethod = "GetMap"
+    def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
     Date startTime = new Date()
     def responseTime
     def requestInfoLog
@@ -318,40 +319,9 @@ class WebMappingService implements InitializingBean
         bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
 
-      // if no output format is specified, default to omptimized auto png/jpeg
-      if ( !omsParams.outputFormat )
+      if ( omsParams.outputFormat == OPTIMIZED_FORMAT )
       {
-        def tileGeom
-        def imageGeom
-        def sourceESPG = (omsParams?.srs && omsParams?.srs.equalsIgnoreCase("ESPG:3857")) ? 3857 : 4326
-        def rawCoords = omsParams.get( "rawCoords" )[0][0]
-        def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
-
-        def tileCoords = [
-          new Coordinate( bbox.minX, bbox.minY ),
-          new Coordinate( bbox.minX, bbox.maxY ),
-          new Coordinate( bbox.maxX, bbox.maxY ),
-          new Coordinate( bbox.maxX, bbox.minY ),
-          new Coordinate( bbox.minX, bbox.minY )
-          ] as Coordinate[]
-
-        def imageCoords = []
-        
-        if (wmsParams.version.equalsIgnoreCase("1.3.0") && bbox?.proj?.units == '\u00b0') {
-          rawCoords.each {
-            imageCoords.push(new Coordinate( it[1], it[0] ))
-          }
-        }
-        else {
-          rawCoords.each {
-            imageCoords.push(new Coordinate( it[0], it[1] ))
-          }
-        }
-        
-        tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
-        imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
-
-        omsParams.outputFormat = imageGeom.contains( tileGeom ) ? "image/jpeg" : "image/png"
+        omsParams.outputFormat = optimalFormat(omsParams, bbox, wmsParams.version)
       }
       omsParams.remove( "rawCoords" )
 
@@ -629,6 +599,48 @@ class WebMappingService implements InitializingBean
       //stagerService.updateLastAccessDates(imageEntries)
     }
     return images
+  }
+
+  private String optimalFormat(Map<String, Object> omsParams, Map<String, Object> bbox, String wmsVersion)
+  {
+    def tileGeom
+    def imageGeom
+    def sourceESPG = (omsParams?.srs && omsParams?.srs.equalsIgnoreCase("ESPG:3857")) ? 3857 : 4326
+    def rawCoords = omsParams.get( "rawCoords" )[0][0]
+    def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
+
+    def tileCoords = [
+      new Coordinate( bbox.minX, bbox.minY ),
+      new Coordinate( bbox.minX, bbox.maxY ),
+      new Coordinate( bbox.maxX, bbox.maxY ),
+      new Coordinate( bbox.maxX, bbox.minY ),
+      new Coordinate( bbox.minX, bbox.minY )
+      ] as Coordinate[]
+
+    def imageCoords = []
+    
+    if (wmsVersion == "1.3.0" && bbox?.proj?.units == '\u00b0') {
+      rawCoords.each {
+        imageCoords.push(new Coordinate( it[1], it[0] ))
+      }
+    }
+    else {
+      rawCoords.each {
+        imageCoords.push(new Coordinate( it[0], it[1] ))
+      }
+    }
+    
+    tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
+    imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
+
+    if (imageGeom.contains( tileGeom ))
+    {
+      return "image/jpeg"
+    }
+    else
+    {
+      return "image/png"
+    }
   }
 
   def getStyles()
