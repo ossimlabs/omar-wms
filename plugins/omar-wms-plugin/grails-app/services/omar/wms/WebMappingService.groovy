@@ -12,6 +12,10 @@ import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 
+import com.vividsolutions.jts.geom.Coordinate
+import com.vividsolutions.jts.geom.GeometryFactory
+import com.vividsolutions.jts.geom.PrecisionModel
+
 import java.awt.Color
 import java.awt.Font
 import java.awt.image.BufferedImage
@@ -269,6 +273,7 @@ class WebMappingService implements InitializingBean
   {
     def requestType = "GET"
     def requestMethod = "GetMap"
+    def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
     Date startTime = new Date()
     def responseTime
     def requestInfoLog
@@ -313,6 +318,12 @@ class WebMappingService implements InitializingBean
 
         bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
+
+      if ( omsParams.outputFormat == OPTIMIZED_FORMAT )
+      {
+        omsParams.outputFormat = optimalFormat(omsParams, bbox, wmsParams.version)
+      }
+      omsParams.remove( "rawCoords" )
 
       result = callOmsService( omsParams )
       httpStatus = result.status
@@ -495,6 +506,7 @@ class WebMappingService implements InitializingBean
       images.eachWithIndex { v, i ->
         omsParams."images[${imageListIdx}].file" = v.imageFile
         omsParams."images[${imageListIdx}].entry" = v.entry
+        omsParams.rawCoords = v.imageCoords
         imageListIdx++
       }
     }
@@ -562,7 +574,6 @@ class WebMappingService implements InitializingBean
 
       def queryParams = [
               filter: (id) ? "in(${id})" : wmsParams.filter,
-              fields: ['id', 'filename', 'entry_id', 'sensor_id', 'mission_id', 'file_type', 'title', 'access_date'],
               max: mosaicLimit?.toInteger()
       ]
 
@@ -577,7 +588,8 @@ class WebMappingService implements InitializingBean
                 id       : b.id,
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
-                access_date: b.access_date
+                access_date: b.access_date,
+                imageCoords: b.geometry?.coordinates ?: b.ground_geom
         ]
         a
       }
@@ -587,6 +599,48 @@ class WebMappingService implements InitializingBean
       //stagerService.updateLastAccessDates(imageEntries)
     }
     return images
+  }
+
+  private String optimalFormat(Map<String, Object> omsParams, Map<String, Object> bbox, String wmsVersion)
+  {
+    def tileGeom
+    def imageGeom
+    def sourceESPG = (omsParams?.srs && omsParams?.srs.equalsIgnoreCase("ESPG:3857")) ? 3857 : 4326
+    def rawCoords = omsParams.get( "rawCoords" )[0][0]
+    def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
+
+    def tileCoords = [
+      new Coordinate( bbox.minX, bbox.minY ),
+      new Coordinate( bbox.minX, bbox.maxY ),
+      new Coordinate( bbox.maxX, bbox.maxY ),
+      new Coordinate( bbox.maxX, bbox.minY ),
+      new Coordinate( bbox.minX, bbox.minY )
+      ] as Coordinate[]
+
+    def imageCoords = []
+    
+    if (wmsVersion == "1.3.0" && bbox?.proj?.units == '\u00b0') {
+      rawCoords.each {
+        imageCoords.push(new Coordinate( it[1], it[0] ))
+      }
+    }
+    else {
+      rawCoords.each {
+        imageCoords.push(new Coordinate( it[0], it[1] ))
+      }
+    }
+    
+    tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
+    imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
+
+    if (imageGeom.contains( tileGeom ))
+    {
+      return "image/jpeg"
+    }
+    else
+    {
+      return "image/png"
+    }
   }
 
   def getStyles()

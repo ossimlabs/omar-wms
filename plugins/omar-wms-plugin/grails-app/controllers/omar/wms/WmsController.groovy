@@ -148,7 +148,7 @@ where:
 			@ApiImplicitParam( name = 'bbox', value = 'Bounding box', defaultValue = "-180,-90,180,90", paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'width', value = 'Width of result image', defaultValue = "1024", paramType = 'query', dataType = 'integer', required = true ),
 			@ApiImplicitParam( name = 'height', value = 'Height of result image', defaultValue = "512", paramType = 'query', dataType = 'integer', required = true ),
-			@ApiImplicitParam( name = 'format', value = 'MIME Type of result image', defaultValue = "image/jpeg", allowableValues = "image/jpeg, image/png, image/gif", paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'format', value = 'MIME Type of result image', defaultValue = "image/vnd.jpeg-png", allowableValues = "image/jpeg, image/png, image/gif, image/vnd.jpeg-png", paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'transparent', value = 'Defines the transparency', defaultValue = "FALSE", allowableValues = "TRUE,FALSE", paramType = 'query', dataType = 'boolean', required = false ),
 			@ApiImplicitParam( name = 'styles', value = 'Styles to apply to image ', defaultValue = "", paramType = 'query', dataType = 'string', required = false ),
 			@ApiImplicitParam( name = 'exceptions', value = 'Valid exceptions', defaultValue = "", allowableValues = "application/vnd.ogc.se_xml,application/vnd.ogc.se_inimage,application/vnd.ogc.se_blank", paramType = 'query', dataType = 'string', required = false ),
