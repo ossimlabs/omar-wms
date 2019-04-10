@@ -5,6 +5,7 @@ package omar.wms
 
 import groovy.json.JsonSlurper
 import groovy.json.JsonBuilder
+import groovy.transform.Memoized
 import groovy.xml.StreamingMarkupBuilder
 import omar.core.DateUtil
 import omar.core.HttpStatus
@@ -28,7 +29,12 @@ class WebMappingService implements InitializingBean
 {
   static transactional = false
 
-  static final IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
+  static final int DEFAULT_BLANK_TILE_SIZE = 4196
+  static final int DEFAULT_LEGEND_SIZE = 512
+  static final int DEFAULT_PNG_SIZE = 262144
+  static final int DEFAULT_JPEG_SIZE = 16384
+
+  static final String IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
 
   def grailsLinkGenerator
   def grailsApplication
@@ -367,10 +373,11 @@ class WebMappingService implements InitializingBean
     result
   }
 
+  @Memoized
   def createBlankImage(GetMapRequest wmsParams)
   {
     def image = new BufferedImage(wmsParams.width, wmsParams.height, BufferedImage.TYPE_INT_ARGB)
-    def buffer = new FastByteArrayOutputStream()
+    def buffer = new FastByteArrayOutputStream(DEFAULT_BLANK_TILE_SIZE)
 
     ImageIO.write(image, 'png', buffer)
     buffer.toByteArrayUnsafe()
@@ -409,10 +416,10 @@ class WebMappingService implements InitializingBean
         contentType = responseMap."Content-Type"[0].split( ";" )[0]
       }
 
-
-      FastByteArrayOutputStream outputStream = new FastByteArrayOutputStream()
+      int bufferSize = ( contentType == 'image/jpeg') ? DEFAULT_JPEG_SIZE : DEFAULT_PNG_SIZE
+      FastByteArrayOutputStream outputStream = new FastByteArrayOutputStream(bufferSize)
+      
       result.status = connection.responseCode
-
 
       if ( connection.responseCode >= 400 )
       {
@@ -668,9 +675,7 @@ class WebMappingService implements InitializingBean
 
     def image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB)
 
-    def ostream = new FastByteArrayOutputStream(
-      (image.sampleModel.sampleSize.sum() / 8 * image.width * image.height).intValue()
-    )
+    def ostream = new FastByteArrayOutputStream(  DEFAULT_LEGEND_SIZE  )
 
     def g2d = image.createGraphics()
 

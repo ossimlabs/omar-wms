@@ -116,9 +116,8 @@ class MosaicService
 
       g2d.dispose()
 
-      def ostream = new FastByteArrayOutputStream(
-        (outputImage.width * outputImage.height * 4).intValue()
-      )
+      int bufferSize = ( contentType == 'image/jpeg') ? WebMappingService.DEFAULT_JPEG_SIZE : WebMappingService.DEFAULT_PNG_SIZE
+      def ostream = new FastByteArrayOutputStream(bufferSize)
 
 //println ([outputImage, imageType, ostream])
 
