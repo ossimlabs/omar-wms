@@ -275,7 +275,7 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  def getMap(GetMapRequest wmsParams)
+  def getMap(GetMapRequest wmsParams, Boolean getPsm = false)
   {
     def requestType = "GET"
     def requestMethod = "GetMap"
@@ -300,7 +300,7 @@ class WebMappingService implements InitializingBean
               cutHeight       : wmsParams.height,
               outputFormat    : wmsParams.format,
               transparent     : wmsParams.transparent,
-              operation       : "ortho",
+              operation       : getPsm ? "psm" : "ortho",
               outputRadiometry: 'ossim_uint8'
       ]
 
