@@ -278,7 +278,7 @@ class WebMappingService implements InitializingBean
   def getMap(GetMapRequest wmsParams, Boolean getPsm = false)
   {
     def requestType = "GET"
-    def requestMethod = "GetMap"
+    def requestMethod = getPsm ? "GetPsm" : "GetMap"
     def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
     Date startTime = new Date()
     def responseTime
@@ -363,11 +363,12 @@ class WebMappingService implements InitializingBean
     }
     else
     {
-        result = [
-          buffer: createBlankImage(wmsParams),
-          contentType: 'image/png',
-          status: HttpStatus.OK
-        ]
+      log.info("No oms params found, returning a blank image")
+      result = [
+        buffer: createBlankImage(wmsParams),
+        contentType: 'image/png',
+        status: HttpStatus.OK
+      ]
     }
 
     result

@@ -44,6 +44,9 @@ class WmsController
 		case "GETSTYLES":
 			forward action: 'getStyles'
 			break
+		case "GETPSM":
+			forward action: 'getPsm'
+			break
 		case "GETLEGENDGRAPHIC":
 			forward action: 'getLegendGraphic'
 			break
