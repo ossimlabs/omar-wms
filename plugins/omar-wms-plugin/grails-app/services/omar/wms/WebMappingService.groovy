@@ -35,6 +35,7 @@ class WebMappingService implements InitializingBean
   static final int DEFAULT_JPEG_SIZE = 16384
 
   static final String IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
+  static final String OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
 
   def grailsLinkGenerator
   def grailsApplication
@@ -279,26 +280,29 @@ class WebMappingService implements InitializingBean
   {
     def requestType = "GET"
     def requestMethod = getPsm ? "GetPsm" : "GetMap"
-    def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
+
     Date startTime = new Date()
     def responseTime
-    def requestInfoLog
     def httpStatus
     def filename
     def bboxMidpoint
     def result
-    Boolean addLocation = true
 
     Map<String, Object> omsParams = parseLayers( wmsParams )
 
     if ( omsParams )
     {
+      if (getPsm && ! omsParams.hasProperty('images[1].file')) {
+          throw new Exception('The filter given to the getPsm call did not contain at least two images')
+      }
+
       Map<String, Object> bbox = parseBbox( wmsParams )
 
       omsParams += [
               cutWidth        : wmsParams.width,
               cutHeight       : wmsParams.height,
-              outputFormat    : wmsParams.format,
+              outputFormat    : wmsParams.format == OPTIMIZED_FORMAT ?
+                      optimalFormat(omsParams, bbox, wmsParams.version) : wmsParams.format,
               transparent     : wmsParams.transparent,
               operation       : getPsm ? "psm" : "ortho",
               outputRadiometry: 'ossim_uint8'
@@ -314,7 +318,6 @@ class WebMappingService implements InitializingBean
         double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
         bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
         omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
-        addLocation = false
       }
       else
       {
@@ -325,10 +328,6 @@ class WebMappingService implements InitializingBean
         bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
 
-      if ( omsParams.outputFormat == OPTIMIZED_FORMAT )
-      {
-        omsParams.outputFormat = optimalFormat(omsParams, bbox, wmsParams.version)
-      }
       omsParams.remove( "rawCoords" )
 
       result = callOmsService( omsParams )
@@ -336,7 +335,6 @@ class WebMappingService implements InitializingBean
       filename = omsParams.get( "images[0].file" )
 
       Date endTime = new Date()
-
       responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
       Map logParams = [
@@ -353,13 +351,11 @@ class WebMappingService implements InitializingBean
          location: bboxMidpoint
       ]
 
-      if(addLocation)
-      {
-        logParams.location = bboxMidpoint
+      if (getPsm) {
+          logParams['filename2'] = omsParams.get( "images[1].file" )
       }
 
-      requestInfoLog = new JsonBuilder(logParams)
-      log.info requestInfoLog.toString()
+      log.info(new JsonBuilder(logParams).toString())
     }
     else
     {
