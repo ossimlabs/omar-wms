@@ -64,6 +64,14 @@ class WebMappingService implements InitializingBean
     BLANK, GEOSCRIPT, FILTER
   }
 
+  String extractUsernameFromRequest(def request)
+  {
+    def userInfo = grailsApplication.config.omar?.wms?.userInfo
+    String requestHeaderName = request.getHeader(userInfo?.requestHeaderUserName)
+    String userInfoName = requestHeaderName ?: userInfo.requestHeaderUserNameDefault
+    userInfoName
+  }
+
   def getCapabilities(GetCapabilitiesRequest wmsParams)
   {
     def contentType, buffer
@@ -77,6 +85,7 @@ class WebMappingService implements InitializingBean
     Date startTime = new Date()
     def responseTime
     def requestInfoLog
+    def username = wmsParams.username ?: "(null)"
 
     def x = {
       mkp.xmlDeclaration()
@@ -249,7 +258,7 @@ class WebMappingService implements InitializingBean
 
     requestInfoLog = new JsonBuilder(timestamp: DateUtil.formatUTC(startTime), requestType: requestType,
             requestMethod: requestMethod, endTime: DateUtil.formatUTC(endTime), responseTime: responseTime,
-            responseSize: buffer.getBytes().length, params: wmsParams.toString())
+            responseSize: buffer.getBytes().length, params: wmsParams.toString(), username: username)
 
     log.info requestInfoLog.toString()
 
@@ -288,6 +297,7 @@ class WebMappingService implements InitializingBean
     def bboxMidpoint
     def result
     Boolean addLocation = true
+    def username = wfsParams.username ?: "(null)"
 
     Map<String, Object> omsParams = parseLayers( wmsParams )
 
@@ -350,7 +360,8 @@ class WebMappingService implements InitializingBean
          filename: filename,
          bbox: bbox,
          params: wmsParams.toString(),
-         location: bboxMidpoint
+         location: bboxMidpoint,
+         username: username
       ]
 
       if(addLocation)

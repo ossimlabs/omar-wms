@@ -67,7 +67,8 @@ class WmsController
 	def getCapabilities( GetCapabilitiesRequest wmsParams )
 	{
 		BindUtil.fixParamNames( GetCapabilitiesRequest, params )
-        bindData( wmsParams, params )
+      bindData( wmsParams, params )
+		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
 		Map<String, String> results = webMappingService.getCapabilities( wmsParams )
 
@@ -155,8 +156,9 @@ where:
 	] )
 	def getMap( )
 	{
-        GetMapRequest wmsParams =  new GetMapRequest()
-        bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
+      GetMapRequest wmsParams =  new GetMapRequest()
+      bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
+		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
 		def outputStream = null
 		try

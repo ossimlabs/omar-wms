@@ -21,6 +21,8 @@ class GetCapabilitiesRequest implements Validateable
   String version /*!< Version to request */
   String request /*!< Request type */
 
+  String username
+
   static mapping = {
     version false
   }
