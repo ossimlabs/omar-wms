@@ -164,7 +164,7 @@ where:
 	/**
 	 * 		Returns the pan-sharpened images of the given WMS getPsm request
 	 */
-	@ApiOperation( value = "Get image from the server",
+	@ApiOperation( value = "Get a pan-sharpened image provided _____ parameters",
 			produces = 'application/xml,application/json',
 			httpMethod="GET",
 			notes = """
