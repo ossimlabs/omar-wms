@@ -286,7 +286,7 @@ class WebMappingService implements InitializingBean
     def httpStatus
     def filename
     def bboxMidpoint
-    def result
+    Map result
 
     Map<String, Object> omsParams = parseLayers( wmsParams )
 
@@ -445,9 +445,6 @@ class WebMappingService implements InitializingBean
     {
 
       e.printStackTrace()
-      // log.error '*' * 40
-      // log.error "${omsParams} ${ogcParams}"
-      // log.error '*' * 40
 
       HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${e}" )
 
