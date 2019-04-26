@@ -159,7 +159,7 @@ where:
 	] )
 	def getMap( )
 	{
-		getMapOrPsm()
+		getMapOrPsm(false)
 	}
 
 	/**
@@ -244,9 +244,9 @@ where:
 		getMapOrPsm(true)
 	}
 
-	def getMapOrPsm (Boolean isPsm=false){
-    GetMapRequest wmsParams =  new GetMapRequest()
-      bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
+	def getMapOrPsm (Boolean isPsm){
+		GetMapRequest wmsParams =  new GetMapRequest()
+		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
 		OutputStream outputStream = null
