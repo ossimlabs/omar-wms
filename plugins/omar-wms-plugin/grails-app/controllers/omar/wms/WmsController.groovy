@@ -158,7 +158,7 @@ where:
 	] )
 	def getMap( )
 	{
-		getMapOrPsm()
+		getMapOrPsm(false)
 	}
 
 	/**
@@ -243,7 +243,7 @@ where:
 		getMapOrPsm(true)
 	}
 
-	def getMapOrPsm (Boolean isPsm=false){
+	def getMapOrPsm (Boolean isPsm){
 		GetMapRequest wmsParams =  new GetMapRequest()
 		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
 
