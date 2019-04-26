@@ -296,7 +296,7 @@ class WebMappingService implements InitializingBean
     def filename
     def bboxMidpoint
     Map result
-    def username = wfsParams.username ?: "(null)"
+    def username = wmsParams.username ?: "(null)"
 
     Map<String, Object> omsParams = parseLayers( wmsParams )
 
