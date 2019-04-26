@@ -302,7 +302,7 @@ class WebMappingService implements InitializingBean
 
     if ( omsParams )
     {
-      if (getPsm && ! omsParams.hasProperty('images[1].file')) {
+      if (getPsm && omsParams.get('images[1].file') == null) {
           throw new Exception('The filter given to the getPsm call did not contain at least two images')
       }
 
