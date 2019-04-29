@@ -35,7 +35,6 @@ class WebMappingService implements InitializingBean
   static final int DEFAULT_JPEG_SIZE = 16384
 
   static final String IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
-  static final String OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
 
   def grailsLinkGenerator
   def grailsApplication
@@ -285,38 +284,34 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  def getMap(GetMapRequest wmsParams, Boolean getPsm = false)
+  def getMap(GetMapRequest wmsParams)
   {
     def requestType = "GET"
-    def requestMethod = getPsm ? "GetPsm" : "GetMap"
-
+    def requestMethod = "GetMap"
+    def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
     Date startTime = new Date()
     def responseTime
+    def requestInfoLog
     def httpStatus
     def filename
     def bboxMidpoint
-    def acquisitionDate
-    Map result
+    def result
+    Boolean addLocation = true
     def username = wmsParams.username ?: "(null)"
-
+    def acquisitionDate
 
     Map<String, Object> omsParams = parseLayers( wmsParams )
 
     if ( omsParams )
     {
-      if (getPsm && omsParams.get('images[1].file') == null) {
-          throw new Exception('The filter given to the getPsm call did not contain at least two images')
-      }
-
       Map<String, Object> bbox = parseBbox( wmsParams )
 
       omsParams += [
               cutWidth        : wmsParams.width,
               cutHeight       : wmsParams.height,
-              outputFormat    : wmsParams.format == OPTIMIZED_FORMAT ?
-                      optimalFormat(omsParams, bbox, wmsParams.version) : wmsParams.format,
+              outputFormat    : wmsParams.format,
               transparent     : wmsParams.transparent,
-              operation       : getPsm ? "psm" : "ortho",
+              operation       : "ortho",
               outputRadiometry: 'ossim_uint8'
       ]
 
@@ -330,6 +325,7 @@ class WebMappingService implements InitializingBean
         double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
         bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
         omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
+        addLocation = false
       }
       else
       {
@@ -340,6 +336,10 @@ class WebMappingService implements InitializingBean
         bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
 
+      if ( omsParams.outputFormat == OPTIMIZED_FORMAT )
+      {
+        omsParams.outputFormat = optimalFormat(omsParams, bbox, wmsParams.version)
+      }
       omsParams.remove( "rawCoords" )
 
       result = callOmsService( omsParams )
@@ -348,6 +348,7 @@ class WebMappingService implements InitializingBean
       acquisitionDate = omsParams.get( "images[0].acquisitionDate" ) ?: "(null)"
 
       Date endTime = new Date()
+
       responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
       Map logParams = [
@@ -366,20 +367,21 @@ class WebMappingService implements InitializingBean
          acquisitionDate: acquisitionDate
       ]
 
-      if (getPsm) {
-          logParams['filename2'] = omsParams.get( "images[1].file" )
+      if(addLocation)
+      {
+        logParams.location = bboxMidpoint
       }
 
-      log.info(new JsonBuilder(logParams).toString())
+      requestInfoLog = new JsonBuilder(logParams)
+      log.info requestInfoLog.toString()
     }
     else
     {
-      log.info("No oms params found, returning a blank image")
-      result = [
-        buffer: createBlankImage(wmsParams),
-        contentType: 'image/png',
-        status: HttpStatus.OK
-      ]
+        result = [
+          buffer: createBlankImage(wmsParams),
+          contentType: 'image/png',
+          status: HttpStatus.OK
+        ]
     }
 
     result
@@ -460,6 +462,9 @@ class WebMappingService implements InitializingBean
     {
 
       e.printStackTrace()
+      // log.error '*' * 40
+      // log.error "${omsParams} ${ogcParams}"
+      // log.error '*' * 40
 
       HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${e}" )
 
