@@ -297,7 +297,8 @@ class WebMappingService implements InitializingBean
     def bboxMidpoint
     def result
     Boolean addLocation = true
-    def username = wfsParams.username ?: "(null)"
+    def username = wmsParams.username ?: "(null)"
+    def acquisitionDate
 
     Map<String, Object> omsParams = parseLayers( wmsParams )
 
@@ -344,6 +345,7 @@ class WebMappingService implements InitializingBean
       result = callOmsService( omsParams )
       httpStatus = result.status
       filename = omsParams.get( "images[0].file" )
+      acquisitionDate = omsParams.get( "images[0].acquisitionDate" ) ?: "(null)"
 
       Date endTime = new Date()
 
@@ -361,7 +363,8 @@ class WebMappingService implements InitializingBean
          bbox: bbox,
          params: wmsParams.toString(),
          location: bboxMidpoint,
-         username: username
+         username: username,
+         acquisitionDate: acquisitionDate
       ]
 
       if(addLocation)
@@ -587,7 +590,6 @@ class WebMappingService implements InitializingBean
       def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
       def mosaicLimit = grailsApplication.config.omar.wms.mosaic.limit ?: "10"
 
-// println "mosaicLimit: ${mosaicLimit}"
       def bbox = parseBbox(wmsParams)
 
       def queryParams = [
@@ -607,7 +609,8 @@ class WebMappingService implements InitializingBean
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
                 access_date: b.access_date,
-                imageCoords: b.geometry?.coordinates ?: b.ground_geom
+                imageCoords: b.geometry?.coordinates ?: b.ground_geom,
+                acquisitionDate: b.properties?.acquisition_date
         ]
         a
       }
