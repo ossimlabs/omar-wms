@@ -41,6 +41,8 @@ class GetMapRequest implements Validateable
   String exceptions /*!< Defines the types of exceptions to be returned. Can be of the values application/vnd.ogc.se_xml, application/vnd.ogc.se_inimage, or application/vnd.ogc.se_blank */
   String bgcolor
 
+  String username
+
   static mapping = {
     version false
   }

@@ -5,6 +5,7 @@ package omar.wms
 
 import groovy.json.JsonSlurper
 import groovy.json.JsonBuilder
+import groovy.transform.Memoized
 import groovy.xml.StreamingMarkupBuilder
 import omar.core.DateUtil
 import omar.core.HttpStatus
@@ -28,7 +29,13 @@ class WebMappingService implements InitializingBean
 {
   static transactional = false
 
-  static final IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
+  static final int DEFAULT_BLANK_TILE_SIZE = 4196
+  static final int DEFAULT_LEGEND_SIZE = 512
+  static final int DEFAULT_PNG_SIZE = 262144
+  static final int DEFAULT_JPEG_SIZE = 16384
+
+  static final String IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
+  static final String OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
 
   def grailsLinkGenerator
   def grailsApplication
@@ -58,6 +65,14 @@ class WebMappingService implements InitializingBean
     BLANK, GEOSCRIPT, FILTER
   }
 
+  String extractUsernameFromRequest(def request)
+  {
+    def userInfo = grailsApplication.config.omar?.wms?.userInfo
+    String requestHeaderName = request.getHeader(userInfo?.requestHeaderUserName)
+    String userInfoName = requestHeaderName ?: userInfo.requestHeaderUserNameDefault
+    userInfoName
+  }
+
   def getCapabilities(GetCapabilitiesRequest wmsParams)
   {
     def contentType, buffer
@@ -71,6 +86,7 @@ class WebMappingService implements InitializingBean
     Date startTime = new Date()
     def responseTime
     def requestInfoLog
+    def username = wmsParams.username ?: "(null)"
 
     def x = {
       mkp.xmlDeclaration()
@@ -243,7 +259,7 @@ class WebMappingService implements InitializingBean
 
     requestInfoLog = new JsonBuilder(timestamp: DateUtil.formatUTC(startTime), requestType: requestType,
             requestMethod: requestMethod, endTime: DateUtil.formatUTC(endTime), responseTime: responseTime,
-            responseSize: buffer.getBytes().length, params: wmsParams.toString())
+            responseSize: buffer.getBytes().length, params: wmsParams.toString(), username: username)
 
     log.info requestInfoLog.toString()
 
@@ -269,32 +285,36 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  def getMap(GetMapRequest wmsParams)
+  def getMap(GetMapRequest wmsParams, Boolean getPsm = false)
   {
     def requestType = "GET"
-    def requestMethod = "GetMap"
-    def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
+    def requestMethod = getPsm ? "GetPsm" : "GetMap"
+
     Date startTime = new Date()
     def responseTime
-    def requestInfoLog
     def httpStatus
     def filename
     def bboxMidpoint
-    def result
-    Boolean addLocation = true
+    Map result
+    def username = wmsParams.username ?: "(null)"
 
     Map<String, Object> omsParams = parseLayers( wmsParams )
 
     if ( omsParams )
     {
+      if (getPsm && omsParams.get('images[1].file') == null) {
+          throw new Exception('The filter given to the getPsm call did not contain at least two images')
+      }
+
       Map<String, Object> bbox = parseBbox( wmsParams )
 
       omsParams += [
               cutWidth        : wmsParams.width,
               cutHeight       : wmsParams.height,
-              outputFormat    : wmsParams.format,
+              outputFormat    : wmsParams.format == OPTIMIZED_FORMAT ?
+                      optimalFormat(omsParams, bbox, wmsParams.version) : wmsParams.format,
               transparent     : wmsParams.transparent,
-              operation       : "ortho",
+              operation       : getPsm ? "psm" : "ortho",
               outputRadiometry: 'ossim_uint8'
       ]
 
@@ -308,7 +328,6 @@ class WebMappingService implements InitializingBean
         double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
         bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
         omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
-        addLocation = false
       }
       else
       {
@@ -319,10 +338,6 @@ class WebMappingService implements InitializingBean
         bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
 
-      if ( omsParams.outputFormat == OPTIMIZED_FORMAT )
-      {
-        omsParams.outputFormat = optimalFormat(omsParams, bbox, wmsParams.version)
-      }
       omsParams.remove( "rawCoords" )
 
       result = callOmsService( omsParams )
@@ -330,7 +345,6 @@ class WebMappingService implements InitializingBean
       filename = omsParams.get( "images[0].file" )
 
       Date endTime = new Date()
-
       responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
       Map logParams = [
@@ -344,33 +358,34 @@ class WebMappingService implements InitializingBean
          filename: filename,
          bbox: bbox,
          params: wmsParams.toString(),
-         location: bboxMidpoint
+         location: bboxMidpoint,
+         username: username
       ]
 
-      if(addLocation)
-      {
-        logParams.location = bboxMidpoint
+      if (getPsm) {
+          logParams['filename2'] = omsParams.get( "images[1].file" )
       }
 
-      requestInfoLog = new JsonBuilder(logParams)
-      log.info requestInfoLog.toString()
+      log.info(new JsonBuilder(logParams).toString())
     }
     else
     {
-        result = [
-          buffer: createBlankImage(wmsParams),
-          contentType: 'image/png',
-          status: HttpStatus.OK
-        ]
+      log.info("No oms params found, returning a blank image")
+      result = [
+        buffer: createBlankImage(wmsParams),
+        contentType: 'image/png',
+        status: HttpStatus.OK
+      ]
     }
 
     result
   }
 
+  @Memoized
   def createBlankImage(GetMapRequest wmsParams)
   {
     def image = new BufferedImage(wmsParams.width, wmsParams.height, BufferedImage.TYPE_INT_ARGB)
-    def buffer = new FastByteArrayOutputStream()
+    def buffer = new FastByteArrayOutputStream(DEFAULT_BLANK_TILE_SIZE)
 
     ImageIO.write(image, 'png', buffer)
     buffer.toByteArrayUnsafe()
@@ -409,10 +424,10 @@ class WebMappingService implements InitializingBean
         contentType = responseMap."Content-Type"[0].split( ";" )[0]
       }
 
-
-      FastByteArrayOutputStream outputStream = new FastByteArrayOutputStream()
+      int bufferSize = ( contentType == 'image/jpeg') ? DEFAULT_JPEG_SIZE : DEFAULT_PNG_SIZE
+      FastByteArrayOutputStream outputStream = new FastByteArrayOutputStream(bufferSize)
+      
       result.status = connection.responseCode
-
 
       if ( connection.responseCode >= 400 )
       {
@@ -441,9 +456,6 @@ class WebMappingService implements InitializingBean
     {
 
       e.printStackTrace()
-      // log.error '*' * 40
-      // log.error "${omsParams} ${ogcParams}"
-      // log.error '*' * 40
 
       HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${e}" )
 
@@ -668,9 +680,7 @@ class WebMappingService implements InitializingBean
 
     def image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB)
 
-    def ostream = new FastByteArrayOutputStream(
-      (image.sampleModel.sampleSize.sum() / 8 * image.width * image.height).intValue()
-    )
+    def ostream = new FastByteArrayOutputStream(  DEFAULT_LEGEND_SIZE  )
 
     def g2d = image.createGraphics()
 
