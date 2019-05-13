@@ -1,13 +1,30 @@
 package omar.wms
 
-import grails.testing.services.ServiceUnitTest
-import spock.lang.*
-import omar.wms.WmsController
 
-import java.nio.Buffer
+import spock.lang.*
 
 class WmsControllerSpec extends Specification
 {
+
+    final GetMapRequest exampleGetMapRequest = new GetMapRequest().with {
+        width = 256
+        height = 256
+        bbox = "1.1,1.1,1.1,1.1"
+        service = "WMS"
+        version = "1.1.1"
+        request = "getPsm"
+        srs = "EPSG:4326"
+        crs = null
+        bbox = '147.3211669921875,-42.879638671875,147.32391357421875,-42.87689208984375'
+        format = 'image/png'
+        layers = 'omar:raster_entry'
+        styles = "{\"bands\":\"default\",\"histCenterTile\":false,\"histOp\":\"auto-minmax\",\"resamplerFilter\":\"bilinear\",\"nullPixelFlip\":false}"
+        transparent = true
+        filter = 'INTERSECTS(ground_geom,POLYGON((146.9285294926882 -42.96513088145454, 146.9285294926882 -42.74156864994309, 147.4379233272598 -42.74156864994309, 147.4379233272598 -42.96513088145454, 146.9285294926882 -42.96513088145454)))'
+        exceptions = null
+        bgcolor = null
+        username = (null)
+    }
 
     /*
         Here we want to test WebMappingService.getMap() method, mocking the calls to external services
@@ -15,25 +32,6 @@ class WmsControllerSpec extends Specification
     void "test getMap(getPsm=true)"()
     {
         def wms = Spy(WebMappingService)
-
-        GetMapRequest getMapRequest = new GetMapRequest() // required param for WebMappingService.getMap()
-        getMapRequest.width = 256
-        getMapRequest.height = 256
-        getMapRequest.bbox = "1.1,1.1,1.1,1.1"
-        getMapRequest.service = "WMS"
-        getMapRequest.version = "1.1.1"
-        getMapRequest.request = "getPsm"
-        getMapRequest.srs = "EPSG:4326"
-        getMapRequest.crs = null
-        getMapRequest.bbox = '147.3211669921875,-42.879638671875,147.32391357421875,-42.87689208984375'
-        getMapRequest.format = 'image/png'
-        getMapRequest.layers = 'omar:raster_entry'
-        getMapRequest.styles = "{\"bands\":\"default\",\"histCenterTile\":false,\"histOp\":\"auto-minmax\",\"resamplerFilter\":\"bilinear\",\"nullPixelFlip\":false}"
-        getMapRequest.transparent = true
-        getMapRequest.filter = 'INTERSECTS(ground_geom,POLYGON((146.9285294926882 -42.96513088145454, 146.9285294926882 -42.74156864994309, 147.4379233272598 -42.74156864994309, 147.4379233272598 -42.96513088145454, 146.9285294926882 -42.96513088145454)))'
-        getMapRequest.exceptions = null
-        getMapRequest.bgcolor = null
-        getMapRequest.username = (null)
 
         Map<String, Object> parseLayersResult = [
                 'images[0].file': '/data/s3/2009/02/05/00/ntf/05FEB09OV05010005V090205P0001912264B220000100282M_001508507.ntf',
@@ -77,11 +75,11 @@ class WmsControllerSpec extends Specification
         ]
 
         when:
-            wms.getMap(getMapRequest, true)
+            wms.getMap(exampleGetMapRequest, true)
 
         then:
-            1 * wms.parseLayers(getMapRequest) >> parseLayersResult
-            1 * wms.parseBbox(getMapRequest) >> parseBboxResult
+            1 * wms.parseLayers(exampleGetMapRequest) >> parseLayersResult
+            1 * wms.parseBbox(exampleGetMapRequest) >> parseBboxResult
             1 * wms.callOmsService(callOmsServiceInput) >> callOmsServiceResult
     }
 }
