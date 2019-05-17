@@ -399,6 +399,7 @@ class WebMappingService implements InitializingBean
 
   def callOmsService(Map<String, Object> omsParams, def ogcParams = [:])
   {
+
     Map<String, Object> result = [status: HttpStatus.OK]
 
     // default histogram operation to auto-minmax
@@ -514,7 +515,7 @@ class WebMappingService implements InitializingBean
     bbox
   }
 
-  private Map<String, Object> parseLayers(GetMapRequest wmsParams)
+  Map<String, Object> parseLayers(GetMapRequest wmsParams)
   {
     HashMap omsParams = [:]
     def layerNames = wmsParams?.layers?.split( ',' )
@@ -542,7 +543,7 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  private Map<String, Object> parseStyles(GetMapRequest wmsParams)
+  Map<String, Object> parseStyles(GetMapRequest wmsParams)
   {
     def styles = [:]
     def newStyles = [:]
@@ -577,7 +578,7 @@ class WebMappingService implements InitializingBean
       }
     }
 
-    newStyles
+    return newStyles
   }
 
   private List fetchImages(String layerName, GetMapRequest wmsParams)
