@@ -226,7 +226,7 @@ where:
 	@ApiImplicitParams( [
 			@ApiImplicitParam( name = 'service', value = 'OGC service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1, 1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
-			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetMap", defaultValue = 'GetMap', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetPsm", defaultValue = 'GetPsm', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'layers', value = 'Type name', defaultValue = "omar:raster_entry", paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'filter', value = 'Filter', paramType = 'query', dataType = 'string', required = false ),
 			@ApiImplicitParam( name = 'srs', value = 'Spatial Reference System (Version 1.1.1)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
