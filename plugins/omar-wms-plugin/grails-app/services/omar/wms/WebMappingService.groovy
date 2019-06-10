@@ -35,7 +35,6 @@ class WebMappingService implements InitializingBean
   static final int DEFAULT_JPEG_SIZE = 16384
 
   static final String IMAGE_SPACE_PROJECTION_ID =  "EPSG:99999"
-  static final String OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
 
   def grailsLinkGenerator
   def grailsApplication
@@ -285,36 +284,34 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  def getMap(GetMapRequest wmsParams, Boolean getPsm = false)
+  def getMap(GetMapRequest wmsParams)
   {
     def requestType = "GET"
-    def requestMethod = getPsm ? "GetPsm" : "GetMap"
-
+    def requestMethod = "GetMap"
+    def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
     Date startTime = new Date()
     def responseTime
+    def requestInfoLog
     def httpStatus
     def filename
     def bboxMidpoint
-    Map result
+    def result
+    Boolean addLocation = true
     def username = wmsParams.username ?: "(null)"
+    def acquisitionDate
 
     Map<String, Object> omsParams = parseLayers( wmsParams )
 
     if ( omsParams )
     {
-      if (getPsm && omsParams.get('images[1].file') == null) {
-          throw new Exception('The filter given to the getPsm call did not contain at least two images')
-      }
-
       Map<String, Object> bbox = parseBbox( wmsParams )
 
       omsParams += [
               cutWidth        : wmsParams.width,
               cutHeight       : wmsParams.height,
-              outputFormat    : wmsParams.format == OPTIMIZED_FORMAT ?
-                      optimalFormat(omsParams, bbox, wmsParams.version) : wmsParams.format,
+              outputFormat    : wmsParams.format,
               transparent     : wmsParams.transparent,
-              operation       : getPsm ? "psm" : "ortho",
+              operation       : "ortho",
               outputRadiometry: 'ossim_uint8'
       ]
 
@@ -328,6 +325,7 @@ class WebMappingService implements InitializingBean
         double scaleY = wmsParams.height.toDouble()/(bbox.maxY-bbox.minY)
         bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
         omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
+        addLocation = false
       }
       else
       {
@@ -338,13 +336,19 @@ class WebMappingService implements InitializingBean
         bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
 
+      if ( omsParams.outputFormat == OPTIMIZED_FORMAT )
+      {
+        omsParams.outputFormat = optimalFormat(omsParams, bbox, wmsParams.version)
+      }
       omsParams.remove( "rawCoords" )
 
       result = callOmsService( omsParams )
       httpStatus = result.status
       filename = omsParams.get( "images[0].file" )
+      acquisitionDate = omsParams.get( "images[0].acquisitionDate" ) ?: "(null)"
 
       Date endTime = new Date()
+
       responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
       Map logParams = [
@@ -359,23 +363,25 @@ class WebMappingService implements InitializingBean
          bbox: bbox,
          params: wmsParams.toString(),
          location: bboxMidpoint,
-         username: username
+         username: username,
+         acquisitionDate: acquisitionDate
       ]
 
-      if (getPsm) {
-          logParams['filename2'] = omsParams.get( "images[1].file" )
+      if(addLocation)
+      {
+        logParams.location = bboxMidpoint
       }
 
-      log.info(new JsonBuilder(logParams).toString())
+      requestInfoLog = new JsonBuilder(logParams)
+      log.info requestInfoLog.toString()
     }
     else
     {
-      log.info("No oms params found, returning a blank image")
-      result = [
-        buffer: createBlankImage(wmsParams),
-        contentType: 'image/png',
-        status: HttpStatus.OK
-      ]
+        result = [
+          buffer: createBlankImage(wmsParams),
+          contentType: 'image/png',
+          status: HttpStatus.OK
+        ]
     }
 
     result
@@ -393,6 +399,7 @@ class WebMappingService implements InitializingBean
 
   def callOmsService(Map<String, Object> omsParams, def ogcParams = [:])
   {
+
     Map<String, Object> result = [status: HttpStatus.OK]
 
     // default histogram operation to auto-minmax
@@ -456,6 +463,9 @@ class WebMappingService implements InitializingBean
     {
 
       e.printStackTrace()
+      // log.error '*' * 40
+      // log.error "${omsParams} ${ogcParams}"
+      // log.error '*' * 40
 
       HashMap ogcExceptionResult = OgcExceptionUtil.formatOgcExceptionForResponse( ogcParams, "WMS server Error: ${e}" )
 
@@ -505,7 +515,7 @@ class WebMappingService implements InitializingBean
     bbox
   }
 
-  private Map<String, Object> parseLayers(GetMapRequest wmsParams)
+  Map<String, Object> parseLayers(GetMapRequest wmsParams)
   {
     HashMap omsParams = [:]
     def layerNames = wmsParams?.layers?.split( ',' )
@@ -533,7 +543,7 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  private Map<String, Object> parseStyles(GetMapRequest wmsParams)
+  Map<String, Object> parseStyles(GetMapRequest wmsParams)
   {
     def styles = [:]
     def newStyles = [:]
@@ -568,7 +578,7 @@ class WebMappingService implements InitializingBean
       }
     }
 
-    newStyles
+    return newStyles
   }
 
   private List fetchImages(String layerName, GetMapRequest wmsParams)
@@ -581,7 +591,6 @@ class WebMappingService implements InitializingBean
       def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
       def mosaicLimit = grailsApplication.config.omar.wms.mosaic.limit ?: "10"
 
-// println "mosaicLimit: ${mosaicLimit}"
       def bbox = parseBbox(wmsParams)
 
       def queryParams = [
@@ -601,7 +610,8 @@ class WebMappingService implements InitializingBean
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
                 access_date: b.access_date,
-                imageCoords: b.geometry?.coordinates ?: b.ground_geom
+                imageCoords: b.geometry?.coordinates ?: b.ground_geom,
+                acquisitionDate: b.properties?.acquisition_date
         ]
         a
       }

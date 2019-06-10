@@ -44,9 +44,6 @@ class WmsController
 		case "GETSTYLES":
 			forward action: 'getStyles'
 			break
-		case "GETPSM":
-			forward action: 'getPsm'
-			break
 		case "GETLEGENDGRAPHIC":
 			forward action: 'getLegendGraphic'
 			break
@@ -226,7 +223,7 @@ where:
 	@ApiImplicitParams( [
 			@ApiImplicitParam( name = 'service', value = 'OGC service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1, 1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
-			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetMap", defaultValue = 'GetMap', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetPsm", defaultValue = 'GetPsm', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'layers', value = 'Type name', defaultValue = "omar:raster_entry", paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'filter', value = 'Filter', paramType = 'query', dataType = 'string', required = false ),
 			@ApiImplicitParam( name = 'srs', value = 'Spatial Reference System (Version 1.1.1)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
@@ -249,19 +246,19 @@ where:
 		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
-		OutputStream outputStream = null
+		def outputStream = null
 		try
 		{
-			outputStream = response.outputStream
+   		outputStream = response.outputStream
 			if(wmsParams.validate())
 			{
-				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
-				if(getMapResult.status) response.status = getMapResult.status
-				if(getMapResult.contentType) response.contentType = getMapResult.contentType
-				if(getMapResult.buffer?.length) response.contentLength = getMapResult.buffer.length
+				def result = webMappingService.getMap( wmsParams )
+				if(result.status) response.status = result.status
+				if(result.contentType) response.contentType = result.contentType
+				if(result.buffer?.length) response.contentLength = result.buffer.length
 				if(outputStream)
 				{
-					outputStream << getMapResult.buffer
+					outputStream << result.buffer
 				}
 			}
 			else
@@ -274,15 +271,19 @@ where:
 				outputStream << ogcExceptionResult.buffer
 			}
 		}
-		catch ( IOException e )
+		catch ( e )
 		{
-			log.error("Error writing response output stream", e)
+			log.error(e.toString())
 		}
 		finally{
-			outputStream?.close()
+			try{
+				outputStream?.close()
+			}
+			catch(e)
+			{
+				log.error(e.toString())
+			}
 		}
-
-		return outputStream
 	}
 
 	// Keep as endpoint
