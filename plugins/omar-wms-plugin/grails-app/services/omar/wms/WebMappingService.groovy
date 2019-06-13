@@ -400,7 +400,7 @@ class WebMappingService implements InitializingBean
     }
 
     URL omsUrl = new URL( omsChipperUrl )
-
+println omarChipperUrl
     omsParams += omsUrl.params
     omsUrl.setParams( omsParams )
 
@@ -418,7 +418,7 @@ class WebMappingService implements InitializingBean
 
       int bufferSize = ( contentType == 'image/jpeg') ? DEFAULT_JPEG_SIZE : DEFAULT_PNG_SIZE
       FastByteArrayOutputStream outputStream = new FastByteArrayOutputStream(bufferSize)
-      
+
       result.status = connection.responseCode
 
       if ( connection.responseCode >= 400 )
@@ -625,7 +625,7 @@ class WebMappingService implements InitializingBean
       ] as Coordinate[]
 
     def imageCoords = []
-    
+
     if (wmsVersion == "1.3.0" && bbox?.proj?.units == '\u00b0') {
       rawCoords.each {
         imageCoords.push(new Coordinate( it[1], it[0] ))
@@ -636,7 +636,7 @@ class WebMappingService implements InitializingBean
         imageCoords.push(new Coordinate( it[0], it[1] ))
       }
     }
-    
+
     tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
     imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
 
