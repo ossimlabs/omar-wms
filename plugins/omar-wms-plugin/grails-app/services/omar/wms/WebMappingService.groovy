@@ -415,7 +415,7 @@ class WebMappingService implements InitializingBean
     }
 
     URL omsUrl = new URL( omsChipperUrl )
-println omsChipperUrl
+
     omsParams += omsUrl.params
     omsUrl.setParams( omsParams )
 
