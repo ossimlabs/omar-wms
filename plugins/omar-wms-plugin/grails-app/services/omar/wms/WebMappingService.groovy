@@ -603,6 +603,8 @@ class WebMappingService implements InitializingBean
         queryParams.bbox = bbox
       }
 
+      def slurper = new groovy.json.JsonSlurper()
+
       // added sensor_id, mission_id and file_type (for data type of source satellite image) and title for image ID
       images = geoscriptService.queryLayer( "${prefix}:${name}", queryParams )?.features?.inject( [] ) { a, b ->
         a << [
@@ -610,11 +612,12 @@ class WebMappingService implements InitializingBean
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
                 access_date: b.access_date,
-                imageCoords: b.geometry?.coordinates ?: b.ground_geom,
+                imageCoords: b?.geometry?.coordinates ?: slurper?.parseText( b?.ground_geom?.geoJSON )?.coordinates,
                 acquisitionDate: b.properties?.acquisition_date
         ]
         a
       }
+
       List<String> imageEntries = new ArrayList<String>(images.size)
       images.forEach { imageEntries.add(it.id.toString().replaceFirst("raster_entry.", "")) }
       // Remove updateLateAccessDates to test fix to WMS calls sometimes not returning
@@ -630,6 +633,7 @@ class WebMappingService implements InitializingBean
     def sourceESPG = (omsParams?.srs && omsParams?.srs.equalsIgnoreCase("ESPG:3857")) ? 3857 : 4326
     def rawCoords = omsParams.get( "rawCoords" )[0][0]
     def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
+
 
     def tileCoords = [
       new Coordinate( bbox.minX, bbox.minY ),
@@ -653,6 +657,7 @@ class WebMappingService implements InitializingBean
     }
 
     tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
+
     imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
 
     if (imageGeom.contains( tileGeom ))
