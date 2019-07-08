@@ -66,7 +66,7 @@ class WebMappingService implements InitializingBean
 
   String extractUsernameFromRequest(def request)
   {
-    def userInfo = grailsApplication.config.omar?.wms?.userInfo
+    def userInfo = grailsApplication.config.userInfo
     String requestHeaderName = request.getHeader(userInfo?.requestHeaderUserName)
     String userInfoName = requestHeaderName ?: userInfo.requestHeaderUserNameDefault
     userInfoName
