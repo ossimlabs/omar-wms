@@ -284,10 +284,10 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  def getMap(GetMapRequest wmsParams)
+  def getMap(GetMapRequest wmsParams, Boolean getPsm = false)
   {
     def requestType = "GET"
-    def requestMethod = "GetMap"
+    def requestMethod = getPsm ? "GetPsm" : "GetMap"
     def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
     Date startTime = new Date()
     def responseTime
@@ -295,7 +295,7 @@ class WebMappingService implements InitializingBean
     def httpStatus
     def filename
     def bboxMidpoint
-    def result
+    Map result
     Boolean addLocation = true
     def username = wmsParams.username ?: "(null)"
     def acquisitionDate
@@ -304,6 +304,10 @@ class WebMappingService implements InitializingBean
 
     if ( omsParams )
     {
+      if (getPsm && omsParams.get('images[1].file') == null) {
+        throw new Exception('The filter given to the getPsm call did not contain at least two images')
+      }
+
       Map<String, Object> bbox = parseBbox( wmsParams )
 
       omsParams += [
@@ -311,7 +315,7 @@ class WebMappingService implements InitializingBean
               cutHeight       : wmsParams.height,
               outputFormat    : wmsParams.format,
               transparent     : wmsParams.transparent,
-              operation       : "ortho",
+              operation       : getPsm ? "psm" : "ortho",
               outputRadiometry: 'ossim_uint8'
       ]
 
@@ -367,16 +371,20 @@ class WebMappingService implements InitializingBean
          acquisitionDate: acquisitionDate
       ]
 
+      if (getPsm) {
+        logParams['filename2'] = omsParams.get( "images[1].file" )
+      }
+
       if(addLocation)
       {
         logParams.location = bboxMidpoint
       }
 
-      requestInfoLog = new JsonBuilder(logParams)
-      log.info requestInfoLog.toString()
+      log.info(new JsonBuilder(logParams).toString())
     }
     else
     {
+        log.info("No oms params found, returning a blank image")
         result = [
           buffer: createBlankImage(wmsParams),
           contentType: 'image/png',
@@ -414,10 +422,12 @@ class WebMappingService implements InitializingBean
       omsParams.bands = "default"
     }
 
-    URL omsUrl = new URL( omsChipperUrl )
+    def paramString  = omsParams.collect {
+      "${it.key}=${URLEncoder.encode(it.value as String, 'UTF-8')}"
+    }.join('&')
 
-    omsParams += omsUrl.params
-    omsUrl.setParams( omsParams )
+
+    URL omsUrl = new URL( "${omsChipperUrl}?${paramString}" )
 
     try
     {

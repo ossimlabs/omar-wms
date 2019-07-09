@@ -6,32 +6,34 @@ import spock.lang.*
 class WmsControllerSpec extends Specification
 {
 
-    final GetMapRequest exampleGetMapRequest = new GetMapRequest().with {
-        width = 256
-        height = 256
-        bbox = "1.1,1.1,1.1,1.1"
-        service = "WMS"
-        version = "1.1.1"
-        request = "getPsm"
-        srs = "EPSG:4326"
-        crs = null
-        bbox = '147.3211669921875,-42.879638671875,147.32391357421875,-42.87689208984375'
-        format = 'image/png'
-        layers = 'omar:raster_entry'
-        styles = "{\"bands\":\"default\",\"histCenterTile\":false,\"histOp\":\"auto-minmax\",\"resamplerFilter\":\"bilinear\",\"nullPixelFlip\":false}"
-        transparent = true
-        filter = 'INTERSECTS(ground_geom,POLYGON((146.9285294926882 -42.96513088145454, 146.9285294926882 -42.74156864994309, 147.4379233272598 -42.74156864994309, 147.4379233272598 -42.96513088145454, 146.9285294926882 -42.96513088145454)))'
-        exceptions = null
-        bgcolor = null
-        username = (null)
-    }
-
     /*
         Here we want to test WebMappingService.getMap() method, mocking the calls to external services
      */
     void "test getMap(getPsm=true)"()
     {
         def wms = Spy(WebMappingService)
+
+        final GetMapRequest exampleGetMapRequest = new GetMapRequest()
+
+        exampleGetMapRequest.with {
+            width = 256
+            height = 256
+            bbox = "1.1,1.1,1.1,1.1"
+            service = "WMS"
+            version = "1.1.1"
+            request = "getPsm"
+            srs = "EPSG:4326"
+            crs = null
+            bbox = '147.3211669921875,-42.879638671875,147.32391357421875,-42.87689208984375'
+            format = 'image/png'
+            layers = 'omar:raster_entry'
+            styles = "{\"bands\":\"default\",\"histCenterTile\":false,\"histOp\":\"auto-minmax\",\"resamplerFilter\":\"bilinear\",\"nullPixelFlip\":false}"
+            transparent = true
+            filter = 'INTERSECTS(ground_geom,POLYGON((146.9285294926882 -42.96513088145454, 146.9285294926882 -42.74156864994309, 147.4379233272598 -42.74156864994309, 147.4379233272598 -42.96513088145454, 146.9285294926882 -42.96513088145454)))'
+            exceptions = null
+            bgcolor = null
+            username = (null)
+        }
 
         Map<String, Object> parseLayersResult = [
                 'images[0].file': '/data/s3/2009/02/05/00/ntf/05FEB09OV05010005V090205P0001912264B220000100282M_001508507.ntf',
@@ -73,6 +75,8 @@ class WmsControllerSpec extends Specification
                 'buffer': new byte[0],
                 'contentType': 'image/png'
         ]
+
+        wms.omsChipperUrl = 'https://localhost'
 
         when:
             wms.getMap(exampleGetMapRequest, true)
