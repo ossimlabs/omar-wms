@@ -423,7 +423,8 @@ class WebMappingService implements InitializingBean
     }
 
     def paramString  = omsParams.collect {
-      "${it.key}=${URLEncoder.encode(it.value as String, 'UTF-8')}"
+      def value = it.value as String ?: ''
+      "${it.key}=${URLEncoder.encode(value, 'UTF-8')}"
     }.join('&')
 
 
