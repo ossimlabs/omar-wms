@@ -15,31 +15,29 @@ omar:
       chipper:
         # Is the location of the chipper endpoint for chipping imagery.
         url: http://omar-oms-app:8080/omar-oms/chipper
-
         # Is the default histogram operation that is applied if no argument is passed in the styles.
         # e.g.: "none", "auto-minmax", "auto-percentile", "std-stretch-1", "std-stretch-2", or "std-stretch-3"
         histOp: auto-minmax
     mosaic:
-      limit: 10  
-    
-    userInfo:
-      # Configurable request header name parameter
-      requestHeaderUserName: username
-
-      # Configurable default name for the request header user (Default: Anonymous).
-      # Used if no name is found in PKI cert.
-      requestHeaderUserNameDefault: anonymous
+      limit: 50
 
 
 # Set the context path for the application
-#server:
-#  contextPath: /omar-wms
+server:
+  contextPath: /omar-wms
 
 # Define the http protocols that swagger will use
 swagger:
   schemes:
     - HTTPS
     - HTTP
+
+userInfo:
+  # Configurable request header name parameter
+  requestHeaderUserName: username
+  # Configurable default name for the request header user (Default: Anonymous).
+  # Used if no name is found in PKI cert.
+  requestHeaderUserNameDefault: Anonymous
 
 ---
 grails:

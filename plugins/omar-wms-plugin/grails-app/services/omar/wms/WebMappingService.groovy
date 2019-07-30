@@ -66,7 +66,7 @@ class WebMappingService implements InitializingBean
 
   String extractUsernameFromRequest(def request)
   {
-    def userInfo = grailsApplication.config.omar?.wms?.userInfo
+    def userInfo = grailsApplication.config.userInfo
     String requestHeaderName = request.getHeader(userInfo?.requestHeaderUserName)
     String userInfoName = requestHeaderName ?: userInfo.requestHeaderUserNameDefault
     userInfoName
@@ -284,10 +284,10 @@ class WebMappingService implements InitializingBean
     }
   }
 
-  def getMap(GetMapRequest wmsParams)
+  def getMap(GetMapRequest wmsParams, Boolean getPsm = false)
   {
     def requestType = "GET"
-    def requestMethod = "GetMap"
+    def requestMethod = getPsm ? "GetPsm" : "GetMap"
     def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
     Date startTime = new Date()
     def responseTime
@@ -295,7 +295,7 @@ class WebMappingService implements InitializingBean
     def httpStatus
     def filename
     def bboxMidpoint
-    def result
+    Map result
     Boolean addLocation = true
     def username = wmsParams.username ?: "(null)"
     def acquisitionDate
@@ -304,6 +304,10 @@ class WebMappingService implements InitializingBean
 
     if ( omsParams )
     {
+      if (getPsm && omsParams.get('images[1].file') == null) {
+        throw new Exception('The filter given to the getPsm call did not contain at least two images')
+      }
+
       Map<String, Object> bbox = parseBbox( wmsParams )
 
       omsParams += [
@@ -311,7 +315,7 @@ class WebMappingService implements InitializingBean
               cutHeight       : wmsParams.height,
               outputFormat    : wmsParams.format,
               transparent     : wmsParams.transparent,
-              operation       : "ortho",
+              operation       : getPsm ? "psm" : "ortho",
               outputRadiometry: 'ossim_uint8'
       ]
 
@@ -367,16 +371,20 @@ class WebMappingService implements InitializingBean
          acquisitionDate: acquisitionDate
       ]
 
+      if (getPsm) {
+        logParams['filename2'] = omsParams.get( "images[1].file" )
+      }
+
       if(addLocation)
       {
         logParams.location = bboxMidpoint
       }
 
-      requestInfoLog = new JsonBuilder(logParams)
-      log.info requestInfoLog.toString()
+      log.info(new JsonBuilder(logParams).toString())
     }
     else
     {
+        log.info("No oms params found, returning a blank image")
         result = [
           buffer: createBlankImage(wmsParams),
           contentType: 'image/png',
@@ -414,10 +422,13 @@ class WebMappingService implements InitializingBean
       omsParams.bands = "default"
     }
 
-    URL omsUrl = new URL( omsChipperUrl )
+    def paramString  = omsParams.collect {
+      def value = it.value as String ?: ''
+      "${it.key}=${URLEncoder.encode(value, 'UTF-8')}"
+    }.join('&')
 
-    omsParams += omsUrl.params
-    omsUrl.setParams( omsParams )
+
+    URL omsUrl = new URL( "${omsChipperUrl}?${paramString}" )
 
     try
     {
@@ -603,6 +614,8 @@ class WebMappingService implements InitializingBean
         queryParams.bbox = bbox
       }
 
+      def slurper = new groovy.json.JsonSlurper()
+
       // added sensor_id, mission_id and file_type (for data type of source satellite image) and title for image ID
       images = geoscriptService.queryLayer( "${prefix}:${name}", queryParams )?.features?.inject( [] ) { a, b ->
         a << [
@@ -610,11 +623,12 @@ class WebMappingService implements InitializingBean
                 imageFile: b.filename ?: b.properties?.filename,
                 entry    : b.entry_id ? b.entry_id?.toInteger() : b.properties?.entry_id?.toInteger(),
                 access_date: b.access_date,
-                imageCoords: b.geometry?.coordinates ?: b.ground_geom,
+                imageCoords: b?.geometry?.coordinates ?: slurper?.parseText( b?.ground_geom?.geoJSON )?.coordinates,
                 acquisitionDate: b.properties?.acquisition_date
         ]
         a
       }
+
       List<String> imageEntries = new ArrayList<String>(images.size)
       images.forEach { imageEntries.add(it.id.toString().replaceFirst("raster_entry.", "")) }
       // Remove updateLateAccessDates to test fix to WMS calls sometimes not returning
@@ -630,6 +644,7 @@ class WebMappingService implements InitializingBean
     def sourceESPG = (omsParams?.srs && omsParams?.srs.equalsIgnoreCase("ESPG:3857")) ? 3857 : 4326
     def rawCoords = omsParams.get( "rawCoords" )[0][0]
     def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
+
 
     def tileCoords = [
       new Coordinate( bbox.minX, bbox.minY ),
@@ -653,6 +668,7 @@ class WebMappingService implements InitializingBean
     }
 
     tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
+
     imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
 
     if (imageGeom.contains( tileGeom ))

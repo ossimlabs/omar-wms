@@ -41,6 +41,9 @@ class WmsController
 		case "GETMAP":
 			forward action: 'getMap'
 			break
+		case "GETPSM":
+			forward action: 'getPsm'
+			break
 		case "GETSTYLES":
 			forward action: 'getStyles'
 			break
@@ -246,19 +249,19 @@ where:
 		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
-		def outputStream = null
+		OutputStream outputStream = null
 		try
 		{
-   		outputStream = response.outputStream
+   			outputStream = response.outputStream
 			if(wmsParams.validate())
 			{
-				def result = webMappingService.getMap( wmsParams )
-				if(result.status) response.status = result.status
-				if(result.contentType) response.contentType = result.contentType
-				if(result.buffer?.length) response.contentLength = result.buffer.length
+				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
+				if(getMapResult.status) response.status = getMapResult.status
+				if(getMapResult.contentType) response.contentType = getMapResult.contentType
+				if(getMapResult.buffer?.length) response.contentLength = getMapResult.buffer.length
 				if(outputStream)
 				{
-					outputStream << result.buffer
+					outputStream << getMapResult.buffer
 				}
 			}
 			else
@@ -271,19 +274,15 @@ where:
 				outputStream << ogcExceptionResult.buffer
 			}
 		}
-		catch ( e )
+		catch ( IOException e )
 		{
-			log.error(e.toString())
+			log.error("Error writing response output stream", e)
 		}
 		finally{
-			try{
-				outputStream?.close()
-			}
-			catch(e)
-			{
-				log.error(e.toString())
-			}
+			outputStream?.close()
 		}
+
+		return outputStream
 	}
 
 	// Keep as endpoint
