@@ -1,0 +1,6 @@
+---
+app:
+  applicationFile: omar-wms-plugin/grails-app/conf/application.yml
+  dockerGuide: docs/Dockerfile
+  installGuide: docs/omar-wms.md
+  userGuide: 
