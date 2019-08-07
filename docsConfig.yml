@@ -3,3 +3,4 @@ applicationFile: plugins/omar-wms-plugin/grails-app/conf/application.yml
 dockerFile: docs/Dockerfile
 install-guide: docs/omar-wms.md
 user-guide: 
+displayDeployConf: True
