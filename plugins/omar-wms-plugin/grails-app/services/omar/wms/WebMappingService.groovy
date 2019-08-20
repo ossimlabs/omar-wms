@@ -576,7 +576,8 @@ class WebMappingService implements InitializingBean
     // the string
     styles?.each { k, v ->
       String newKey = toCamelCase( k )
-      if ( newKey.toLowerCase() == "histcenter" )
+      if ( newKey.toLowerCase() == "histcenter" ||
+           newKey.toLowerCase() == "histcentertile" )
       {
         if ( v.toBoolean() )
         {
