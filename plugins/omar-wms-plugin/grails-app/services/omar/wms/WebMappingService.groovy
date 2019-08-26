@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.PrecisionModel
 
 import java.awt.Color
 import java.awt.Font
+import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
@@ -576,7 +577,8 @@ class WebMappingService implements InitializingBean
     // the string
     styles?.each { k, v ->
       String newKey = toCamelCase( k )
-      if ( newKey.toLowerCase().contains( "histcenter" ) )
+      if ( newKey.toLowerCase() == "histcenter" ||
+           newKey.toLowerCase() == "histcentertile" )
       {
         if ( v.toBoolean() )
         {
@@ -688,6 +690,8 @@ class WebMappingService implements InitializingBean
 
   def getLegendGraphic(def params)
   {
+    def start = System.currentTimeMillis()
+
     def legendData = new JsonSlurper().parseText(footprintService.getFootprintsLegend(params))?.collect { style ->
         [label: style.label, color: Color.decode(style.color)]
     }
@@ -704,14 +708,16 @@ class WebMappingService implements InitializingBean
     // println "imageWidth: ${imageWidth}"
     // println "imageHeight: ${imageHeight}"
 
-    def image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB)
-
+    def image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB)
     def ostream = new FastByteArrayOutputStream(  DEFAULT_LEGEND_SIZE  )
-
     def g2d = image.createGraphics()
 
     g2d.color = Color.white
     g2d.fillRect(0, 0, image.width, image.height)
+    
+    g2d.setRenderingHint(
+        RenderingHints.KEY_TEXT_ANTIALIASING,
+        RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 
     // def url = "http://localhost:8081/footprints/getFootprintsLegend?style=bySensorType".toURL()
     // def legendData = new JsonSlurper().parseText(url.text)
@@ -724,14 +730,30 @@ class WebMappingService implements InitializingBean
         g2d.fillRect(xOffset, y1, rectSize, rectSize)
         g2d.color = Color.black
         g2d.drawRect(xOffset, y1, rectSize, rectSize)
-        g2d.setFont(new Font("Sans Serif", Font.BOLD, 12))
+        g2d.setFont(new Font("Tahoma", Font.BOLD, 14))
         g2d.drawString(legendItem.label, xOffset + rectSize + xOffset, y2)
     }
 
     g2d.dispose()
 
-    ImageIO.write(image, 'png', ostream)
+    ImageIO.write(image, 'jpeg', ostream)
 
-    return [contentType: 'image/png', file: ostream.toByteArrayUnsafe()]
+    def stop = System.currentTimeMillis()
+    def buffer = ostream.toByteArrayUnsafe()
+
+    def info = [
+      method: 'getLegendGraphic',
+      elapsed: stop - start,
+      // params: params,
+      // legendData: legendData,
+      imageHeight: imageHeight,
+      imageWidth: imageWidth,
+      buffer: buffer.size()
+    ]
+
+    log.info info as String
+
+
+    return [contentType: 'image/jpeg', file: buffer]
   }
 }
