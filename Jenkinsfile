@@ -66,6 +66,8 @@ node("${BUILD_NODE}"){
         {
             // Run all tasks on the app. This includes pushing to OpenShift and S3.
             sh """
+		pwd
+		ls -Ralh
             gradle pushDockerImage \
                 -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
             """
