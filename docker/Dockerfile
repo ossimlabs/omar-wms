@@ -4,7 +4,7 @@ FROM alpine
 RUN apk add openjdk8-jre
 
 ENV HOME /home/omar
-RUN useradd -u 1001 -r -g 0 --create-home -d $HOME -s /sbin/nologin -c 'Default Application User' omar
+RUN adduser -D -h $HOME -s /sbin/nologin -u 1001 omar
 COPY run.sh $HOME
 RUN chown 1001:0 -R $HOME && \
     chmod 777 $HOME && \
