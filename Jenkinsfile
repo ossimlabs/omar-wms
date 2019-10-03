@@ -25,6 +25,10 @@ node("${BUILD_NODE}"){
                 projectName: o2ArtifactProject,
                 filter: "common-variables.groovy",
                 flatten: true])
+
+            step ([$class: "CopyArtifact",
+		projectName: o2ArtifactProject,
+		filter: "run.sh"])
         }
 
         load "common-variables.groovy"
