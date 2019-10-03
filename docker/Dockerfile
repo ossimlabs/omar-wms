@@ -1,7 +1,6 @@
 #ARG BASE_IMAGE
 #FROM ${BASE_IMAGE}
-FROM alpine
-RUN apk add openjdk8-jre
+FROM adoptopenjdk/openjdk8:alpine-slim
 
 ENV HOME /home/omar
 RUN adduser -D -h $HOME -s /sbin/nologin -u 1001 omar
