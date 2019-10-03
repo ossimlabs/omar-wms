@@ -15,4 +15,4 @@ ENV SPRING_CLOUD_CONFIG_ENABLED=true \
 WORKDIR $HOME
 EXPOSE 8080
 COPY *.jar $HOME/
-CMD $HOME/run.sh
+CMD ["/bin/sh", "/home/omar/run.sh"]
