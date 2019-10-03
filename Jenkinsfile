@@ -25,10 +25,6 @@ node("${BUILD_NODE}"){
                 projectName: o2ArtifactProject,
                 filter: "common-variables.groovy",
                 flatten: true])
-
-            step ([$class: "CopyArtifact",
-		projectName: o2ArtifactProject,
-		filter: "run.sh"])
         }
 
         load "common-variables.groovy"
@@ -66,8 +62,6 @@ node("${BUILD_NODE}"){
         {
             // Run all tasks on the app. This includes pushing to OpenShift and S3.
             sh """
-		pwd
-		ls -Ralh
             gradle pushDockerImage \
                 -PossimMavenProxy=${OSSIM_MAVEN_PROXY}
             """

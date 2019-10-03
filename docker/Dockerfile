@@ -5,7 +5,7 @@ RUN apk add openjdk8-jre
 
 ENV HOME /home/omar
 RUN adduser -D -h $HOME -s /sbin/nologin -u 1001 omar
-COPY ../run.sh $HOME
+COPY run.sh $HOME
 RUN chown 1001:0 -R $HOME && \
     chmod 777 $HOME && \
     chmod 777 $HOME/*.sh
