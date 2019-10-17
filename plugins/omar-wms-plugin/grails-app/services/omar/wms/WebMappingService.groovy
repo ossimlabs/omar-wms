@@ -372,6 +372,9 @@ class WebMappingService implements InitializingBean
          acquisitionDate: acquisitionDate
       ]
 
+      println "DEBUG!! (1) OMS PARAMS $omsParams"
+      println "DEBUG!! (2) LOG PARAMS $logParams"
+
       // We want to remove dates that are not in a valid date format because metrics will not ingest it.
       if (logParams.acquisitionDate == null) {
         logParams.remove("acquisitionDate")
