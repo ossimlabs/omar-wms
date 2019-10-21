@@ -350,7 +350,7 @@ class WebMappingService implements InitializingBean
       result = callOmsService( omsParams )
       httpStatus = result.status
       filename = omsParams.get( "images[0].file" )
-      acquisitionDate = omsParams.get( "images[0].acquisitionDate" ) ?: "(null)"
+      acquisitionDate = omsParams.get( "images[0].acquisitionDate" )
 
       Date endTime = new Date()
 
@@ -371,6 +371,14 @@ class WebMappingService implements InitializingBean
          username: username,
          acquisitionDate: acquisitionDate
       ]
+
+      println "DEBUG!! (1) OMS PARAMS $omsParams"
+      println "DEBUG!! (2) LOG PARAMS $logParams"
+
+      // We want to remove dates that are not in a valid date format because metrics will not ingest it.
+      if (logParams.acquisitionDate == null) {
+        logParams.remove("acquisitionDate")
+      }
 
       if (getPsm) {
         logParams['filename2'] = omsParams.get( "images[1].file" )
