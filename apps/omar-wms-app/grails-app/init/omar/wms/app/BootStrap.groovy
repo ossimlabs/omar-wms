@@ -1,4 +1,4 @@
-package omar.wms
+package omar.wms.app
 
 class BootStrap {
 

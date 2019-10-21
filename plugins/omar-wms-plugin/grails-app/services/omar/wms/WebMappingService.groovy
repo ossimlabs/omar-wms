@@ -320,6 +320,8 @@ class WebMappingService implements InitializingBean
               outputRadiometry: 'ossim_uint8'
       ]
 
+
+
       omsParams += parseStyles( wmsParams )
 
       if(!bbox.proj)
@@ -348,6 +350,7 @@ class WebMappingService implements InitializingBean
       omsParams.remove( "rawCoords" )
 
       result = callOmsService( omsParams )
+
       httpStatus = result.status
       filename = omsParams.get( "images[0].file" )
       acquisitionDate = omsParams.get( "images[0].acquisitionDate" ) ?: "(null)"
@@ -425,7 +428,7 @@ class WebMappingService implements InitializingBean
 
     def paramString  = omsParams.collect {
       def value = it.value as String ?: ''
-      "${it.key}=${URLEncoder.encode(value, 'UTF-8')}"
+      "${URLEncoder.encode(it.key, 'UTF-8')}=${URLEncoder.encode(value, 'UTF-8')}"
     }.join('&')
 
 
