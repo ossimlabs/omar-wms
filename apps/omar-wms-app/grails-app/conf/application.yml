@@ -199,4 +199,8 @@ omar:
         histOp: auto-minmax
     mosaic:
       limit: 50
-
+# Define the http protocols that swagger will use
+swagger:
+  schemes:
+    - HTTPS
+    - HTTP
