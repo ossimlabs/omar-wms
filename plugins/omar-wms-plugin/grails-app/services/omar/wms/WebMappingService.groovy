@@ -13,9 +13,9 @@ import omar.core.OgcExceptionUtil
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 
-import com.vividsolutions.jts.geom.Coordinate
-import com.vividsolutions.jts.geom.GeometryFactory
-import com.vividsolutions.jts.geom.PrecisionModel
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.PrecisionModel
 
 import java.awt.Color
 import java.awt.Font
@@ -320,6 +320,8 @@ class WebMappingService implements InitializingBean
               outputRadiometry: 'ossim_uint8'
       ]
 
+
+
       omsParams += parseStyles( wmsParams )
 
       if(!bbox.proj)
@@ -348,6 +350,7 @@ class WebMappingService implements InitializingBean
       omsParams.remove( "rawCoords" )
 
       result = callOmsService( omsParams )
+
       httpStatus = result.status
       filename = omsParams.get( "images[0].file" )
       acquisitionDate = omsParams.get( "images[0].acquisitionDate" )
@@ -433,7 +436,7 @@ class WebMappingService implements InitializingBean
 
     def paramString  = omsParams.collect {
       def value = it.value as String ?: ''
-      "${it.key}=${URLEncoder.encode(value, 'UTF-8')}"
+      "${URLEncoder.encode(it.key, 'UTF-8')}=${URLEncoder.encode(value, 'UTF-8')}"
     }.join('&')
 
 

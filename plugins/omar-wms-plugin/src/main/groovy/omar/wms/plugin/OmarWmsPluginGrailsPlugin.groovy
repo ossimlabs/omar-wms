@@ -1,22 +1,18 @@
-/**
- * @version 1.1.0
- * @brief Everything is todo
- */
-package omar.wms
+package omar.wms.plugin
 
 import grails.plugins.*
 
-class OmarWmsGrailsPlugin extends Plugin {
+class OmarWmsPluginGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "3.1.10 > *"
+    def grailsVersion = "4.0.0 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         "grails-app/views/error.gsp"
     ]
 
     // TODO Fill in these fields
-    def title = "Omar Wms" // Headline display name of the plugin
+    def title = "Omar Wms Plugin" // Headline display name of the plugin
     def author = "Your name"
     def authorEmail = ""
     def description = '''\
@@ -25,7 +21,7 @@ Brief summary/description of the plugin.
     def profiles = ['web']
 
     // URL to the plugin's documentation
-    def documentation = "http://grails.org/plugin/omar-wms"
+    def documentation = "http://grails.org/plugin/omar-wms-plugin"
 
     // Extra (optional) plugin metadata
 
