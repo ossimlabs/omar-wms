@@ -742,7 +742,7 @@ class WebMappingService implements InitializingBean
         g2d.color = Color.black
         g2d.drawRect(xOffset, y1, rectSize, rectSize)
         // g2d.setFont(new Font("Tahoma", Font.BOLD, 14))
-        g2d.font = g2d.font.deriveFont((float)(g2d.font.size * 1.4F))        
+        // g2d.font = g2d.font.deriveFont((float)(g2d.font.size * 1.4F))        
         g2d.drawString(legendItem.label, xOffset + rectSize + xOffset, y2)
     }
 
