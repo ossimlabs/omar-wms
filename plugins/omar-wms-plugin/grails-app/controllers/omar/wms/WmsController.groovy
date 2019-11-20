@@ -30,25 +30,25 @@ class WmsController
 
 	def index()
 	{
-		def wmsParams = params - params.subMap( [ 'controller', 'format' ] )
-		def op = wmsParams.find { it.key.equalsIgnoreCase( 'request' ) }
+		def op = params.find { it.key.equalsIgnoreCase( 'request' ) }?.value
+		def wmsParams
 
-		switch ( op?.value?.toUpperCase() )
+		switch ( op?.toUpperCase() )
 		{
 		case "GETCAPABILITIES":
-			forward action: 'getCapabilities'
+			getCapabilities()
 			break
 		case "GETMAP":
-			forward action: 'getMap'
+			getMap()
 			break
 		case "GETPSM":
-			forward action: 'getPsm'
+			getPsm()
 			break
 		case "GETSTYLES":
-			forward action: 'getStyles'
+			getStyles()
 			break
 		case "GETLEGENDGRAPHIC":
-			forward action: 'getLegendGraphic'
+			getLegendGraphic()
 			break
 		}
 	}
@@ -67,10 +67,12 @@ class WmsController
 			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1,1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetCapabilities", defaultValue = 'GetCapabilities', paramType = 'query', dataType = 'string', required = true ),
 	] )
-	def getCapabilities( GetCapabilitiesRequest wmsParams )
+	def getCapabilities()
 	{
+		 GetCapabilitiesRequest wmsParams = new GetCapabilitiesRequest()
 		BindUtil.fixParamNames( GetCapabilitiesRequest, params )
-      bindData( wmsParams, params )
+      
+	  	bindData( wmsParams, params )
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
 		Map<String, String> results = webMappingService.getCapabilities( wmsParams )
@@ -278,7 +280,8 @@ where:
 		{
 			log.error("Error writing response output stream", e)
 		}
-		finally{
+		finally
+		{
 			outputStream?.close()
 		}
 
