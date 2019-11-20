@@ -36,7 +36,7 @@ class WmsController
 		switch ( op?.toUpperCase() )
 		{
 		case "GETCAPABILITIES":
-			getCapabilities(new GetCapabilitiesRequest())
+			getCapabilities()
 			break
 		case "GETMAP":
 			getMap()
@@ -67,8 +67,9 @@ class WmsController
 			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1,1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetCapabilities", defaultValue = 'GetCapabilities', paramType = 'query', dataType = 'string', required = true ),
 	] )
-	def getCapabilities( GetCapabilitiesRequest wmsParams )
+	def getCapabilities()
 	{
+		 GetCapabilitiesRequest wmsParams = new GetCapabilitiesRequest()
 		BindUtil.fixParamNames( GetCapabilitiesRequest, params )
       
 	  	bindData( wmsParams, params )
