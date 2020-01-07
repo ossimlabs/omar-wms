@@ -312,6 +312,7 @@ where:
 		if (acceptEncoding?.equals(OmarWebUtils.GZIP_ENCODE_HEADER_PARAM)){
 			outputText = OmarWebUtils.gzippify(inputText, StandardCharsets.UTF_8.name())
 			response.setHeader 'Content-Encoding', acceptEncoding
+			println "I am using GZIP! ${ outputText.size() } vs. ${ inputText.size() }"
 		} else {
 			outputText = inputText
 		}
