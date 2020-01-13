@@ -1,6 +1,7 @@
 #ARG BASE_IMAGE
 #FROM ${BASE_IMAGE}
-FROM adoptopenjdk/openjdk8:alpine-slim
+#FROM adoptopenjdk/openjdk8:alpine-slim
+FROM quay.io/radiantsolutions/openjdk8:alpine-slim
 # Install lots of fonts
 ENV LANG en_GB.UTF-8
 RUN apk add --update ttf-dejavu ttf-droid ttf-freefont ttf-liberation ttf-ubuntu-font-family && rm -rf /var/cache/apk/*
