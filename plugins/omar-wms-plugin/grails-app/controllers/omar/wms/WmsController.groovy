@@ -77,9 +77,15 @@ class WmsController
 
 		Map<String, String> results = webMappingService.getCapabilities( wmsParams )
 
-		String outputBuffer = encodeResponse(results.buffer)
-
-		render contentType: results.contentType, text: outputBuffer
+		response.setHeader 'Content-Type', results.contentType
+		def outputBuffer = encodeResponse( results.buffer )
+		if ( outputBuffer instanceof ByteArrayOutputStream ) {
+		  outputBuffer.writeTo( response.outputStream )
+		  response.outputStream.flush()
+		}
+		else { 
+		  render outputBuffer
+		}
 	}
 
 	/**
@@ -305,17 +311,16 @@ where:
 	 * @param inputText The original, unencoded response
 	 * @return The encoded response
 	 */
-	private String encodeResponse(String inputText) {
-		String outputText
-		String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
+ 	 private encodeResponse(String inputText) {
+	    def outputText
+	    String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
 
-		if (acceptEncoding?.equals(OmarWebUtils.GZIP_ENCODE_HEADER_PARAM)){
-			outputText = OmarWebUtils.gzippify(inputText, StandardCharsets.UTF_8.name())
-			response.setHeader 'Content-Encoding', acceptEncoding
-		} else {
-			outputText = inputText
-		}
-
+	    if ( acceptEncoding?.contains( OmarWebUtils.GZIP_ENCODE_HEADER_PARAM ) ) { 
+	        response.setHeader 'Content-Encoding', OmarWebUtils.GZIP_ENCODE_HEADER_PARAM									    
+		outputText = OmarWebUtils.gzippify( inputText, StandardCharsets.UTF_8.name() )
+	    } else {
+	        outputText = inputText
+	    }
 		return outputText
-	}
+	  }
 }
