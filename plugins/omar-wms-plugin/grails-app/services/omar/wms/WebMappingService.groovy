@@ -679,11 +679,8 @@ class WebMappingService implements InitializingBean
         imageCoords.push(new Coordinate( it[0], it[1] ))
       }
     }
-println "Image Coords" 
-println imageCoords
+
     tileGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( tileCoords ), null )
-println "Tile Coords" 
-println tileCoords
     imageGeom = geometryFactory.createPolygon( geometryFactory.createLinearRing( imageCoords as Coordinate[]), null )
 
     if (imageGeom.contains( tileGeom ))
