@@ -658,14 +658,23 @@ class WebMappingService implements InitializingBean
     def rawCoords = omsParams.get( "rawCoords" )[0][0]
     def geometryFactory = new GeometryFactory( new PrecisionModel( PrecisionModel.FLOATING ), sourceESPG )
 
+    def tileMinX = bbox.minX
+    def tileMinY = bbox.minY
+    def tileMaxX = bbox.maxX
+    def tileMaxY = bbox.maxY
 
+    if ( bbox?.proj?.id?.toUpperCase() == 'EPSG:3857' ) {
+      (tileMinX, tileMinY) = meters2degress(tileMinX, tileMinY)
+      (tileMaxX, tileMaxY) = meters2degress(tileMaxX, tileMaxY)
+    } else 
+    
     def tileCoords = [
-      new Coordinate( bbox.minX, bbox.minY ),
-      new Coordinate( bbox.minX, bbox.maxY ),
-      new Coordinate( bbox.maxX, bbox.maxY ),
-      new Coordinate( bbox.maxX, bbox.minY ),
-      new Coordinate( bbox.minX, bbox.minY )
-      ] as Coordinate[]
+      new Coordinate( tileMinX, tileMinY ),
+      new Coordinate( tileMinX, tileMaxY ),
+      new Coordinate( tileMaxX, tileMaxY ),
+      new Coordinate( tileMaxX, tileMinY ),
+      new Coordinate( tileMinX, tileMinY )
+    ] as Coordinate[]
 
     def imageCoords = []
 
@@ -766,5 +775,18 @@ class WebMappingService implements InitializingBean
 
 
     return [contentType: 'image/jpeg', file: buffer]
+  }
+
+  static double[] degrees2meters(double lon, double lat) {
+    def x = lon * 20037508.34 / 180;
+    def y = Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180);
+    y = y * 20037508.34 / 180;
+    return [x, y]
+  }
+
+  static double[] meters2degress(double x,double y) {
+    def lon = x *  180 / 20037508.34 ;
+    def lat = Math.atan(Math.exp(y * Math.PI / 20037508.34)) * 360 / Math.PI - 90; 
+    return [lon, lat]
   }
 }
