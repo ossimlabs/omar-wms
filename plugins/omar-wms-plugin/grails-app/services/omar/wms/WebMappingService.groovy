@@ -666,7 +666,7 @@ class WebMappingService implements InitializingBean
     if ( bbox?.proj?.id?.toUpperCase() == 'EPSG:3857' ) {
       (tileMinX, tileMinY) = meters2degress(tileMinX, tileMinY)
       (tileMaxX, tileMaxY) = meters2degress(tileMaxX, tileMaxY)
-    } else 
+    }  
     
     def tileCoords = [
       new Coordinate( tileMinX, tileMinY ),
