@@ -646,7 +646,9 @@ class WebMappingService implements InitializingBean
       images.forEach { imageEntries.add(it.id.toString().replaceFirst("raster_entry.", "")) }
       // Remove updateLateAccessDates to test fix to WMS calls sometimes not returning
       //stagerService.updateLastAccessDates(imageEntries)
-    } println images
+    } 
+
+println images
     return images
   }
 
