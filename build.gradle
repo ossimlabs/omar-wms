@@ -126,6 +126,12 @@ subprojects { project ->
                 jarDestination = "${project.projectDir}/build/libs/${project.name}-${version}.jar"
             }
 
+println '*' * 40
+println "mavenPublishUrl=${mavenPublishUrl}"
+println "mavenRepoUsername=${mavenRepoUsername}"
+println "mavenRepoPassword=${mavenRepoPassword}"
+println '*' * 40
+
             io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
             io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)  
         }
