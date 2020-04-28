@@ -122,7 +122,7 @@ subprojects { project ->
             }
 
 println '*' * 40
-println project.propertes
+println project.properties
 println '*' * 40
 println System.env
 println '*' * 40
