@@ -126,14 +126,12 @@ subprojects { project ->
                 jarDestination = "${project.projectDir}/build/libs/${project.name}-${version}.jar"
             }
 
-println '*' * 40
-println "mavenPublishUrl=${mavenPublishUrl}"
-println "mavenRepoUsername=${mavenRepoUsername}"
-println "mavenRepoPassword=${mavenRepoPassword}"
-println '*' * 40
+            def foo = getConfigurationProperty( 'MAVEN_UPLOAD_URL', 'mavenPublishUrl' )
 
+            println foo
+            
             io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
-            io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)  
+            io.ossim.gradleDefaults.Publications.addRepository(project, foo, mavenRepoUsername, mavenRepoPassword)  
         }
 
         apply plugin:"asset-pipeline"
