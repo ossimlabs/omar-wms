@@ -55,7 +55,7 @@ subprojects { project ->
                 openshiftPassword = getConfigurationProperty( 'OPENSHIFT_PASSWORD', 'openshiftPassword' )                
                 openshiftProjectName =  getConfigurationProperty( 'OPENSHIFT_PROJECT_NAME', 'openshiftProjectName' )
 
-                mavenPublishUrl  =  getConfigurationProperty( 'MAVEN_PUBLISH_URL', 'mavenPublishUrl' )
+                mavenPublishUrl  =  getConfigurationProperty( 'MAVEN_UPLOAD_URL', 'mavenPublishUrl' )
                 mavenRepoUsername =  getConfigurationProperty( 'MAVEN_REPO_USERNAME', 'mavenRepoUsername' )
                 mavenRepoPassword =  getConfigurationProperty( 'MAVEN_REPO_PASSWORD', 'mavenRepoPassword' )
 
