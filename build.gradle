@@ -54,6 +54,11 @@ subprojects { project ->
                 openshiftUsername = getConfigurationProperty( 'OPENSHIFT_USERNAME', 'openshiftUsername' )
                 openshiftPassword = getConfigurationProperty( 'OPENSHIFT_PASSWORD', 'openshiftPassword' )                
                 openshiftProjectName =  getConfigurationProperty( 'OPENSHIFT_PROJECT_NAME', 'openshiftProjectName' )
+
+                mavenPublishUrl  =  getConfigurationProperty( 'MAVEN_PUBLISH_URL', 'mavenPublishUrl' )
+                mavenRepoUsername =  getConfigurationProperty( 'MAVEN_REPO_USERNAME', 'mavenRepoUsername' )
+                mavenRepoPassword =  getConfigurationProperty( 'MAVEN_REPO_PASSWORD', 'mavenRepoPassword' )
+
             }
 
             io.ossim.gradleDefaults.Openshift.addOpenshiftTasks(
@@ -120,8 +125,6 @@ subprojects { project ->
             ext {
                 jarDestination = "${project.projectDir}/build/libs/${project.name}-${version}.jar"
             }
-
-println "mavenPublishUrl=${mavenPublishUrl}"
 
             io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
             io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)  
