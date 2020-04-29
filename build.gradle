@@ -55,11 +55,7 @@ subprojects { project ->
                 openshiftPassword = getConfigurationProperty( 'OPENSHIFT_PASSWORD', 'openshiftPassword' )                
                 openshiftProjectName =  getConfigurationProperty( 'OPENSHIFT_PROJECT_NAME', 'openshiftProjectName' )
 
-                mavenPublishUrl  =  getConfigurationProperty( 'MAVEN_UPLOAD_URL', 'mavenPublishUrl' )
-                mavenRepoUsername =  getConfigurationProperty( 'MAVEN_REPO_USERNAME', 'mavenRepoUsername' )
-                mavenRepoPassword =  getConfigurationProperty( 'MAVEN_REPO_PASSWORD', 'mavenRepoPassword' )
-
-            }
+                }
 
             io.ossim.gradleDefaults.Openshift.addOpenshiftTasks(
                 project, 
@@ -125,13 +121,9 @@ subprojects { project ->
             ext {
                 jarDestination = "${project.projectDir}/build/libs/${project.name}-${version}.jar"
             }
-
-            def foo = getConfigurationProperty( 'MAVEN_UPLOAD_URL', 'mavenPublishUrl' )
-
-            println foo
-            
+           
             io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
-            io.ossim.gradleDefaults.Publications.addRepository(project, foo, mavenRepoUsername, mavenRepoPassword)  
+            io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)  
         }
 
         apply plugin:"asset-pipeline"
