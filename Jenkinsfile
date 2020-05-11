@@ -2,8 +2,8 @@ properties([
   buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '3', daysToKeepStr: '', numToKeepStr: '20')),
   disableConcurrentBuilds(),
   parameters([
-    string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
-        booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run')
+    //string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
+    //booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run')
   ])
 ])
 podTemplate(
@@ -31,7 +31,7 @@ podTemplate(
   ]
 )
 
-node("${BUILD_NODE}"){
+node("omar-build"){ //${BUILD_NODE}
 
     stage("Checkout branch $BRANCH_NAME")
     {
@@ -89,9 +89,9 @@ node("${BUILD_NODE}"){
 	  }
   }
 	stage("Clean Workspace"){
-    if ("${CLEAN_WORKSPACE}" == "true"){
+    //if ("${CLEAN_WORKSPACE}" == "true"){
       step([$class: 'WsCleanup'])
-    }
+    //}
   }
 }
 
