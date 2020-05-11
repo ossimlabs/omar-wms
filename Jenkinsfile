@@ -14,8 +14,7 @@ podTemplate(
       privileged: true
     ),
     containerTemplate(
-      envVars: [
-      ]
+      //envVars: []
       image: "${params.DOCKER_REGISTRY}/ktis-builder:2.0", //TODO
       name: 'builder',
       command: 'cat',
