@@ -1,7 +1,11 @@
 properties([
   buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '3', daysToKeepStr: '', numToKeepStr: '20')),
   disableConcurrentBuilds(),
-  //parameters([])
+  parameters([
+    string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
+    booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run')
+
+  ])
 ])
 podTemplate(
   containers: [
@@ -29,7 +33,7 @@ podTemplate(
   ]
 )
 {
-  node("omar-build"){ //${BUILD_NODE}
+node("${BUILD_NODE}"){
 
     stage("Checkout branch $BRANCH_NAME")
     {
@@ -48,7 +52,7 @@ podTemplate(
     }
     stage('Build') {
       container('builder') {
-        sh """
+ 	      sh """
         ./gradlew assemble \
             -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
         """
@@ -56,43 +60,42 @@ podTemplate(
         archiveArtifacts "apps/*/build/libs/*.jar"
       }
     }
-    stage ("Publish Nexus"){	
-          withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                          credentialsId: 'nexusCredentials',
-                          usernameVariable: 'MAVEN_REPO_USERNAME',
-                          passwordVariable: 'MAVEN_REPO_PASSWORD']]) {
-            sh """
-            ./gradlew publish \
-                -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-            """
-          }
-    }
+	stage ("Publish Nexus"){	
+        withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                        credentialsId: 'nexusCredentials',
+                        usernameVariable: 'MAVEN_REPO_USERNAME',
+                        passwordVariable: 'MAVEN_REPO_PASSWORD']])
+        {
+          sh """
+          ./gradlew publish \
+              -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+          """
+        }
+    	}
 
-    stage('Docker build') {
+  stage('Docker build') {
+    container('docker') {
+      withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
+        sh """
+          docker build -t "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME} .
+        """
+      }
+    }
+    stage('Docker push'){
       container('docker') {
-        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
-          sh """
-            docker build -t "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME} .
-          """
+        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
+        sh """
+            docker push "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME}
+        """
         }
-      }
-      stage('Docker push'){
-        container('docker') {
-          withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
-          sh """
-              docker push "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME}
-          """
-          }
-        }
-      }
-    }
-    stage("Clean Workspace"){
-      //if ("${CLEAN_WORKSPACE}" == "true"){
-        step([$class: 'WsCleanup'])
-      //}
-    }
+		  }
+	  }
+  }
+	stage("Clean Workspace"){
+    if ("${CLEAN_WORKSPACE}" == "true")
+      step([$class: 'WsCleanup'])
   }
 }
-
+}
     
 
