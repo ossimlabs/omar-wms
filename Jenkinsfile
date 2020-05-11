@@ -5,10 +5,10 @@ properties([
     string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
     booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run')
 
-  ])
+  ]),
   pipelineTriggers([
             [$class: "GitHubPushTrigger"]
-  ]),
+  ])
 ])
 podTemplate(
   containers: [
