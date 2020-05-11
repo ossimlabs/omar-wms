@@ -2,6 +2,8 @@ properties([
   buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '3', daysToKeepStr: '', numToKeepStr: '20')),
   disableConcurrentBuilds(),
   parameters([
+    string(name: 'BUILD_NODE', defaultValue: 'omar-build', description: 'The build node to run on'),
+        booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run')
   ])
 ])
 podTemplate(
@@ -60,8 +62,7 @@ node("${BUILD_NODE}"){
         withCredentials([[$class: 'UsernamePasswordMultiBinding',
                         credentialsId: 'nexusCredentials',
                         usernameVariable: 'MAVEN_REPO_USERNAME',
-                        passwordVariable: 'MAVEN_REPO_PASSWORD']])
-        {
+                        passwordVariable: 'MAVEN_REPO_PASSWORD']]) {
           sh """
           ./gradlew publish \
               -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
@@ -88,8 +89,9 @@ node("${BUILD_NODE}"){
 	  }
   }
 	stage("Clean Workspace"){
-    if ("${CLEAN_WORKSPACE}" == "true")
+    if ("${CLEAN_WORKSPACE}" == "true"){
       step([$class: 'WsCleanup'])
+    }
   }
 }
 
