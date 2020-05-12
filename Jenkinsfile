@@ -35,7 +35,7 @@ podTemplate(
   ]
 )
 {
-node("POD_LABEL"){
+node(POD_LABEL){
 
     stage("Checkout branch $BRANCH_NAME")
     {
