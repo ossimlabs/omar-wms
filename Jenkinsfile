@@ -21,7 +21,7 @@ podTemplate(
     ),
     containerTemplate(
       //envVars: []
-      image: "${params.DOCKER_REGISTRY}/ktis-builder:2.0", //TODO
+      image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/omar-builder", //TODO
       name: 'builder',
       command: 'cat',
       ttyEnabled: true
