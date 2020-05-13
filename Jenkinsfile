@@ -2,7 +2,7 @@ properties([
     parameters ([
         string(name: 'BUILD_NODE', defaultValue: 'POD_LABEL', description: 'The build node to run on'),
         booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run'),
-        string(name: 'DOCKER_REGISTRY_DOWNLOAD_URL', defaultValue: 'nexus-docker-private-group.ossim.io', description: 'Url to load omar-builder from')
+        string(name: 'BUILDER_REGISTRY_DOWNLOAD_URL', defaultValue: 'nexus-docker-private-group.ossim.io', description: 'Url to load omar-builder from')
     ]),
     pipelineTriggers([
             [$class: "GitHubPushTrigger"]
@@ -22,7 +22,7 @@ podTemplate(
     ),
     containerTemplate(
       //envVars: []
-      image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/omar-builder", //TODO
+      image: "${BUILDER_REGISTRY_DOWNLOAD_URL}/omar-builder:latest", //TODO
       name: 'builder',
       command: 'cat',
       ttyEnabled: true
@@ -64,6 +64,7 @@ node(POD_LABEL){
       }
     }
 	stage ("Publish Nexus"){	
+    container('builder'){
         withCredentials([[$class: 'UsernamePasswordMultiBinding',
                         credentialsId: 'nexusCredentials',
                         usernameVariable: 'MAVEN_REPO_USERNAME',
@@ -75,7 +76,7 @@ node(POD_LABEL){
           """
         }
     	}
-
+  }
   stage('Docker build') {
     container('docker') {
       withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
