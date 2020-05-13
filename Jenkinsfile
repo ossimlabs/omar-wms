@@ -80,6 +80,7 @@ node(POD_LABEL){
   try {
         stage ("OpenShift Tag Image")
         {
+          container('builder'){
             withCredentials([[$class: 'UsernamePasswordMultiBinding',
                             credentialsId: 'openshiftCredentials',
                             usernameVariable: 'OPENSHIFT_USERNAME',
@@ -91,6 +92,7 @@ node(POD_LABEL){
                         -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
                 """
             }
+          }
         }
     } catch (e) {
         echo e.toString()
