@@ -2,7 +2,7 @@ properties([
     parameters ([
         string(name: 'BUILD_NODE', defaultValue: 'POD_LABEL', description: 'The build node to run on'),
         booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run'),
-        string(name: 'BUILDER_REGISTRY_DOWNLOAD_URL', defaultValue: 'nexus-docker-private-group.ossim.io', description: 'Url to load omar-builder from')
+        string(name: 'DOCKER_REGISTRY_DOWNLOAD_URL', defaultValue: 'nexus-docker-private-group.ossim.io', description: 'Url to load omar-builder from')
     ]),
     pipelineTriggers([
             [$class: "GitHubPushTrigger"]
@@ -22,7 +22,7 @@ podTemplate(
     ),
     containerTemplate(
       //envVars: []
-      image: "${BUILDER_REGISTRY_DOWNLOAD_URL}/omar-builder:latest", //TODO
+      image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/omar-builder:latest", //TODO
       name: 'builder',
       command: 'cat',
       ttyEnabled: true
@@ -81,7 +81,7 @@ node(POD_LABEL){
     container('docker') {
       withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
         sh """
-          docker build -t "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME} .
+          docker build -t "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME} ./docker
         """
       }
     }
