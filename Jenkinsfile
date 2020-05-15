@@ -36,72 +36,79 @@ podTemplate(
   ]
 )
 {
-node(POD_LABEL){
+  node(POD_LABEL){
 
-    stage("Checkout branch $BRANCH_NAME")
-    {
-        checkout(scm)
-    }
-
-    stage("Load Variables")
-    {
-      withCredentials([string(credentialsId: 'o2-artifact-project', variable: 'o2ArtifactProject')]) {
-        step ([$class: "CopyArtifact",
-          projectName: o2ArtifactProject,
-          filter: "common-variables.groovy",
-          flatten: true])
-        }
-        load "common-variables.groovy"
-    }
-    stage('Build') {
-      container('builder') {
- 	      sh """
-        ./gradlew assemble \
-            -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-        """
-        archiveArtifacts "plugins/*/build/libs/*.jar"
-        archiveArtifacts "apps/*/build/libs/*.jar"
+      stage("Checkout branch $BRANCH_NAME")
+      {
+          checkout(scm)
       }
-    }
-	stage ("Publish Nexus"){	
-    container('builder'){
-        withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                        credentialsId: 'nexusCredentials',
-                        usernameVariable: 'MAVEN_REPO_USERNAME',
-                        passwordVariable: 'MAVEN_REPO_PASSWORD']])
-        {
+
+      stage("Load Variables")
+      {
+        withCredentials([string(credentialsId: 'o2-artifact-project', variable: 'o2ArtifactProject')]) {
+          step ([$class: "CopyArtifact",
+            projectName: o2ArtifactProject,
+            filter: "common-variables.groovy",
+            flatten: true])
+          }
+          load "common-variables.groovy"
+      }
+      stage('Build') {
+        container('builder') {
           sh """
-          ./gradlew publish \
+          pwd 
+          ls -l
+          ./gradlew assemble \
+              -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+          ./gradlew copyJarToDockerDir \
               -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
           """
+          archiveArtifacts "plugins/*/build/libs/*.jar"
+          archiveArtifacts "apps/*/build/libs/*.jar"
         }
-    	}
-  }
-  stage('Docker build') {
-    container('docker') {
-      withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
-        sh """
-          docker cp builder/:omar-wms-app-2.0.0-SNAPSHOT.jar .
-          docker build -t "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME} ./docker
-        """
       }
-      //omar-wms-plugin-2.0.0-SNAPSHOT.jar.jar .
-    }
-    stage('Docker push'){
-      container('docker') {
-        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
-        sh """
-            docker push "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME}
-        """
+    stage ("Publish Nexus"){	
+      container('builder'){
+          withCredentials([[$class: 'UsernamePasswordMultiBinding',
+                          credentialsId: 'nexusCredentials',
+                          usernameVariable: 'MAVEN_REPO_USERNAME',
+                          passwordVariable: 'MAVEN_REPO_PASSWORD']])
+          {
+            sh """
+            find -name '*.jar'
+            pwd 
+            ls -l docker
+            ./gradlew publish \
+                -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+            ls -l docker
+            """
+          }
         }
-		  }
-	  }
-  }
-	stage("Clean Workspace"){
-    if ("${CLEAN_WORKSPACE}" == "true")
-      step([$class: 'WsCleanup'])
+    }
+    stage('Docker build') {
+      container('docker') {
+        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
+          sh """
+            pwd 
+            ls -l docker
+            docker build -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:${BRANCH_NAME} ./docker
+          """
+        }
+        //omar-wms-plugin-2.0.0-SNAPSHOT.jar.jar . docker cp builder/:omar-wms-app-2.0.0-SNAPSHOT.jar .
+      }
+      stage('Docker push'){
+        container('docker') {
+          withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
+          sh """
+              docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:${BRANCH_NAME}
+          """
+          }
+        }
+      }
+    }
+    stage("Clean Workspace"){
+      if ("${CLEAN_WORKSPACE}" == "true")
+        step([$class: 'WsCleanup'])
+    }
   }
 }
-}
-    
-
