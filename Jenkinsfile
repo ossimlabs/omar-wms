@@ -77,30 +77,11 @@ node(POD_LABEL){
         }
     	}
   }
-  try {
-        stage ("OpenShift Tag Image")
-        {
-          container('builder'){
-            withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                            credentialsId: 'openshiftCredentials',
-                            usernameVariable: 'OPENSHIFT_USERNAME',
-                            passwordVariable: 'OPENSHIFT_PASSWORD']])
-            {
-                // Run all tasks on the app. This includes pushing to OpenShift and S3.
-                sh """
-                    ./gradlew openshiftTagImage \
-                        -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-                """
-            }
-          }
-        }
-    } catch (e) {
-        echo e.toString()
-    }
   stage('Docker build') {
     container('docker') {
       withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
         sh """
+          docker cp ${DOCKER_REGISTRY_DOWNLOAD_URL}/omar-builder:latest/*.jar .
           docker build -t "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME} ./docker
         """
       }
