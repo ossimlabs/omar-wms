@@ -2,7 +2,7 @@ properties([
     parameters ([
         string(name: 'BUILD_NODE', defaultValue: 'POD_LABEL', description: 'The build node to run on'),
         booleanParam(name: 'CLEAN_WORKSPACE', defaultValue: true, description: 'Clean the workspace at the end of the run'),
-        string(name: 'DOCKER_REGISTRY_DOWNLOAD_URL', defaultValue: 'nexus-docker-private-group.ossim.io', description: 'Url to load omar-builder from')
+        string(name: 'DOCKER_REGISTRY_DOWNLOAD_URL', defaultValue: 'nexus-docker-private-group.ossim.io', description: 'Repository of docker images')
     ]),
     pipelineTriggers([
             [$class: "GitHubPushTrigger"]
@@ -21,8 +21,7 @@ podTemplate(
       privileged: true
     ),
     containerTemplate(
-      //envVars: []
-      image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/omar-builder:latest", //TODO
+      image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/omar-builder:latest",
       name: 'builder',
       command: 'cat',
       ttyEnabled: true
@@ -56,8 +55,6 @@ podTemplate(
       stage('Build') {
         container('builder') {
           sh """
-          pwd 
-          ls -l
           ./gradlew assemble \
               -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
           ./gradlew copyJarToDockerDir \
@@ -75,12 +72,8 @@ podTemplate(
                           passwordVariable: 'MAVEN_REPO_PASSWORD']])
           {
             sh """
-            find -name '*.jar'
-            pwd 
-            ls -l docker
             ./gradlew publish \
                 -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-            ls -l docker
             """
           }
         }
@@ -89,12 +82,9 @@ podTemplate(
       container('docker') {
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
           sh """
-            pwd 
-            ls -l docker
             docker build -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:${BRANCH_NAME} ./docker
           """
         }
-        //omar-wms-plugin-2.0.0-SNAPSHOT.jar.jar . docker cp builder/:omar-wms-app-2.0.0-SNAPSHOT.jar .
       }
       stage('Docker push'){
         container('docker') {
