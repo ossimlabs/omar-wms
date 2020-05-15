@@ -81,10 +81,11 @@ node(POD_LABEL){
     container('docker') {
       withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
         sh """
-          docker cp ${DOCKER_REGISTRY_DOWNLOAD_URL}/omar-builder:latest/*.jar .
+          docker cp builder/:omar-wms-app-2.0.0-SNAPSHOT.jar .
           docker build -t "${params.DOCKER_REGISTRY}"/${params.GIT_SERVICE_NAME}:${BRANCH_NAME} ./docker
         """
       }
+      //omar-wms-plugin-2.0.0-SNAPSHOT.jar.jar .
     }
     stage('Docker push'){
       container('docker') {
