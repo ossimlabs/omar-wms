@@ -12,3 +12,5 @@ out/
 .classpath
 prodDb.mv.db
 packaged-chart
+.lock
+charts/*.tgz
