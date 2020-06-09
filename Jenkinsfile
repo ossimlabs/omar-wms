@@ -15,7 +15,7 @@ podTemplate(
   containers: [
     containerTemplate(
       name: 'docker',
-      image: 'docker:latest',
+      image: 'docker:19.03.11',
       ttyEnabled: true,
       command: 'cat',
       privileged: true
