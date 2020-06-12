@@ -65,10 +65,10 @@ podTemplate(
 
         withSonarQubeEnv('sonarqube'){
           sh """
-                    ${scannerHome}/bin/sonar-scanner \
-                    -Dsonar.projectKey=omar-wms \
-                    -Dsonar.login=${SONARQUBE_TOKEN}
-                  """
+            ${scannerHome}/bin/sonar-scanner \
+            -Dsonar.projectKey=omar-wms \
+            -Dsonar.login=${SONARQUBE_TOKEN}
+          """
         }
       }
     }
