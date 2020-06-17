@@ -54,7 +54,8 @@ subprojects { project ->
                 openshiftUsername = getConfigurationProperty( 'OPENSHIFT_USERNAME', 'openshiftUsername' )
                 openshiftPassword = getConfigurationProperty( 'OPENSHIFT_PASSWORD', 'openshiftPassword' )                
                 openshiftProjectName =  getConfigurationProperty( 'OPENSHIFT_PROJECT_NAME', 'openshiftProjectName' )
-            }
+
+                }
 
             io.ossim.gradleDefaults.Openshift.addOpenshiftTasks(
                 project, 
@@ -70,7 +71,7 @@ subprojects { project ->
 
             docker {
                 registryCredentials {
-                    url = getConfigurationProperty( 'DOCKER_REGISTRY_PRIVATE_URL', 'dockerRegistryPrivateUrl' )
+                    url = dockerRegistryPrivateUrl 
                     username = getConfigurationProperty( 'DOCKER_REGISTRY_USERNAME', 'dockerRegistryUsername' )
                     password = getConfigurationProperty( 'DOCKER_REGISTRY_PASSWORD', 'dockerRegistryPassword' )
                 }
@@ -120,7 +121,7 @@ subprojects { project ->
             ext {
                 jarDestination = "${project.projectDir}/build/libs/${project.name}-${version}.jar"
             }
-
+           
             io.ossim.gradleDefaults.Publications.addPublication(project, groupName, name, "${buildVersion}-${buildVersionTag}")
             io.ossim.gradleDefaults.Publications.addRepository(project, mavenPublishUrl, mavenRepoUsername, mavenRepoPassword)  
         }
