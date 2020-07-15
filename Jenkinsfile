@@ -31,7 +31,14 @@ podTemplate(
       name: 'helm',
       command: 'cat',
       ttyEnabled: true
-    )
+    ),
+    containerTemplate(
+          name: 'cypress',
+          image: 'cypress/base:12.14.1',
+          ttyEnabled: true,
+          command: 'cat',
+          privileged: true
+        )
   ],
   volumes: [
     hostPathVolume(
@@ -68,6 +75,16 @@ podTemplate(
                 archiveArtifacts "plugins/*/build/swaggerSpec.json"
         }
     }
+    stage ("Run Cypress Test") {
+                container('cypress') {
+                    sh """
+                    npx cypress run \
+                        -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+                    """
+                    junit 'results/*.xml'
+                    archiveArtifacts "results/*.xml"
+                }
+            }
 
     stage('SonarQube Analysis') {
       nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
