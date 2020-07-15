@@ -1,1 +1,9 @@
-{}
+{
+  "projectId": "iskp2p",
+  "baseUrl": "https://omar.ossim.io/omar-wms",
+  "reporter": "junit",
+  "reporterOptions": {
+    "mochaFile": "results/test-results.xml",
+    "toConsole": true
+  }
+}
