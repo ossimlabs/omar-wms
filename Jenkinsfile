@@ -59,6 +59,14 @@ podTemplate(
       load "common-variables.groovy"
     }
 
+    stage ("Generate Swagger Spec") {
+                sh """
+                ./gradlew :omar-wms-plugin:generateSwaggerDocs \
+                    -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+                """
+                archiveArtifacts "plugins/*/build/swaggerSpec.json"
+            }
+
     stage('SonarQube Analysis') {
       nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
         def scannerHome = tool "${SONARQUBE_SCANNER_VERSION}"
