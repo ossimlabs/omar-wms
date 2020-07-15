@@ -60,12 +60,14 @@ podTemplate(
     }
 
     stage ("Generate Swagger Spec") {
+        container('builder') {
                 sh """
                 ./gradlew :omar-wms-plugin:generateSwaggerDocs \
                     -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
                 """
                 archiveArtifacts "plugins/*/build/swaggerSpec.json"
-            }
+        }
+    }
 
     stage('SonarQube Analysis') {
       nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
