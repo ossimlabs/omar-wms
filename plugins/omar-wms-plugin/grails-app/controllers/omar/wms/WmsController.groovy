@@ -41,9 +41,9 @@ class WmsController
 		case "GETMAP":
 			getMap()
 			break
-		case "GETPSM":
-			getPsm()
-			break
+//		case "GETPSM":
+//			getPsm()
+//			break
 		case "GETSTYLES":
 			getStyles()
 			break
@@ -247,10 +247,10 @@ where:
 			@ApiImplicitParam( name = 'styles', value = 'Styles to apply to image ', defaultValue = "", paramType = 'query', dataType = 'string', required = false ),
 			@ApiImplicitParam( name = 'exceptions', value = 'Valid exceptions', defaultValue = "", allowableValues = "application/vnd.ogc.se_xml,application/vnd.ogc.se_inimage,application/vnd.ogc.se_blank", paramType = 'query', dataType = 'string', required = false ),
 	] )
-	def getPsm( )
-	{
-		getMapOrPsm(true)
-	}
+//	def getPsm( )
+//	{
+//		getMapOrPsm(true)
+//	}
 
 	def getMapOrPsm (Boolean isPsm){
 		GetMapRequest wmsParams =  new GetMapRequest()
