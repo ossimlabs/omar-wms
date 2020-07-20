@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="Mocha Tests" time="0.8220000000000001" tests="4" failures="2">
-  <testsuite name="Root Suite" timestamp="2020-07-20T17:01:59" tests="0" file="cypress/integration/APITesting.js" failures="0" time="0">
+<testsuites name="Mocha Tests" time="0.789" tests="4" failures="2">
+  <testsuite name="Root Suite" timestamp="2020-07-20T17:52:14" tests="0" file="cypress/integration/APITesting.js" failures="0" time="0">
   </testsuite>
-  <testsuite name="Automated tests for the omar-wms methods" timestamp="2020-07-20T17:01:59" tests="4" failures="2" time="0.8220000000000001">
+  <testsuite name="Automated tests for the omar-wms methods" timestamp="2020-07-20T17:52:14" tests="4" failures="2" time="0.789">
     <testcase name="Automated tests for the omar-wms methods Should test 200 code for getMap default values" time="0" classname="Should test 200 code for getMap default values">
       <failure message="`cy.request()` failed on:
 
@@ -36,7 +36,7 @@ The response we got was:
 Status: 400 - Bad Request
 Headers: {
   &quot;server&quot;: &quot;nginx/1.17.10&quot;,
-  &quot;date&quot;: &quot;Mon, 20 Jul 2020 17:01:59 GMT&quot;,
+  &quot;date&quot;: &quot;Mon, 20 Jul 2020 17:52:15 GMT&quot;,
   &quot;content-type&quot;: &quot;text/plain&quot;,
   &quot;content-length&quot;: &quot;34&quot;,
   &quot;connection&quot;: &quot;keep-alive&quot;,
@@ -76,7 +76,7 @@ The response we got was:
 Status: 400 - Bad Request
 Headers: {
   "server": "nginx/1.17.10",
-  "date": "Mon, 20 Jul 2020 17:01:59 GMT",
+  "date": "Mon, 20 Jul 2020 17:52:15 GMT",
   "content-type": "text/plain",
   "content-length": "34",
   "connection": "keep-alive",
@@ -131,7 +131,7 @@ The response we got was:
 Status: 400 - Bad Request
 Headers: {
   &quot;server&quot;: &quot;nginx/1.17.10&quot;,
-  &quot;date&quot;: &quot;Mon, 20 Jul 2020 17:02:00 GMT&quot;,
+  &quot;date&quot;: &quot;Mon, 20 Jul 2020 17:52:15 GMT&quot;,
   &quot;content-type&quot;: &quot;text/plain&quot;,
   &quot;content-length&quot;: &quot;34&quot;,
   &quot;connection&quot;: &quot;keep-alive&quot;,
@@ -171,7 +171,7 @@ The response we got was:
 Status: 400 - Bad Request
 Headers: {
   "server": "nginx/1.17.10",
-  "date": "Mon, 20 Jul 2020 17:02:00 GMT",
+  "date": "Mon, 20 Jul 2020 17:52:15 GMT",
   "content-type": "text/plain",
   "content-length": "34",
   "connection": "keep-alive",
@@ -193,9 +193,9 @@ https://on.cypress.io/request
 From Your Spec Code:
     at Context.eval (https://omar.ossim.io/__cypress/tests?p=cypress/integration/APITesting.js:26:12)]]></failure>
     </testcase>
-    <testcase name="Automated tests for the omar-wms methods Should test 200 code for getCapabilities default values" time="0.388" classname="Should test 200 code for getCapabilities default values">
+    <testcase name="Automated tests for the omar-wms methods Should test 200 code for getCapabilities default values" time="0.393" classname="Should test 200 code for getCapabilities default values">
     </testcase>
-    <testcase name="Automated tests for the omar-wms methods Should test response header for getCapabilities" time="0.434" classname="Should test response header for getCapabilities">
+    <testcase name="Automated tests for the omar-wms methods Should test response header for getCapabilities" time="0.396" classname="Should test response header for getCapabilities">
     </testcase>
   </testsuite>
 </testsuites>

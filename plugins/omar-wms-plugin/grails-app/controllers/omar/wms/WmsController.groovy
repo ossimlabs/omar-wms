@@ -167,7 +167,8 @@ where:
 	] )
 	def getMap( )
 	{
-		getMapOrPsm(false)
+		tryingNewThings(false)
+//		getMapOrPsm(false)
 	}
 
 	/**
@@ -323,4 +324,47 @@ where:
 	    }
 		return outputText
 	  }
+
+	def tryingNewThings(Boolean isPSM)
+	{
+		GetMapRequest wmsParams =  new GetMapRequest()
+		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
+		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
+
+		OutputStream outputStream = null
+		try
+		{
+			outputStream = response.outputStream
+			if(wmsParams.validate())
+			{
+				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
+				if(getMapResult.status) response.status = getMapResult.status
+				if(getMapResult.contentType) response.contentType = getMapResult.contentType
+				if(getMapResult.buffer?.length) response.contentLength = getMapResult.buffer.length
+				if(outputStream)
+				{
+					outputStream << getMapResult.buffer
+				}
+			}
+			else
+			{
+				response.status = HttpStatus.BAD_REQUEST
+
+				HashMap ogcExceptionResult = OgcExceptionUtil.formatWmsException(wmsParams)
+				response.contentType = ogcExceptionResult.contentType
+				response.contentLength = ogcExceptionResult.buffer.length
+				outputStream << ogcExceptionResult.buffer
+			}
+		}
+		catch ( IOException e )
+		{
+			log.error("Error writing response output stream", e)
+		}
+		finally
+		{
+			outputStream?.close()
+		}
+
+		return outputStream
+	}
 }
