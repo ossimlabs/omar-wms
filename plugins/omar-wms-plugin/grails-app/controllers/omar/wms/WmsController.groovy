@@ -35,21 +35,21 @@ class WmsController
 
 		switch ( op?.toUpperCase() )
 		{
-		case "GETCAPABILITIES":
-			getCapabilities()
-			break
-		case "GETMAP":
-			getMap()
-			break
-		case "GETPSM":
-			getPsm()
-			break
-		case "GETSTYLES":
-			getStyles()
-			break
-		case "GETLEGENDGRAPHIC":
-			getLegendGraphic()
-			break
+			case "GETCAPABILITIES":
+				getCapabilities()
+				break
+			case "GETMAP":
+				getMap()
+				break
+			case "GETPSM":
+				getPsm()
+				break
+			case "GETSTYLES":
+				getStyles()
+				break
+			case "GETLEGENDGRAPHIC":
+				getLegendGraphic()
+				break
 		}
 	}
 
@@ -59,9 +59,9 @@ class WmsController
 	 * @param  wmsParams parameters to the WMS service request GetCapabilities
 	 */
 	@ApiOperation( value = "Get the capabilities of the server",
-                  produces = 'application/vnd.ogc.wms_xml',
-                  httpMethod = "GET",
-						nickname = "getCapabilities")
+			produces = 'application/vnd.ogc.wms_xml',
+			httpMethod = "GET",
+			nickname = "getCapabilities")
 	@ApiImplicitParams( [
 			@ApiImplicitParam( name = 'service', value = 'OGC Service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1,1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
@@ -69,10 +69,10 @@ class WmsController
 	] )
 	def getCapabilities()
 	{
-		 GetCapabilitiesRequest wmsParams = new GetCapabilitiesRequest()
+		GetCapabilitiesRequest wmsParams = new GetCapabilitiesRequest()
 		BindUtil.fixParamNames( GetCapabilitiesRequest, params )
-      
-	  	bindData( wmsParams, params )
+
+		bindData( wmsParams, params )
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
 		Map<String, String> results = webMappingService.getCapabilities( wmsParams )
@@ -80,11 +80,11 @@ class WmsController
 		response.setHeader 'Content-Type', results.contentType
 		def outputBuffer = encodeResponse( results.buffer )
 		if ( outputBuffer instanceof ByteArrayOutputStream ) {
-		  outputBuffer.writeTo( response.outputStream )
-		  response.outputStream.flush()
+			outputBuffer.writeTo( response.outputStream )
+			response.outputStream.flush()
 		}
-		else { 
-		  render outputBuffer
+		else {
+			render outputBuffer
 		}
 	}
 
@@ -92,9 +92,9 @@ class WmsController
 	 * 		Returns the images of the given WMS getMap request
 	 */
 	@ApiOperation( value = "Get image from the server",
-		produces = 'application/xml,application/json',
-      httpMethod="GET",
-		notes = """
+			produces = 'application/xml,application/json',
+			httpMethod="GET",
+			notes = """
 * **version** can be 1.1.1 or 1.3.0. If 1.3.0 is used **crs**
    must be specified and if version is 1.1.1 is used then **srs**
    field is used
@@ -130,14 +130,10 @@ class WmsController
    }
 ```
 where:
-
 * **bands:** is a one based band selection list. First band starts at 1.
-
 * **histOp:** values supported none, auto-minmax,
    auto-percentile, std-stretch-1, std-stretch-2, or std-stretch-3
-
 * **sharpenMode:** values supported none, light, or heavy.
-
 * **contrast:** Allows one to control the contrast of an
    image. This is a multiplier.
 * **brightness:** Allows one to control the brightness of the image.
@@ -148,7 +144,7 @@ where:
     sinc, magic
 * **histCenterTile:**Currently calculates the histogram from center of image. Can be true|false
     """
-		 )
+	)
 	@ApiImplicitParams( [
 			@ApiImplicitParam( name = 'service', value = 'OGC service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
 			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1, 1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
@@ -167,7 +163,6 @@ where:
 	] )
 	def getMap( )
 	{
-//		tryingNewThings(false)
 		getMapOrPsm(false)
 	}
 
@@ -213,14 +208,10 @@ where:
    }
 ```
 where:
-
 * **bands:** is a one based band selection list. First band starts at 1.
-
 * **histOp:** values supported none, auto-minmax,
    auto-percentile, std-stretch-1, std-stretch-2, or std-stretch-3
-
 * **sharpenMode:** values supported none, light, or heavy.
-
 * **contrast:** Allows one to control the contrast of an
    image. This is a multiplier.
 * **brightness:** Allows one to control the brightness of the image.
@@ -261,7 +252,7 @@ where:
 		OutputStream outputStream = null
 		try
 		{
-   			outputStream = response.outputStream
+			outputStream = response.outputStream
 			if(wmsParams.validate())
 			{
 				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
@@ -312,59 +303,16 @@ where:
 	 * @param inputText The original, unencoded response
 	 * @return The encoded response
 	 */
- 	 private encodeResponse(String inputText) {
-	    def outputText
-	    String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
+	private encodeResponse(String inputText) {
+		def outputText
+		String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
 
-	    if ( acceptEncoding?.contains( OmarWebUtils.GZIP_ENCODE_HEADER_PARAM ) ) { 
-	        response.setHeader 'Content-Encoding', OmarWebUtils.GZIP_ENCODE_HEADER_PARAM									    
-		outputText = OmarWebUtils.gzippify( inputText, StandardCharsets.UTF_8.name() )
-	    } else {
-	        outputText = inputText
-	    }
+		if ( acceptEncoding?.contains( OmarWebUtils.GZIP_ENCODE_HEADER_PARAM ) ) {
+			response.setHeader 'Content-Encoding', OmarWebUtils.GZIP_ENCODE_HEADER_PARAM
+			outputText = OmarWebUtils.gzippify( inputText, StandardCharsets.UTF_8.name() )
+		} else {
+			outputText = inputText
+		}
 		return outputText
-	  }
-
-//	def tryingNewThings(Boolean isPSM)
-//	{
-//		GetMapRequest wmsParams =  new GetMapRequest()
-//		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
-//		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
-//
-//		OutputStream outputStream = null
-//		try
-//		{
-//			outputStream = response.outputStream
-//			if(wmsParams.validate())
-//			{
-//				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
-//				if(getMapResult.status) response.status = getMapResult.status
-//				if(getMapResult.contentType) response.contentType = getMapResult.contentType
-//				if(getMapResult.buffer?.length) response.contentLength = getMapResult.buffer.length
-//				if(outputStream)
-//				{
-//					outputStream << getMapResult.buffer
-//				}
-//			}
-//			else
-//			{
-//				response.status = HttpStatus.BAD_REQUEST
-//
-//				HashMap ogcExceptionResult = OgcExceptionUtil.formatWmsException(wmsParams)
-//				response.contentType = ogcExceptionResult.contentType
-//				response.contentLength = ogcExceptionResult.buffer.length
-//				outputStream << ogcExceptionResult.buffer
-//			}
-//		}
-//		catch ( IOException e )
-//		{
-//			log.error("Error writing response output stream", e)
-//		}
-//		finally
-//		{
-//			outputStream?.close()
-//		}
-//
-//		return outputStream
-//	}
+	}
 }
