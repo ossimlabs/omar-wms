@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="Mocha Tests" time="0.789" tests="4" failures="2">
-  <testsuite name="Root Suite" timestamp="2020-07-20T17:52:14" tests="0" file="cypress/integration/APITesting.js" failures="0" time="0">
+<testsuites name="Mocha Tests" time="0.753" tests="6" failures="4">
+  <testsuite name="Root Suite" timestamp="2020-07-20T18:28:59" tests="0" file="cypress/integration/APITesting.js" failures="0" time="0">
   </testsuite>
-  <testsuite name="Automated tests for the omar-wms methods" timestamp="2020-07-20T17:52:14" tests="4" failures="2" time="0.789">
+  <testsuite name="Automated tests for the omar-wms methods" timestamp="2020-07-20T18:28:59" tests="6" failures="4" time="0.753">
     <testcase name="Automated tests for the omar-wms methods Should test 200 code for getMap default values" time="0" classname="Should test 200 code for getMap default values">
       <failure message="`cy.request()` failed on:
 
@@ -36,7 +36,7 @@ The response we got was:
 Status: 400 - Bad Request
 Headers: {
   &quot;server&quot;: &quot;nginx/1.17.10&quot;,
-  &quot;date&quot;: &quot;Mon, 20 Jul 2020 17:52:15 GMT&quot;,
+  &quot;date&quot;: &quot;Mon, 20 Jul 2020 18:29:00 GMT&quot;,
   &quot;content-type&quot;: &quot;text/plain&quot;,
   &quot;content-length&quot;: &quot;34&quot;,
   &quot;connection&quot;: &quot;keep-alive&quot;,
@@ -76,7 +76,7 @@ The response we got was:
 Status: 400 - Bad Request
 Headers: {
   "server": "nginx/1.17.10",
-  "date": "Mon, 20 Jul 2020 17:52:15 GMT",
+  "date": "Mon, 20 Jul 2020 18:29:00 GMT",
   "content-type": "text/plain",
   "content-length": "34",
   "connection": "keep-alive",
@@ -131,7 +131,7 @@ The response we got was:
 Status: 400 - Bad Request
 Headers: {
   &quot;server&quot;: &quot;nginx/1.17.10&quot;,
-  &quot;date&quot;: &quot;Mon, 20 Jul 2020 17:52:15 GMT&quot;,
+  &quot;date&quot;: &quot;Mon, 20 Jul 2020 18:29:00 GMT&quot;,
   &quot;content-type&quot;: &quot;text/plain&quot;,
   &quot;content-length&quot;: &quot;34&quot;,
   &quot;connection&quot;: &quot;keep-alive&quot;,
@@ -171,7 +171,7 @@ The response we got was:
 Status: 400 - Bad Request
 Headers: {
   "server": "nginx/1.17.10",
-  "date": "Mon, 20 Jul 2020 17:52:15 GMT",
+  "date": "Mon, 20 Jul 2020 18:29:00 GMT",
   "content-type": "text/plain",
   "content-length": "34",
   "connection": "keep-alive",
@@ -193,9 +193,199 @@ https://on.cypress.io/request
 From Your Spec Code:
     at Context.eval (https://omar.ossim.io/__cypress/tests?p=cypress/integration/APITesting.js:26:12)]]></failure>
     </testcase>
-    <testcase name="Automated tests for the omar-wms methods Should test 200 code for getCapabilities default values" time="0.393" classname="Should test 200 code for getCapabilities default values">
+    <testcase name="Automated tests for the omar-wms methods Should test 200 code for getPsm default values" time="0" classname="Should test 200 code for getPsm default values">
+      <failure message="`cy.request()` failed on:
+
+https://omar.ossim.io/omar-wms/wms/getPsm?service=WMS&amp;version=1.3.0&amp;request=GetCapabilities
+
+The response we received from your web server was:
+
+  &gt; 400: Bad Request
+
+This was considered a failure because the status code was not `2xx` or `3xx`.
+
+If you do not want status codes to cause failures pass the option: `failOnStatusCode: false`
+
+-----------------------------------------------------------
+
+The request we sent was:
+
+Method: GET
+URL: https://omar.ossim.io/omar-wms/wms/getPsm?service=WMS&amp;version=1.3.0&amp;request=GetCapabilities
+Headers: {
+  &quot;Connection&quot;: &quot;keep-alive&quot;,
+  &quot;user-agent&quot;: &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Cypress/4.10.0 Chrome/80.0.3987.165 Electron/8.3.1 Safari/537.36&quot;,
+  &quot;accept&quot;: &quot;*/*&quot;,
+  &quot;accept-encoding&quot;: &quot;gzip, deflate&quot;
+}
+
+-----------------------------------------------------------
+
+The response we got was:
+
+Status: 400 - Bad Request
+Headers: {
+  &quot;server&quot;: &quot;nginx/1.17.10&quot;,
+  &quot;date&quot;: &quot;Mon, 20 Jul 2020 18:29:00 GMT&quot;,
+  &quot;content-type&quot;: &quot;text/plain&quot;,
+  &quot;content-length&quot;: &quot;34&quot;,
+  &quot;connection&quot;: &quot;keep-alive&quot;,
+  &quot;strict-transport-security&quot;: &quot;max-age=15724800; includeSubDomains&quot;
+}
+Body: WMS server Error: width: nullable
+
+https://on.cypress.io/request" type="CypressError"><![CDATA[CypressError: `cy.request()` failed on:
+
+https://omar.ossim.io/omar-wms/wms/getPsm?service=WMS&version=1.3.0&request=GetCapabilities
+
+The response we received from your web server was:
+
+  > 400: Bad Request
+
+This was considered a failure because the status code was not `2xx` or `3xx`.
+
+If you do not want status codes to cause failures pass the option: `failOnStatusCode: false`
+
+-----------------------------------------------------------
+
+The request we sent was:
+
+Method: GET
+URL: https://omar.ossim.io/omar-wms/wms/getPsm?service=WMS&version=1.3.0&request=GetCapabilities
+Headers: {
+  "Connection": "keep-alive",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Cypress/4.10.0 Chrome/80.0.3987.165 Electron/8.3.1 Safari/537.36",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate"
+}
+
+-----------------------------------------------------------
+
+The response we got was:
+
+Status: 400 - Bad Request
+Headers: {
+  "server": "nginx/1.17.10",
+  "date": "Mon, 20 Jul 2020 18:29:00 GMT",
+  "content-type": "text/plain",
+  "content-length": "34",
+  "connection": "keep-alive",
+  "strict-transport-security": "max-age=15724800; includeSubDomains"
+}
+Body: WMS server Error: width: nullable
+
+https://on.cypress.io/request
+    at https://omar.ossim.io/__cypress/runner/cypress_runner.js:157527:21
+    at tryCatcher (https://omar.ossim.io/__cypress/runner/cypress_runner.js:10130:23)
+    at Promise._settlePromiseFromHandler (https://omar.ossim.io/__cypress/runner/cypress_runner.js:8065:31)
+    at Promise._settlePromise (https://omar.ossim.io/__cypress/runner/cypress_runner.js:8122:18)
+    at Promise._settlePromise0 (https://omar.ossim.io/__cypress/runner/cypress_runner.js:8167:10)
+    at Promise._settlePromises (https://omar.ossim.io/__cypress/runner/cypress_runner.js:8247:18)
+    at _drainQueueStep (https://omar.ossim.io/__cypress/runner/cypress_runner.js:4837:12)
+    at _drainQueue (https://omar.ossim.io/__cypress/runner/cypress_runner.js:4830:9)
+    at Async.../../node_modules/bluebird/js/release/async.js.Async._drainQueues (https://omar.ossim.io/__cypress/runner/cypress_runner.js:4846:5)
+    at Async.drainQueues (https://omar.ossim.io/__cypress/runner/cypress_runner.js:4716:14)
+From Your Spec Code:
+    at Context.eval (https://omar.ossim.io/__cypress/tests?p=cypress/integration/APITesting.js:21:12)]]></failure>
     </testcase>
-    <testcase name="Automated tests for the omar-wms methods Should test response header for getCapabilities" time="0.396" classname="Should test response header for getCapabilities">
+    <testcase name="Automated tests for the omar-wms methods Should test response header for getPsm" time="0" classname="Should test response header for getPsm">
+      <failure message="`cy.request()` failed on:
+
+https://omar.ossim.io/omar-wms/wms/getPsm?service=WMS&amp;version=1.3.0&amp;request=GetCapabilities
+
+The response we received from your web server was:
+
+  &gt; 400: Bad Request
+
+This was considered a failure because the status code was not `2xx` or `3xx`.
+
+If you do not want status codes to cause failures pass the option: `failOnStatusCode: false`
+
+-----------------------------------------------------------
+
+The request we sent was:
+
+Method: GET
+URL: https://omar.ossim.io/omar-wms/wms/getPsm?service=WMS&amp;version=1.3.0&amp;request=GetCapabilities
+Headers: {
+  &quot;Connection&quot;: &quot;keep-alive&quot;,
+  &quot;user-agent&quot;: &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Cypress/4.10.0 Chrome/80.0.3987.165 Electron/8.3.1 Safari/537.36&quot;,
+  &quot;accept&quot;: &quot;*/*&quot;,
+  &quot;accept-encoding&quot;: &quot;gzip, deflate&quot;
+}
+
+-----------------------------------------------------------
+
+The response we got was:
+
+Status: 400 - Bad Request
+Headers: {
+  &quot;server&quot;: &quot;nginx/1.17.10&quot;,
+  &quot;date&quot;: &quot;Mon, 20 Jul 2020 18:29:01 GMT&quot;,
+  &quot;content-type&quot;: &quot;text/plain&quot;,
+  &quot;content-length&quot;: &quot;34&quot;,
+  &quot;connection&quot;: &quot;keep-alive&quot;,
+  &quot;strict-transport-security&quot;: &quot;max-age=15724800; includeSubDomains&quot;
+}
+Body: WMS server Error: width: nullable
+
+https://on.cypress.io/request" type="CypressError"><![CDATA[CypressError: `cy.request()` failed on:
+
+https://omar.ossim.io/omar-wms/wms/getPsm?service=WMS&version=1.3.0&request=GetCapabilities
+
+The response we received from your web server was:
+
+  > 400: Bad Request
+
+This was considered a failure because the status code was not `2xx` or `3xx`.
+
+If you do not want status codes to cause failures pass the option: `failOnStatusCode: false`
+
+-----------------------------------------------------------
+
+The request we sent was:
+
+Method: GET
+URL: https://omar.ossim.io/omar-wms/wms/getPsm?service=WMS&version=1.3.0&request=GetCapabilities
+Headers: {
+  "Connection": "keep-alive",
+  "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Cypress/4.10.0 Chrome/80.0.3987.165 Electron/8.3.1 Safari/537.36",
+  "accept": "*/*",
+  "accept-encoding": "gzip, deflate"
+}
+
+-----------------------------------------------------------
+
+The response we got was:
+
+Status: 400 - Bad Request
+Headers: {
+  "server": "nginx/1.17.10",
+  "date": "Mon, 20 Jul 2020 18:29:01 GMT",
+  "content-type": "text/plain",
+  "content-length": "34",
+  "connection": "keep-alive",
+  "strict-transport-security": "max-age=15724800; includeSubDomains"
+}
+Body: WMS server Error: width: nullable
+
+https://on.cypress.io/request
+    at https://omar.ossim.io/__cypress/runner/cypress_runner.js:157527:21
+    at tryCatcher (https://omar.ossim.io/__cypress/runner/cypress_runner.js:10130:23)
+    at Promise._settlePromiseFromHandler (https://omar.ossim.io/__cypress/runner/cypress_runner.js:8065:31)
+    at Promise._settlePromise (https://omar.ossim.io/__cypress/runner/cypress_runner.js:8122:18)
+    at Promise._settlePromise0 (https://omar.ossim.io/__cypress/runner/cypress_runner.js:8167:10)
+    at Promise._settlePromises (https://omar.ossim.io/__cypress/runner/cypress_runner.js:8247:18)
+    at _drainQueueStep (https://omar.ossim.io/__cypress/runner/cypress_runner.js:4837:12)
+    at _drainQueue (https://omar.ossim.io/__cypress/runner/cypress_runner.js:4830:9)
+    at Async.../../node_modules/bluebird/js/release/async.js.Async._drainQueues (https://omar.ossim.io/__cypress/runner/cypress_runner.js:4846:5)
+    at Async.drainQueues (https://omar.ossim.io/__cypress/runner/cypress_runner.js:4716:14)
+From Your Spec Code:
+    at Context.eval (https://omar.ossim.io/__cypress/tests?p=cypress/integration/APITesting.js:26:12)]]></failure>
+    </testcase>
+    <testcase name="Automated tests for the omar-wms methods Should test 200 code for getCapabilities default values" time="0.39" classname="Should test 200 code for getCapabilities default values">
+    </testcase>
+    <testcase name="Automated tests for the omar-wms methods Should test response header for getCapabilities" time="0.363" classname="Should test response header for getCapabilities">
     </testcase>
   </testsuite>
 </testsuites>
