@@ -41,15 +41,15 @@ class WmsController
 		case "GETMAP":
 			getMap()
 			break
-//		case "GETPSM":
-//			getPsm()
-//			break
-//		case "GETSTYLES":
-//			getStyles()
-//			break
-//		case "GETLEGENDGRAPHIC":
-//			getLegendGraphic()
-//			break
+		case "GETPSM":
+			getPsm()
+			break
+		case "GETSTYLES":
+			getStyles()
+			break
+		case "GETLEGENDGRAPHIC":
+			getLegendGraphic()
+			break
 		}
 	}
 
@@ -167,8 +167,8 @@ where:
 	] )
 	def getMap( )
 	{
-		tryingNewThings(false)
-//		getMapOrPsm(false)
+//		tryingNewThings(false)
+		getMapOrPsm(false)
 	}
 
 	/**
@@ -232,101 +232,28 @@ where:
 * **histCenterTile:**Currently calculates the histogram from center of image. Can be true|false
     """
 	)
-//	@ApiImplicitParams( [
-//			@ApiImplicitParam( name = 'service', value = 'OGC service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
-//			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1, 1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
-//			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetPsm", defaultValue = 'GetPsm', paramType = 'query', dataType = 'string', required = true ),
-//			@ApiImplicitParam( name = 'layers', value = 'Type name', defaultValue = "omar:raster_entry", paramType = 'query', dataType = 'string', required = true ),
-//			@ApiImplicitParam( name = 'filter', value = 'Filter', paramType = 'query', dataType = 'string', required = false ),
-//			@ApiImplicitParam( name = 'srs', value = 'Spatial Reference System (Version 1.1.1)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
-//			@ApiImplicitParam( name = 'crs', value = 'Spatial Reference System (Version 1.3.0)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
-//			@ApiImplicitParam( name = 'bbox', value = 'Bounding box', defaultValue = "-180,-90,180,90", paramType = 'query', dataType = 'string', required = true ),
-//			@ApiImplicitParam( name = 'width', value = 'Width of result image', defaultValue = "1024", paramType = 'query', dataType = 'integer', required = true ),
-//			@ApiImplicitParam( name = 'height', value = 'Height of result image', defaultValue = "512", paramType = 'query', dataType = 'integer', required = true ),
-//			@ApiImplicitParam( name = 'format', value = 'MIME Type of result image', defaultValue = "image/vnd.jpeg-png", allowableValues = "image/jpeg, image/png, image/gif, image/vnd.jpeg-png", paramType = 'query', dataType = 'string', required = true ),
-//			@ApiImplicitParam( name = 'transparent', value = 'Defines the transparency', defaultValue = "FALSE", allowableValues = "TRUE,FALSE", paramType = 'query', dataType = 'boolean', required = false ),
-//			@ApiImplicitParam( name = 'styles', value = 'Styles to apply to image ', defaultValue = "", paramType = 'query', dataType = 'string', required = false ),
-//			@ApiImplicitParam( name = 'exceptions', value = 'Valid exceptions', defaultValue = "", allowableValues = "application/vnd.ogc.se_xml,application/vnd.ogc.se_inimage,application/vnd.ogc.se_blank", paramType = 'query', dataType = 'string', required = false ),
-//	] )
-//	def getPsm( )
-//	{
-//		getMapOrPsm(true)
-//	}
-
-//	def getMapOrPsm (Boolean isPsm){
-//		GetMapRequest wmsParams =  new GetMapRequest()
-//		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
-//		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
-//
-//		OutputStream outputStream = null
-//		try
-//		{
-//   			outputStream = response.outputStream
-//			if(wmsParams.validate())
-//			{
-//				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
-//				if(getMapResult.status) response.status = getMapResult.status
-//				if(getMapResult.contentType) response.contentType = getMapResult.contentType
-//				if(getMapResult.buffer?.length) response.contentLength = getMapResult.buffer.length
-//				if(outputStream)
-//				{
-//					outputStream << getMapResult.buffer
-//				}
-//			}
-//			else
-//			{
-//				response.status = HttpStatus.BAD_REQUEST
-//
-//				HashMap ogcExceptionResult = OgcExceptionUtil.formatWmsException(wmsParams)
-//				response.contentType = ogcExceptionResult.contentType
-//				response.contentLength = ogcExceptionResult.buffer.length
-//				outputStream << ogcExceptionResult.buffer
-//			}
-//		}
-//		catch ( IOException e )
-//		{
-//			log.error("Error writing response output stream", e)
-//		}
-//		finally
-//		{
-//			outputStream?.close()
-//		}
-//
-//		return outputStream
-//	}
-
-	// Keep as endpoint
-//	def getStyles()
-//	{
-//		render webMappingService.getStyles(params)
-//	}
-//
-//	// Keep as endpoint
-//	def getLegendGraphic()
-//	{
-//		render webMappingService.getLegendGraphic(params)
-//	}
-
-	/**
-	 * Encodes the response to gzip if requested
-	 * @param inputText The original, unencoded response
-	 * @return The encoded response
-	 */
- 	 private encodeResponse(String inputText) {
-	    def outputText
-	    String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
-
-	    if ( acceptEncoding?.contains( OmarWebUtils.GZIP_ENCODE_HEADER_PARAM ) ) { 
-	        response.setHeader 'Content-Encoding', OmarWebUtils.GZIP_ENCODE_HEADER_PARAM									    
-		outputText = OmarWebUtils.gzippify( inputText, StandardCharsets.UTF_8.name() )
-	    } else {
-	        outputText = inputText
-	    }
-		return outputText
-	  }
-
-	def tryingNewThings(Boolean isPSM)
+	@ApiImplicitParams( [
+			@ApiImplicitParam( name = 'service', value = 'OGC service type', allowableValues = "WMS", defaultValue = 'WMS', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'version', value = 'Version to request', allowableValues = "1.1.1, 1.3.0", defaultValue = '1.3.0', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'request', value = 'Request type', allowableValues = "GetPsm", defaultValue = 'GetPsm', paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'layers', value = 'Type name', defaultValue = "omar:raster_entry", paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'filter', value = 'Filter', paramType = 'query', dataType = 'string', required = false ),
+			@ApiImplicitParam( name = 'srs', value = 'Spatial Reference System (Version 1.1.1)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
+			@ApiImplicitParam( name = 'crs', value = 'Spatial Reference System (Version 1.3.0)', defaultValue = "epsg:4326", paramType = 'query', dataType = 'string', required = false ),
+			@ApiImplicitParam( name = 'bbox', value = 'Bounding box', defaultValue = "-180,-90,180,90", paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'width', value = 'Width of result image', defaultValue = "1024", paramType = 'query', dataType = 'integer', required = true ),
+			@ApiImplicitParam( name = 'height', value = 'Height of result image', defaultValue = "512", paramType = 'query', dataType = 'integer', required = true ),
+			@ApiImplicitParam( name = 'format', value = 'MIME Type of result image', defaultValue = "image/vnd.jpeg-png", allowableValues = "image/jpeg, image/png, image/gif, image/vnd.jpeg-png", paramType = 'query', dataType = 'string', required = true ),
+			@ApiImplicitParam( name = 'transparent', value = 'Defines the transparency', defaultValue = "FALSE", allowableValues = "TRUE,FALSE", paramType = 'query', dataType = 'boolean', required = false ),
+			@ApiImplicitParam( name = 'styles', value = 'Styles to apply to image ', defaultValue = "", paramType = 'query', dataType = 'string', required = false ),
+			@ApiImplicitParam( name = 'exceptions', value = 'Valid exceptions', defaultValue = "", allowableValues = "application/vnd.ogc.se_xml,application/vnd.ogc.se_inimage,application/vnd.ogc.se_blank", paramType = 'query', dataType = 'string', required = false ),
+	] )
+	def getPsm( )
 	{
+		getMapOrPsm(true)
+	}
+
+	def getMapOrPsm (Boolean isPsm){
 		GetMapRequest wmsParams =  new GetMapRequest()
 		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
@@ -334,7 +261,7 @@ where:
 		OutputStream outputStream = null
 		try
 		{
-			outputStream = response.outputStream
+   			outputStream = response.outputStream
 			if(wmsParams.validate())
 			{
 				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
@@ -367,4 +294,77 @@ where:
 
 		return outputStream
 	}
+
+	// Keep as endpoint
+	def getStyles()
+	{
+		render webMappingService.getStyles(params)
+	}
+
+	// Keep as endpoint
+	def getLegendGraphic()
+	{
+		render webMappingService.getLegendGraphic(params)
+	}
+
+	/**
+	 * Encodes the response to gzip if requested
+	 * @param inputText The original, unencoded response
+	 * @return The encoded response
+	 */
+ 	 private encodeResponse(String inputText) {
+	    def outputText
+	    String acceptEncoding = WebUtils.retrieveGrailsWebRequest().getCurrentRequest().getHeader('accept-encoding')
+
+	    if ( acceptEncoding?.contains( OmarWebUtils.GZIP_ENCODE_HEADER_PARAM ) ) { 
+	        response.setHeader 'Content-Encoding', OmarWebUtils.GZIP_ENCODE_HEADER_PARAM									    
+		outputText = OmarWebUtils.gzippify( inputText, StandardCharsets.UTF_8.name() )
+	    } else {
+	        outputText = inputText
+	    }
+		return outputText
+	  }
+
+//	def tryingNewThings(Boolean isPSM)
+//	{
+//		GetMapRequest wmsParams =  new GetMapRequest()
+//		bindData(wmsParams, BindUtil.fixParamNames( GetMapRequest, params ))
+//		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
+//
+//		OutputStream outputStream = null
+//		try
+//		{
+//			outputStream = response.outputStream
+//			if(wmsParams.validate())
+//			{
+//				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
+//				if(getMapResult.status) response.status = getMapResult.status
+//				if(getMapResult.contentType) response.contentType = getMapResult.contentType
+//				if(getMapResult.buffer?.length) response.contentLength = getMapResult.buffer.length
+//				if(outputStream)
+//				{
+//					outputStream << getMapResult.buffer
+//				}
+//			}
+//			else
+//			{
+//				response.status = HttpStatus.BAD_REQUEST
+//
+//				HashMap ogcExceptionResult = OgcExceptionUtil.formatWmsException(wmsParams)
+//				response.contentType = ogcExceptionResult.contentType
+//				response.contentLength = ogcExceptionResult.buffer.length
+//				outputStream << ogcExceptionResult.buffer
+//			}
+//		}
+//		catch ( IOException e )
+//		{
+//			log.error("Error writing response output stream", e)
+//		}
+//		finally
+//		{
+//			outputStream?.close()
+//		}
+//
+//		return outputStream
+//	}
 }
