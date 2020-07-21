@@ -348,7 +348,7 @@ class WebMappingService implements InitializingBean
         omsParams.outputFormat = optimalFormat(omsParams, bbox, wmsParams.version)
       }
       omsParams.remove( "rawCoords" )
-println osmParams
+println omsParams
       result = callOmsService( omsParams )
 
       httpStatus = result.status
