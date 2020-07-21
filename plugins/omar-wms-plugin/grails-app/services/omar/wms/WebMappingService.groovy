@@ -348,7 +348,10 @@ class WebMappingService implements InitializingBean
         omsParams.outputFormat = optimalFormat(omsParams, bbox, wmsParams.version)
       }
       omsParams.remove( "rawCoords" )
-println omsParams
+
+      if ( omsParams.get( "images[0].file" ).contains( "blacksky" ) ) {
+        omsParams.histOp = "none"
+      }
       result = callOmsService( omsParams )
 
       httpStatus = result.status
