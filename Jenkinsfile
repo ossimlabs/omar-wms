@@ -32,13 +32,13 @@ podTemplate(
       command: 'cat',
       ttyEnabled: true
     ),
-    containerTemplate(
-          name: 'cypress',
-          image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/omar-cypress:12.14.1",
-          ttyEnabled: true,
-          command: 'cat',
-          privileged: true
-        )
+         containerTemplate(
+           name: 'cypress',
+           image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/cypress/included:4.9.0",
+           ttyEnabled: true,
+           command: 'cat',
+           privileged: true
+         )
   ],
   volumes: [
     hostPathVolume(
@@ -77,15 +77,21 @@ podTemplate(
     }
     stage ("Run Cypress Test") {
                 container('cypress') {
-                    sh """
-                    npm i -g xunit-viewer
-                    xunit-viewer -r results -o results/omar-wms-test-results.html
-                    """
-                    junit 'results/*.xml'
-                    archiveArtifacts "results/*.xml"
-                    archiveArtifacts "results/*.html"
-                    s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
-                }
+                                try {
+                                    sh """
+                                    cypress run --headless
+                                    """
+                                } finally {
+                                    sh """
+                                    npm i -g xunit-viewer
+                                    xunit-viewer -r results -o results/omar-wms-test-results.html
+                                    """
+                                    junit 'results/*.xml'
+                                    archiveArtifacts "results/*.xml"
+                                    archiveArtifacts "results/*.html"
+                                    s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
+                                }
+                            }
             }
 
     stage('SonarQube Analysis') {
