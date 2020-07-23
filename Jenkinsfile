@@ -81,9 +81,7 @@ podTemplate(
                 sh """
                 cypress run --headless
                 """
-            } catch (err) {
-                console.log(err);
-            }
+            } catch (err) {}
             sh """
                 npm i -g xunit-viewer
                 xunit-viewer -r results -o results/omar-wms-test-results.html
