@@ -76,23 +76,24 @@ podTemplate(
         }
     }
     stage ("Run Cypress Test") {
-                container('cypress') {
-                                try {
-                                    sh """
-                                    cypress run --headless
-                                    """
-                                } catch (err) {
-                                    sh """
-                                    npm i -g xunit-viewer
-                                    xunit-viewer -r results -o results/omar-wms-test-results.html
-                                    """
-                                    junit 'results/*.xml'
-                                    archiveArtifacts "results/*.xml"
-                                    archiveArtifacts "results/*.html"
-                                    s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
-                                }
-                            }
+        container('cypress') {
+            try {
+                sh """
+                cypress run --headless
+                """
+            } catch (err) {
+                console.log(err);
             }
+            sh """
+                npm i -g xunit-viewer
+                xunit-viewer -r results -o results/omar-wms-test-results.html
+                """
+                junit 'results/*.xml'
+                archiveArtifacts "results/*.xml"
+                archiveArtifacts "results/*.html"
+                s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
+            }
+        }
 
     stage('SonarQube Analysis') {
       nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
