@@ -46,7 +46,7 @@ The omar-wms respository is OMAR's implementation of Web Mapping Service (WMS) b
 ```
  cd omar-wms/apps/omar-wms-app
  gradle clean build
- ```
+```
 #### Install:
 ```
  cd omar-wms/apps/omar-wms-app
