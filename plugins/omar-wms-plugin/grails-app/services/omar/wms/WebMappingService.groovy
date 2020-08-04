@@ -622,13 +622,18 @@ class WebMappingService implements InitializingBean
 
       def queryParams = [
               filter: (id) ? "in(${id})" : wmsParams.filter,
-              max: mosaicLimit?.toInteger()
+              max: mosaicLimit?.toInteger(),
+              fields: [ 'filename', 'entry_id', 'access_date', 'ground_geom', 'acquisition_date']
       ]
 
       if ( bbox.proj )
       {
         queryParams.bbox = bbox
       }
+
+      println '-' * 40
+      println "queryParams: ${queryParams}"
+      println '-' * 40
 
       def slurper = new groovy.json.JsonSlurper()
 
