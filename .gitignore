@@ -14,3 +14,11 @@ prodDb.mv.db
 packaged-chart
 .lock
 charts/*.tgz
+results/
+package-lock.json
+node_modules/
+cypress/fixtures/
+cypress/plugins/
+cypress/screenshots/
+cypress/support/
+cypress/videos/

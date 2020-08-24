@@ -32,7 +32,8 @@ class MosaicService
               bbox: bbox,
               filter: filter,
               max: 1,
-          	   sort: [['acquisition_date', 'DESC']]
+              // fields: ['filename', 'entry_id'],
+          	  sort: [['acquisition_date', 'DESC']]
           ]
       )
 
