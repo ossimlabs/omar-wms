@@ -49,11 +49,26 @@ podTemplate(
 )
 {
   node(POD_LABEL){
+    stage("Checkout branch"){
+      scmVars = checkout(scm)
+      
 
-    stage("Checkout branch $BRANCH_NAME")
-    {
-      checkout(scm)
-    }
+        GIT_BRANCH_NAME = scmVars.GIT_BRANCH
+        BRANCH_NAME = """${sh(returnStdout: true, script: "echo ${GIT_BRANCH_NAME} | awk -F'/' '{print \$2}'").trim()}"""
+        VERSION = "1.0"
+        GIT_TAG_NAME = "omar-wms" + "-" + VERSION
+        ARTIFACT_NAME = "ArtifactName"
+
+        script {
+          if (BRANCH_NAME != 'master') {
+            buildName "${VERSION} - ${BRANCH_NAME}-SNAPSHOT"
+          } else {
+            buildName "${VERSION} - ${BRANCH_NAME}"
+          }
+        }
+      }
+
+  
 
     stage("Load Variables")
     {
@@ -64,34 +79,51 @@ podTemplate(
           flatten: true])
       }
       load "common-variables.groovy"
+        
+        switch (BRANCH_NAME) {
+        case "master":
+          TAG_NAME = VERSION
+          break
+
+        case "dev":
+          TAG_NAME = "latest"
+          break
+
+        default:
+          TAG_NAME = BRANCH_NAME
+          break
+      }
+
+    DOCKER_IMAGE_PATH = "${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}/omar-wms"
+    
     }
 
-    stage ("Generate Swagger Spec") {
-        container('builder') {
-                sh """
-                ./gradlew :omar-wms-plugin:generateSwaggerDocs \
-                    -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-                """
-                archiveArtifacts "plugins/*/build/swaggerSpec.json"
-        }
-    }
-    stage ("Run Cypress Test") {
-        container('cypress') {
-            try {
-                sh """
-                cypress run --headless
-                """
-            } catch (err) {}
-            sh """
-                npm i -g xunit-viewer
-                xunit-viewer -r results -o results/omar-wms-test-results.html
-                """
-                junit 'results/*.xml'
-                archiveArtifacts "results/*.xml"
-                archiveArtifacts "results/*.html"
-                s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
-            }
-        }
+    // stage ("Generate Swagger Spec") {
+    //     container('builder') {
+    //             sh """
+    //             ./gradlew :omar-wms-plugin:generateSwaggerDocs \
+    //                 -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+    //             """
+    //             archiveArtifacts "plugins/*/build/swaggerSpec.json"
+    //     }
+    // }
+    // stage ("Run Cypress Test") {
+    //     container('cypress') {
+    //         try {
+    //             sh """
+    //             cypress run --headless
+    //             """
+    //         } catch (err) {}
+    //         sh """
+    //             npm i -g xunit-viewer
+    //             xunit-viewer -r results -o results/omar-wms-test-results.html
+    //             """
+    //             junit 'results/*.xml'
+    //             archiveArtifacts "results/*.xml"
+    //             archiveArtifacts "results/*.html"
+    //             s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
+    //         }
+    //     }
 
     stage('SonarQube Analysis') {
       nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
@@ -176,5 +208,6 @@ podTemplate(
       if ("${CLEAN_WORKSPACE}" == "true")
         step([$class: 'WsCleanup'])
     }
+   }
   }
-}
+
