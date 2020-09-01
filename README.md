@@ -7,6 +7,7 @@
 The OMAR Web Map Service provides OGC capabilities for the WMS standard, serving out image chips from O2's raster data holdings. 
 
 ### Optional environment variables
+
 Only required for Jenkins pipelines or if you are running Nexus and/or Openshift locally
 
 - OPENSHIFT_USERNAME
