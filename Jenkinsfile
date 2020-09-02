@@ -51,11 +51,17 @@ podTemplate(
   node(POD_LABEL){
     stage("Checkout branch"){
       scmVars = checkout(scm)
-      
+
 
         GIT_BRANCH_NAME = scmVars.GIT_BRANCH
         BRANCH_NAME = """${sh(returnStdout: true, script: "echo ${GIT_BRANCH_NAME} | awk -F'/' '{print \$2}'").trim()}"""
-        VERSION = "1.0"
+        sh """
+        touch buildVersion.txt
+        grep buildVersion gradle.properties | cut -d "=" -f2 > "buildVersion.txt"
+        """
+        preVERSION = readFile "buildVersion.txt"
+        VERSION = preVERSION.substring(0, preVERSION.indexOf('\n'))
+
         GIT_TAG_NAME = "omar-wms" + "-" + VERSION
         ARTIFACT_NAME = "ArtifactName"
 
@@ -68,7 +74,7 @@ podTemplate(
         }
       }
 
-  
+
 
     stage("Load Variables")
     {
@@ -79,7 +85,7 @@ podTemplate(
           flatten: true])
       }
       load "common-variables.groovy"
-        
+
         switch (BRANCH_NAME) {
         case "master":
           TAG_NAME = VERSION
@@ -95,35 +101,35 @@ podTemplate(
       }
 
     DOCKER_IMAGE_PATH = "${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}/omar-wms"
-    
+
     }
 
-    // stage ("Generate Swagger Spec") {
-    //     container('builder') {
-    //             sh """
-    //             ./gradlew :omar-wms-plugin:generateSwaggerDocs \
-    //                 -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-    //             """
-    //             archiveArtifacts "plugins/*/build/swaggerSpec.json"
-    //     }
-    // }
-    // stage ("Run Cypress Test") {
-    //     container('cypress') {
-    //         try {
-    //             sh """
-    //             cypress run --headless
-    //             """
-    //         } catch (err) {}
-    //         sh """
-    //             npm i -g xunit-viewer
-    //             xunit-viewer -r results -o results/omar-wms-test-results.html
-    //             """
-    //             junit 'results/*.xml'
-    //             archiveArtifacts "results/*.xml"
-    //             archiveArtifacts "results/*.html"
-    //             s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
-    //         }
-    //     }
+    stage ("Generate Swagger Spec") {
+        container('builder') {
+                sh """
+                ./gradlew :omar-wms-plugin:generateSwaggerDocs \
+                    -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+                """
+                archiveArtifacts "plugins/*/build/swaggerSpec.json"
+        }
+    }
+    stage ("Run Cypress Test") {
+        container('cypress') {
+            try {
+                sh """
+                cypress run --headless
+                """
+            } catch (err) {}
+            sh """
+                npm i -g xunit-viewer
+                xunit-viewer -r results -o results/omar-wms-test-results.html
+                """
+                junit 'results/*.xml'
+                archiveArtifacts "results/*.xml"
+                archiveArtifacts "results/*.html"
+                s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
+            }
+        }
 
     stage('SonarQube Analysis') {
       nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
@@ -152,7 +158,7 @@ podTemplate(
       }
     }
 
-    stage ("Publish Nexus"){	
+    stage ("Publish Nexus"){
       container('builder'){
         withCredentials([[$class: 'UsernamePasswordMultiBinding',
                         credentialsId: 'nexusCredentials',
@@ -171,16 +177,17 @@ podTemplate(
       container('docker') {
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
           sh """
-            docker build --network=host -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:${BRANCH_NAME} ./docker
+            docker build --network=host -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:"${VERSION}" ./docker
           """
         }
-    }
+      }
+
 
     stage('Docker push'){
         container('docker') {
           withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
           sh """
-              docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:${BRANCH_NAME}
+              docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:"${VERSION}"
           """
           }
         }
