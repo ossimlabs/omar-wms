@@ -111,46 +111,46 @@ podTemplate(
 
     }
 
-    // stage ("Generate Swagger Spec") {
-    //     container('builder') {
-    //             sh """
-    //             ./gradlew :omar-wms-plugin:generateSwaggerDocs \
-    //                 -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-    //             """
-    //             archiveArtifacts "plugins/*/build/swaggerSpec.json"
-    //     }
-    // }
-    // stage ("Run Cypress Test") {
-    //     container('cypress') {
-    //         try {
-    //             sh """
-    //             cypress run --headless
-    //             """
-    //         } catch (err) {}
-    //         sh """
-    //             npm i -g xunit-viewer
-    //             xunit-viewer -r results -o results/omar-wms-test-results.html
-    //             """
-    //             junit 'results/*.xml'
-    //             archiveArtifacts "results/*.xml"
-    //             archiveArtifacts "results/*.html"
-    //             s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
-    //         }
-    //     }
+       stage ("Generate Swagger Spec") {
+        container('builder') {
+                sh """
+                ./gradlew :omar-wms-plugin:generateSwaggerDocs \
+                    -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+                """
+                archiveArtifacts "plugins/*/build/swaggerSpec.json"
+        }
+    }
+    stage ("Run Cypress Test") {
+        container('cypress') {
+            try {
+                sh """
+                cypress run --headless
+                """
+            } catch (err) {}
+            sh """
+                npm i -g xunit-viewer
+                xunit-viewer -r results -o results/omar-wms-test-results.html
+                """
+                junit 'results/*.xml'
+                archiveArtifacts "results/*.xml"
+                archiveArtifacts "results/*.html"
+                s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
+            }
+        }
 
-    // stage('SonarQube Analysis') {
-    //   nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
-    //     def scannerHome = tool "${SONARQUBE_SCANNER_VERSION}"
+    stage('SonarQube Analysis') {
+      nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
+        def scannerHome = tool "${SONARQUBE_SCANNER_VERSION}"
 
-    //     withSonarQubeEnv('sonarqube'){
-    //       sh """
-    //         ${scannerHome}/bin/sonar-scanner \
-    //         -Dsonar.projectKey=omar-wms \
-    //         -Dsonar.login=${SONARQUBE_TOKEN}
-    //       """
-    //     }
-    //   }
-    // }
+        withSonarQubeEnv('sonarqube'){
+          sh """
+            ${scannerHome}/bin/sonar-scanner \
+            -Dsonar.projectKey=omar-wms \
+            -Dsonar.login=${SONARQUBE_TOKEN}
+          """
+        }
+      }
+    }
 
     stage('Build') {
       container('builder') {
