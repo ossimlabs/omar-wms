@@ -32,13 +32,20 @@ podTemplate(
       command: 'cat',
       ttyEnabled: true
     ),
-         containerTemplate(
-           name: 'cypress',
-           image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/cypress/included:4.9.0",
-           ttyEnabled: true,
-           command: 'cat',
-           privileged: true
-         )
+    containerTemplate(
+      image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/kubectl-aws-helm:latest",
+      name: 'kubectl-aws-helm',
+      command: 'cat',
+      ttyEnabled: true,
+      alwaysPullImage: true
+    ),
+    containerTemplate(
+        name: 'cypress',
+        image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/cypress/included:4.9.0",
+        ttyEnabled: true,
+        command: 'cat',
+        privileged: true
+    )
   ],
   volumes: [
     hostPathVolume(
@@ -104,46 +111,46 @@ podTemplate(
 
     }
 
-    stage ("Generate Swagger Spec") {
-        container('builder') {
-                sh """
-                ./gradlew :omar-wms-plugin:generateSwaggerDocs \
-                    -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-                """
-                archiveArtifacts "plugins/*/build/swaggerSpec.json"
-        }
-    }
-    stage ("Run Cypress Test") {
-        container('cypress') {
-            try {
-                sh """
-                cypress run --headless
-                """
-            } catch (err) {}
-            sh """
-                npm i -g xunit-viewer
-                xunit-viewer -r results -o results/omar-wms-test-results.html
-                """
-                junit 'results/*.xml'
-                archiveArtifacts "results/*.xml"
-                archiveArtifacts "results/*.html"
-                s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
-            }
-        }
+    // stage ("Generate Swagger Spec") {
+    //     container('builder') {
+    //             sh """
+    //             ./gradlew :omar-wms-plugin:generateSwaggerDocs \
+    //                 -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+    //             """
+    //             archiveArtifacts "plugins/*/build/swaggerSpec.json"
+    //     }
+    // }
+    // stage ("Run Cypress Test") {
+    //     container('cypress') {
+    //         try {
+    //             sh """
+    //             cypress run --headless
+    //             """
+    //         } catch (err) {}
+    //         sh """
+    //             npm i -g xunit-viewer
+    //             xunit-viewer -r results -o results/omar-wms-test-results.html
+    //             """
+    //             junit 'results/*.xml'
+    //             archiveArtifacts "results/*.xml"
+    //             archiveArtifacts "results/*.html"
+    //             s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
+    //         }
+    //     }
 
-    stage('SonarQube Analysis') {
-      nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
-        def scannerHome = tool "${SONARQUBE_SCANNER_VERSION}"
+    // stage('SonarQube Analysis') {
+    //   nodejs(nodeJSInstallationName: "${NODEJS_VERSION}") {
+    //     def scannerHome = tool "${SONARQUBE_SCANNER_VERSION}"
 
-        withSonarQubeEnv('sonarqube'){
-          sh """
-            ${scannerHome}/bin/sonar-scanner \
-            -Dsonar.projectKey=omar-wms \
-            -Dsonar.login=${SONARQUBE_TOKEN}
-          """
-        }
-      }
-    }
+    //     withSonarQubeEnv('sonarqube'){
+    //       sh """
+    //         ${scannerHome}/bin/sonar-scanner \
+    //         -Dsonar.projectKey=omar-wms \
+    //         -Dsonar.login=${SONARQUBE_TOKEN}
+    //       """
+    //     }
+    //   }
+    // }
 
     stage('Build') {
       container('builder') {
@@ -187,6 +194,8 @@ podTemplate(
         container('docker') {
           withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
           sh """
+              docker tag "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:"${VERSION}" "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:dev
+              docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:dev
               docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms-app:"${VERSION}"
           """
           }
@@ -209,6 +218,31 @@ podTemplate(
           sh "curl -u ${HELM_CREDENTIALS} ${HELM_UPLOAD_URL} --upload-file packaged-chart/*.tgz -v"
         }
       }
+    }
+    
+    stage('New Deploy'){
+        container('kubectl-aws-helm') {
+            withAWS(
+            credentials: 'Jenkins IAM User',
+            region: 'us-east-1'){
+                if (BRANCH_NAME == 'master'){
+                    //insert future instructions here
+                }
+                if (BRANCH_NAME == 'dev') {
+                    sh "aws eks --region us-east-1 update-kubeconfig --name gsp-dev-v2 --alias dev"
+                    sh "kubectl config set-context dev --namespace=omar-dev"
+                    sh "kubectl rollout restart deployment/omar-wms"   
+                }
+                if (BRANCH_NAME == 'ContinuousDeploy2.0') {
+                    sh "aws eks --region us-east-1 update-kubeconfig --name gsp-dev-v2 --alias dev"
+                    sh "kubectl config set-context dev --namespace=omar-dev"
+                    sh "kubectl rollout restart deployment/omar-wms"   
+                }
+                else {
+                    sh "echo Not deploying ${BRANCH_NAME} branch"
+                }
+            }
+        }
     }
 
     stage("Clean Workspace"){
