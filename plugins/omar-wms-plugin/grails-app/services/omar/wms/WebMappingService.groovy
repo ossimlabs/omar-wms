@@ -382,6 +382,9 @@ class WebMappingService implements InitializingBean
       ]
 
       println "DEBUG!! (1) OMS PARAMS $omsParams"
+      println "*" * 50
+      println geoBbox
+      println "*" * 50
       println "DEBUG!! (2) LOG PARAMS $logParams"
 
       // We want to remove dates that are not in a valid date format because metrics will not ingest it.
