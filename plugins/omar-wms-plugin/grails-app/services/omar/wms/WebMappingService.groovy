@@ -362,6 +362,8 @@ class WebMappingService implements InitializingBean
 
       responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
+      def geoBbox = [bbox.minX, bbox.minY, bbox.maxX, bbox.maxY]
+
       Map logParams = [
          timestamp: DateUtil.formatUTC(startTime),
          requestType: requestType,
@@ -372,6 +374,7 @@ class WebMappingService implements InitializingBean
          responseSize: result.buffer.length,
          filename: filename,
          bbox: bbox,
+         geoBbox: geoBbox,
          params: wmsParams.toString(),
          location: bboxMidpoint,
          username: username,
