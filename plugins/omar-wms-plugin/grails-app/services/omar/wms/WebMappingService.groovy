@@ -383,7 +383,7 @@ class WebMappingService implements InitializingBean
 
       println "DEBUG!! (1) OMS PARAMS $omsParams"
       println "*" * 50
-      println "Geo BBOX: " + geoBbox
+      println "Geo BBOX: $geoBbox"
       println "*" * 50
       println "DEBUG!! (2) LOG PARAMS $logParams"
 
