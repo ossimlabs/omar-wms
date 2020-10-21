@@ -50,7 +50,7 @@ targetCpu: 50
 hostnames: []
 
 image:
-  name: omar-wms-app
+  name: omar-wms
   tag: dev
   pullPolicy: Always
 
