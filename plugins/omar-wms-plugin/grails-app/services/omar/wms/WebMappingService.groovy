@@ -362,6 +362,8 @@ class WebMappingService implements InitializingBean
 
       responseTime = Math.abs(startTime.getTime() - endTime.getTime())
 
+      def geoBbox = [bbox.minX, bbox.minY, bbox.maxX, bbox.maxY]
+
       Map logParams = [
          timestamp: DateUtil.formatUTC(startTime),
          requestType: requestType,
@@ -372,6 +374,7 @@ class WebMappingService implements InitializingBean
          responseSize: result.buffer.length,
          filename: filename,
          bbox: bbox,
+         geoBbox: geoBbox,
          params: wmsParams.toString(),
          location: bboxMidpoint,
          username: username,
@@ -379,6 +382,9 @@ class WebMappingService implements InitializingBean
       ]
 
       println "DEBUG!! (1) OMS PARAMS $omsParams"
+      println "*" * 50
+      println "Geo BBOX: $geoBbox"
+      println "*" * 50
       println "DEBUG!! (2) LOG PARAMS $logParams"
 
       // We want to remove dates that are not in a valid date format because metrics will not ingest it.
