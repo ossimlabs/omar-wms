@@ -280,7 +280,7 @@ class WebMappingService implements InitializingBean
       def m = wmsLayer =~ /(\w+):(\w+)([\.:](\d+))?/
       if ( m )
       {
-        def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
+//        def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
       }
     }
   }
@@ -292,7 +292,6 @@ class WebMappingService implements InitializingBean
     def OPTIMIZED_FORMAT = "image/vnd.jpeg-png"
     Date startTime = new Date()
     def responseTime
-    def requestInfoLog
     def httpStatus
     def filename
     def bboxMidpoint
@@ -324,7 +323,15 @@ class WebMappingService implements InitializingBean
 
       omsParams += parseStyles( wmsParams )
 
-      if(!bbox.proj)
+      if(bbox.proj)
+      {
+        // now add in the cut params for oms
+        omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
+        omsParams.srs = bbox?.proj.id
+
+        bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
+      }
+      else
       {
         requestMethod = "getTile"
         omsParams.operation = "chip"
@@ -333,14 +340,6 @@ class WebMappingService implements InitializingBean
         bboxMidpoint = [y: (bbox.minY + bbox.maxY) / 2, x: (bbox.minX + bbox.maxX) / 2]
         omsParams.fullResXys = "${bboxMidpoint.x},${bboxMidpoint.y},${scaleX},${scaleY}"
         addLocation = false
-      }
-      else
-      {
-        // now add in the cut params for oms
-        omsParams.cutWmsBbox = "${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}"
-        omsParams.srs = bbox?.proj.id
-
-        bboxMidpoint = [lat: (bbox.minY + bbox.maxY) / 2, lon: (bbox.minX + bbox.maxX) / 2]
       }
 
       if ( omsParams.outputFormat == OPTIMIZED_FORMAT )
