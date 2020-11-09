@@ -32,13 +32,20 @@ podTemplate(
       command: 'cat',
       ttyEnabled: true
     ),
-         containerTemplate(
-           name: 'cypress',
-           image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/cypress/included:4.9.0",
-           ttyEnabled: true,
-           command: 'cat',
-           privileged: true
-         )
+    containerTemplate(
+      image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/kubectl-aws-helm:latest",
+      name: 'kubectl-aws-helm',
+      command: 'cat',
+      ttyEnabled: true,
+      alwaysPullImage: true
+    ),
+    containerTemplate(
+        name: 'cypress',
+        image: "${DOCKER_REGISTRY_DOWNLOAD_URL}/cypress/included:4.9.0",
+        ttyEnabled: true,
+        command: 'cat',
+        privileged: true
+    )
   ],
   volumes: [
     hostPathVolume(
@@ -104,7 +111,7 @@ podTemplate(
 
     }
 
-    stage ("Generate Swagger Spec") {
+       stage ("Generate Swagger Spec") {
         container('builder') {
                 sh """
                 ./gradlew :omar-wms-plugin:generateSwaggerDocs \
@@ -176,23 +183,43 @@ podTemplate(
     stage('Docker build') {
       container('docker') {
         withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
-          sh """
-            docker build --network=host -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}" ./docker
-          """
-        }
-      }
-
-
-    stage('Docker push'){
-        container('docker') {
-          withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
-          sh """
-              docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}"
-          """
+          if (BRANCH_NAME == 'master'){
+                sh """
+                    docker build --network=host -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}" ./docker
+                """
+          }
+          else {
+                sh """
+                    docker build --network=host -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}".a ./docker
+                """
           }
         }
       }
     }
+
+    stage('Docker push'){
+        container('docker') {
+          withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
+            if (BRANCH_NAME == 'master'){
+                sh """
+                    docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}"
+                """
+            }
+            else if (BRANCH_NAME == 'dev') {
+                sh """
+                    docker tag "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}".a "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:dev
+                    docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}".a
+                    docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:dev
+                """
+            }
+            else {
+                sh """
+                    docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}".a           
+                """
+            }
+          }
+        }
+      }
 
     stage('Package chart'){
       container('helm') {
@@ -210,6 +237,26 @@ podTemplate(
         }
       }
     }
+    
+    stage('New Deploy'){
+        container('kubectl-aws-helm') {
+            withAWS(
+            credentials: 'Jenkins-AWS-IAM',
+            region: 'us-east-1'){
+                if (BRANCH_NAME == 'master'){
+                    //insert future instructions here
+                }
+                else if (BRANCH_NAME == 'dev') {
+                    sh "aws eks --region us-east-1 update-kubeconfig --name gsp-dev-v2 --alias dev"
+                    sh "kubectl config set-context dev --namespace=omar-dev"
+                    sh "kubectl rollout restart deployment/omar-wms"   
+                }
+                else {
+                    sh "echo Not deploying ${BRANCH_NAME} branch"
+                }
+            }
+        }
+    }
 
     stage("Clean Workspace"){
       if ("${CLEAN_WORKSPACE}" == "true")
@@ -217,5 +264,3 @@ podTemplate(
     }
    }
   }
-
-//comment
