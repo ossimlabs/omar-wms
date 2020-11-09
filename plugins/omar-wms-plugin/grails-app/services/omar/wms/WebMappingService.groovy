@@ -384,11 +384,19 @@ class WebMappingService implements InitializingBean
                     acquisitionDate: acquisitionDate
             ]
 
-            println "DEBUG!! (1) OMS PARAMS $omsParams"
-            println "*" * 50
-            println "Geo BBOX: $geoBbox"
-            println "*" * 50
-            println "DEBUG!! (2) LOG PARAMS $logParams"
+//            println "DEBUG!! (1) OMS PARAMS $omsParams"
+//            println "*" * 50
+//            println "Geo BBOX: $geoBbox"
+//            println "*" * 50
+//            println "DEBUG!! (2) LOG PARAMS $logParams"
+
+          logger.error "DEBUG!! (1) OMS PARAMS ${omsParams}"
+          logger.error '*' * 50
+          logger.error "Geo BBOX: $geoBbox"
+          logger.error '*' * 50
+          logger.error "DEBUG!! (2) LOG PARAMS $logParams"
+
+
 
             // We want to remove dates that are not in a valid date format because metrics will not ingest it.
             if (logParams.acquisitionDate == null)
@@ -499,7 +507,7 @@ class WebMappingService implements InitializingBean
         catch (e)
         {
 
-            e.printStackTrace()
+            logger.trace("There was an error in WebMappingService line 506", e)
             // log.error '*' * 40
             // log.error "${omsParams} ${ogcParams}"
             // log.error '*' * 40
