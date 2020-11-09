@@ -12,8 +12,13 @@ import java.awt.FontMetrics
 
 import org.springframework.util.FastByteArrayOutputStream
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class MosaicService
 {
+    final Logger logger = LoggerFactory.getLogger("myLogger")
+
   def geoscriptService
   def webMappingService
 
@@ -70,7 +75,9 @@ class MosaicService
         switch(tileResults.status)
         {
         case 400:
-          println new String(tileResults.buffer)
+//            String tileResultsString = new String(tileResults.buffer)
+            logger.print(new String(tileResults.buffer))
+//          println new String(tileResults.buffer)
           break
         default:
           def istream = new BufferedInputStream(new ByteArrayInputStream(tileResults?.buffer))

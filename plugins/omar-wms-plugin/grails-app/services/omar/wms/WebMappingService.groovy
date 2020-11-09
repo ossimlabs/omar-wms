@@ -651,9 +651,13 @@ class WebMappingService implements InitializingBean
                 queryParams.bbox = bbox
             }
 
-            println '-' * 40
-            println "queryParams: ${queryParams}"
-            println '-' * 40
+//            println '-' * 40
+//            println "queryParams: ${queryParams}"
+//            println '-' * 40
+
+          logger.error '-' * 40
+          logger.error "queryParams: ${queryParams}"
+          logger.error '-' * 40
 
             def slurper = new groovy.json.JsonSlurper()
 
@@ -676,7 +680,8 @@ class WebMappingService implements InitializingBean
             //stagerService.updateLastAccessDates(imageEntries)
         }
 
-        println images
+//        println images
+      logger.print(images)
         return images
     }
 
