@@ -43,8 +43,8 @@ class WmsInterceptor
 
   boolean after() { true }
 
-  void afterView()
-  {
-    // no-op
-  }
+//  void afterView()
+//  {
+//    // no-op
+//  }
 }

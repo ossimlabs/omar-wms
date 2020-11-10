@@ -45,13 +45,13 @@ Brief summary/description of the plugin.
         }
     }
 
-    void doWithDynamicMethods() {
-        // TODO Implement registering dynamic methods to classes (optional)
-    }
-
-    void doWithApplicationContext() {
-        // TODO Implement post initialization spring config (optional)
-    }
+//    void doWithDynamicMethods() {
+//        // TODO Implement registering dynamic methods to classes (optional)
+//    }
+//
+//    void doWithApplicationContext() {
+//        // TODO Implement post initialization spring config (optional)
+//    }
 
 //    void onChange(Map<String, Object> event) {
 //        // TODO Implement code that is executed when any artefact that this plugin is
