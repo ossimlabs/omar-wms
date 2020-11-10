@@ -281,10 +281,10 @@ class WebMappingService implements InitializingBean
 
         wmsLayers?.each { wmsLayer ->
             def m = wmsLayer =~ /(\w+):(\w+)([\.:](\d+))?/
-            if (m)
-            {
+//            if (m)
+//            {
 //        def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
-            }
+//            }
         }
     }
 
@@ -309,7 +309,7 @@ class WebMappingService implements InitializingBean
         {
             if (getPsm && omsParams.get('images[1].file') == null)
             {
-                throw new Exception('The filter given to the getPsm call did not contain at least two images')
+                throw new IllegalArgumentException('The filter given to the getPsm call did not contain at least two images')
             }
 
             Map<String, Object> bbox = parseBbox(wmsParams)
@@ -740,10 +740,10 @@ class WebMappingService implements InitializingBean
         }
     }
 
-    def getStyles()
-    {
-
-    }
+//    def getStyles()
+//    {
+//
+//    }
 
     def getLegendGraphic(def params)
     {
