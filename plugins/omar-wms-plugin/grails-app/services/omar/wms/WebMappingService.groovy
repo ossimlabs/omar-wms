@@ -275,18 +275,18 @@ class WebMappingService implements InitializingBean
         return capitalized ? capitalize(text) : text
     }
 
-    def testGeoScriptService(GetMapRequest wmsParams)
-    {
-        def wmsLayers = wmsParams?.layers?.split(',')
-
-        wmsLayers?.each { wmsLayer ->
-            def m = wmsLayer =~ /(\w+):(\w+)([\.:](\d+))?/
+//    def testGeoScriptService(GetMapRequest wmsParams)
+//    {
+//        def wmsLayers = wmsParams?.layers?.split(',')
+//
+//        wmsLayers?.each { wmsLayer ->
+//            def m = wmsLayer =~ /(\w+):(\w+)([\.:](\d+))?/
 //            if (m)
 //            {
 //        def (prefix, name, id) = [m[0][1], m[0][2], m[0][4]]
 //            }
-        }
-    }
+//        }
+//    }
 
     def getMap(GetMapRequest wmsParams, Boolean getPsm = false)
     {
