@@ -25,12 +25,9 @@ import javax.imageio.ImageIO
 
 import org.springframework.util.FastByteArrayOutputStream
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
 class WebMappingService implements InitializingBean
 {
-    final Logger logger = LoggerFactory.getLogger("myLogger")
+
     static transactional = false
 
     static final int DEFAULT_BLANK_TILE_SIZE = 4196
@@ -390,11 +387,11 @@ class WebMappingService implements InitializingBean
 //            println "*" * 50
 //            println "DEBUG!! (2) LOG PARAMS $logParams"
 
-          logger.error "DEBUG!! (1) OMS PARAMS ${omsParams}"
-          logger.error '*' * 50
-          logger.error "Geo BBOX: $geoBbox"
-          logger.error '*' * 50
-          logger.error "DEBUG!! (2) LOG PARAMS $logParams"
+            log.trace "DEBUG!! (1) OMS PARAMS ${omsParams}"
+            log.trace '*' * 50
+            log.trace "Geo BBOX: $geoBbox"
+            log.trace '*' * 50
+            log.trace "DEBUG!! (2) LOG PARAMS $logParams"
 
 
 
@@ -507,7 +504,7 @@ class WebMappingService implements InitializingBean
         catch (e)
         {
 
-            logger.trace("There was an error in WebMappingService line 506", e)
+            log.error(e.toString())
             // log.error '*' * 40
             // log.error "${omsParams} ${ogcParams}"
             // log.error '*' * 40
@@ -601,8 +598,7 @@ class WebMappingService implements InitializingBean
             }
             catch (e)
             {
-              logger.trace("There was an error in WebMappingService line 596", e)
-//                e.printStackTrace()
+              log.trace(e.toString())
             }
         }
         // chipper requires to be camel case
@@ -655,9 +651,9 @@ class WebMappingService implements InitializingBean
 //            println "queryParams: ${queryParams}"
 //            println '-' * 40
 
-          logger.error '-' * 40
-          logger.error "queryParams: ${queryParams}"
-          logger.error '-' * 40
+            log.trace '-' * 40
+            log.trace "queryParams: ${queryParams}"
+            log.trace '-' * 40
 
             def slurper = new groovy.json.JsonSlurper()
 
@@ -681,7 +677,7 @@ class WebMappingService implements InitializingBean
         }
 
 //        println images
-      logger.print(images)
+      log.print(images)
         return images
     }
 
