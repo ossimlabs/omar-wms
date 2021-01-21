@@ -12,7 +12,7 @@ dependencies {
     //compile project( ":${ rootProject.name }-lib" )
     if ( ! System.getenv('O2_INLINE_BUILD') ) {
         compile "io.ossim.omar.plugins:omar-core-plugin:${omarCoreVersion}"
-        compile "io.ossim.omar.plugins:omar-hibernate-spatial-plugin:${omarHibernaetSpatialVersion}"
+        compile "io.ossim.omar.plugins:omar-hibernate-spatial-plugin:${omarHibernateSpatialVersion}"
     }
 
     compile group: 'org.locationtech.jts', name: 'jts-core', version: '1.16.1'
