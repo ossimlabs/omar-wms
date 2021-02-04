@@ -12,8 +12,10 @@ import java.awt.FontMetrics
 
 import org.springframework.util.FastByteArrayOutputStream
 
+
 class MosaicService
 {
+
   def geoscriptService
   def webMappingService
 
@@ -64,18 +66,14 @@ class MosaicService
           outputRadiometry: 'ossim_uint8'
         ]
 
-        // println "*"*20
-        // println omsParams
-        // println "*"*20
 
         def tileResults = webMappingService.callOmsService(omsParams)
-
-// println tileResults.httpStatus
 
         switch(tileResults.status)
         {
         case 400:
-          println new String(tileResults.buffer)
+            log.error(e.toString())
+//          println new String(tileResults.buffer)
           break
         default:
           def istream = new BufferedInputStream(new ByteArrayInputStream(tileResults?.buffer))
@@ -97,17 +95,12 @@ class MosaicService
       g2d.color = Color.red
       g2d.drawRect(0, 0, outputImage.width, outputImage.height)
 
-      // def label = "${queryResults.numberMatched}"
-
       if ( tileImage )
       {
         def tileMetadata = queryResults?.features[0]
 
-        // println tileMetadata
 
         def title = tileMetadata?.title ?: tileMetadata?.properties?.title
-        def filename = tileMetadata?.filename ?: tileMetadata?.properties?.filename
-//        def label = title ?: new File(filename)?.name
         def label = title ?: tileMetadata?.toString()
 
         drawCenteredString(g2d, label,
@@ -119,8 +112,6 @@ class MosaicService
 
       int bufferSize = ( contentType == 'image/jpeg') ? WebMappingService.DEFAULT_JPEG_SIZE : WebMappingService.DEFAULT_PNG_SIZE
       def ostream = new FastByteArrayOutputStream(bufferSize)
-
-//println ([outputImage, imageType, ostream])
 
       ImageIO.write(outputImage, imageType, ostream)
 
