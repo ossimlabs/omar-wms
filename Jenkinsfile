@@ -131,20 +131,20 @@ podTemplate(
       }
     }
 
-    stage ("Publish Nexus"){
-      container('builder'){
-        withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                        credentialsId: 'nexusCredentials',
-                        usernameVariable: 'MAVEN_REPO_USERNAME',
-                        passwordVariable: 'MAVEN_REPO_PASSWORD']])
-        {
-          sh """
-          ./gradlew publish \
-              -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
-          """
-        }
-      }
-    }
+    //stage ("Publish Nexus"){
+    //  container('builder'){
+    //    withCredentials([[$class: 'UsernamePasswordMultiBinding',
+    //                    credentialsId: 'nexusCredentials',
+    //                    usernameVariable: 'MAVEN_REPO_USERNAME',
+    //                    passwordVariable: 'MAVEN_REPO_PASSWORD']])
+    //    {
+    //      sh """
+    //      ./gradlew publish \
+    //          -PossimMavenProxy=${MAVEN_DOWNLOAD_URL}
+    //      """
+    //    }
+    //  }
+    //}
 
     stage('Docker build') {
       container('docker') {
