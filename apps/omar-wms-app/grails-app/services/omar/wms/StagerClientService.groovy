@@ -1,7 +1,6 @@
 package omar.wms
 
 import grails.gorm.transactions.Transactional
-import groovy.json.JsonSlurper
 import org.springframework.beans.factory.annotation.Value
 
 @Transactional(readOnly = true)

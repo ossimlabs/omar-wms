@@ -31,7 +31,7 @@ class WmsController
 	def index()
 	{
 		def op = params.find { it.key.equalsIgnoreCase( 'request' ) }?.value
-		def wmsParams
+
 
 		switch ( op?.toUpperCase() )
 		{
