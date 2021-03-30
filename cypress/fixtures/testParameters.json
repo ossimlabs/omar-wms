@@ -1,0 +1,83 @@
+{
+  "info": {
+    "title": "Test Parameters",
+    "format": {
+      "name": {
+        "method": ["get", "post", "delete", "etc..."],
+        "endpoint": "/controller/endpoint",
+        "in": ["query", "body", "path"],
+        "expected": ["good", "bad"],
+        "parameters": [{"parameterName1": "value1", "parameterName2": "value2"}, { "body": {} }, { "id": "idValue"}]
+      }
+    }
+  },
+  "tests": {
+    "goodGetCapabilities": {
+      "method": "get",
+      "endpoint": "/wms/getCapabilities",
+      "in": "query",
+      "expected": "good",
+      "parameters": {
+        "service": "WMS",
+        "version": "1.3.0",
+        "request": "GetCapabilities"
+      }
+    },
+    "badGetCapabilities": {
+      "method": "get",
+      "endpoint": "/wms/getCapabilities",
+      "in": "query",
+      "expected": "bad",
+      "parameters": {
+        "version": "0.0.1",
+        "fake": "fake & should fail"
+      }
+    },
+    "minGetMap": {
+      "method": "get",
+      "endpoint": "/wms/getCapabilities",
+      "in": "query",
+      "expected": "good",
+      "parameters": {
+        "service": "WMS",
+        "version": "1.3.0",
+        "request": "GetCapabilities",
+        "layers": "omar:raster_entry",
+        "bbox": "-180,-90,180,90",
+        "width": "1024",
+        "height": "512",
+        "format": "image/vnd.jpeg-png"
+      }
+    },
+    "maxGetMap": {
+      "method": "get",
+      "endpoint": "/wms/getCapabilities",
+      "in": "query",
+      "expected": "good",
+      "parameters": {
+        "service": "WMS",
+        "version": "1.3.0",
+        "request": "GetCapabilities",
+        "layers": "omar:raster_entry",
+        "filter": "idk",
+        "srs": "epsg:4326",
+        "crs": "epsg:4326",
+        "bbox": "-180,-90,180,90",
+        "width": "1024",
+        "height": "512",
+        "format": "image/vnd.jpeg-png",
+        "transparent": "TRUE",
+        "styles": "idk",
+        "exceptions": "application/vnd.ogc.se_xml"
+      }
+    },
+    "badGetMap": {
+      "method": "get",
+      "endpoint": "/wms/getCapabilities",
+      "in": "query",
+      "expected": "bad",
+      "parameters": {
+      }
+    }
+  }
+}
