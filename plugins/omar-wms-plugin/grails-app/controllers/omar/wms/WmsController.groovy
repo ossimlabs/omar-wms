@@ -76,7 +76,7 @@ class WmsController
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
 		def outputBuffer
-		if(service == "WMS" && (version == "1.1.1" || version == "1.3.0") && request == "GetCapabilities") {
+		if(version == "1.1.1" || version == "1.3.0") {
 			Map<String, String> results = webMappingService.getCapabilities(wmsParams)
 			response.setHeader 'Content-Type', results.contentType
 			outputBuffer = encodeResponse(results.buffer)
@@ -278,8 +278,7 @@ where:
 		try
 		{
 			outputStream = response.outputStream
-			wmsParams.validate()
-			if(!wmsParams.hasErrors())
+			if(wmsParams.validate())
 			{
 				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
 				if(getMapResult.status) response.status = getMapResult.status

@@ -79,7 +79,10 @@ class GetMapRequest implements Validateable
                     result = "version is 1.1.1 and the srs field must not be empty"
                 }
             }
-            result
+            if (result)
+                return result
+            else
+                return true
         })
         crs(nullable: true, blank: true, validator: { val, obj ->
             String result
@@ -102,7 +105,10 @@ class GetMapRequest implements Validateable
                     result = "version is 1.3.0 and the crs field must not be empty"
                 }
             }
-            result
+            if (result)
+                return result
+            else
+                return true
         })
         bbox(nullable: false, blank: false, validator: { val, obj ->
             String result
@@ -112,7 +118,10 @@ class GetMapRequest implements Validateable
                 result = "bbox must have 4 values separated by commas"
             }
 
-            result
+            if (result)
+                return result
+            else
+                return true
         })
 
         format(nullable: true, blank: true)
