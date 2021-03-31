@@ -29,8 +29,7 @@
       "in": "query",
       "expected": "bad",
       "parameters": {
-        "version": "0.0.1",
-        "fake": "fake & should fail"
+        "version": "0.0.1"
       }
     },
     "minGetMap": {
@@ -77,6 +76,8 @@
       "in": "query",
       "expected": "bad",
       "parameters": {
+        "version": "1.1.1",
+        "srs": "super:invalid:srs"
       }
     }
   }
