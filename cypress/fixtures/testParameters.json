@@ -34,12 +34,12 @@
     },
     "minGetMap": {
       "method": "get",
-      "endpoint": "/wms/getCapabilities",
+      "endpoint": "/wms/getMap",
       "in": "query",
       "expected": "good",
       "parameters": {
         "version": "1.3.0",
-        "request": "GetCapabilities",
+        "request": "getMap",
         "bbox": "-180,-90,180,90",
         "width": "1024",
         "height": "512",
@@ -48,13 +48,13 @@
     },
     "maxGetMap": {
       "method": "get",
-      "endpoint": "/wms/getCapabilities",
+      "endpoint": "/wms/getMap",
       "in": "query",
       "expected": "good",
       "parameters": {
         "service": "WMS",
         "version": "1.3.0",
-        "request": "GetCapabilities",
+        "request": "getMap",
         "layers": "omar:raster_entry",
         "srs": "epsg:4326",
         "crs": "epsg:4326",
@@ -68,7 +68,7 @@
     },
     "badGetMap": {
       "method": "get",
-      "endpoint": "/wms/getCapabilities",
+      "endpoint": "/wms/getMap",
       "in": "query",
       "expected": "bad",
       "parameters": {

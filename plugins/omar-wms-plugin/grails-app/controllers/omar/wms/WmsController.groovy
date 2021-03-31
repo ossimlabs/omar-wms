@@ -75,28 +75,10 @@ class WmsController
 		bindData( wmsParams, params )
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
-		def outputBuffer
-		if(version == "1.1.1" || version == "1.3.0") {
-			Map<String, String> results = webMappingService.getCapabilities(wmsParams)
-			response.setHeader 'Content-Type', results.contentType
-			outputBuffer = encodeResponse(results.buffer)
-		}
-		else {
-			def result = [status     : HttpStatus.BAD_REQUEST,
-					      contentType: "text/plain",
-					      buffer     : "Invalid parameters".bytes
-			]
-			outputBuffer = response.outputStream
-			response.status        = result.status
-			response.contentType   = result.contentType
-			response.contentLength = result.buffer.length
-			if(outputBuffer)
-			{
-				outputBuffer << result.buffer
-			}
-		}
+		Map<String, String> results = webMappingService.getCapabilities( wmsParams )
 
-
+		response.setHeader 'Content-Type', results.contentType
+		def outputBuffer = encodeResponse( results.buffer )
 		if ( outputBuffer instanceof ByteArrayOutputStream ) {
 			outputBuffer.writeTo( response.outputStream )
 			response.outputStream.flush()
