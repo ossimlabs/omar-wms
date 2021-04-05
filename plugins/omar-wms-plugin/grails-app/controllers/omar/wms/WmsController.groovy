@@ -75,17 +75,41 @@ class WmsController
 		bindData( wmsParams, params )
 		wmsParams.username = webMappingService.extractUsernameFromRequest(request)
 
-		Map<String, String> results = webMappingService.getCapabilities( wmsParams )
+		OutputStream outputStream = null
+		try
+		{
+			outputStream = response.outputStream
+			if(wmsParams.validate())
+			{
+				Map results = webMappingService.getCapabilities( wmsParams )
+				if(results.status) response.status = results.status
+				if(results.contentType) response.contentType = results.contentType
+				if(results.buffer?.length) response.contentLength = results.buffer.length
+				if(outputStream)
+				{
+					outputStream << results.buffer
+				}
+			}
+			else
+			{
+				response.status = HttpStatus.BAD_REQUEST
 
-		response.setHeader 'Content-Type', results.contentType
-		def outputBuffer = encodeResponse( results.buffer )
-		if ( outputBuffer instanceof ByteArrayOutputStream ) {
-			outputBuffer.writeTo( response.outputStream )
-			response.outputStream.flush()
+				HashMap ogcExceptionResult = OgcExceptionUtil.formatWmsException(wmsParams)
+				response.contentType = ogcExceptionResult.contentType
+				response.contentLength = ogcExceptionResult.buffer.length
+				outputStream << ogcExceptionResult.buffer
+			}
 		}
-		else {
-			render outputBuffer
+		catch ( IOException e )
+		{
+			log.error("Error writing response output stream", e)
 		}
+		finally
+		{
+			outputStream?.close()
+		}
+
+		return outputStream
 	}
 
 	/**
@@ -262,13 +286,13 @@ where:
 			outputStream = response.outputStream
 			if(wmsParams.validate())
 			{
-				Map getMapResult = webMappingService.getMap( wmsParams, isPsm )
-				if(getMapResult.status) response.status = getMapResult.status
-				if(getMapResult.contentType) response.contentType = getMapResult.contentType
-				if(getMapResult.buffer?.length) response.contentLength = getMapResult.buffer.length
+				Map results = webMappingService.getMap( wmsParams, isPsm )
+				if(results.status) response.status = results.status
+				if(results.contentType) response.contentType = results.contentType
+				if(results.buffer?.length) response.contentLength = results.buffer.length
 				if(outputStream)
 				{
-					outputStream << getMapResult.buffer
+					outputStream << results.buffer
 				}
 			}
 			else

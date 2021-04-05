@@ -15,9 +15,9 @@ packaged-chart
 .lock
 charts/*.tgz
 results/
+package.json
 package-lock.json
 node_modules/
-cypress/fixtures/
 cypress/plugins/
 cypress/screenshots/
 cypress/support/

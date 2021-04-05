@@ -26,4 +26,31 @@ class GetCapabilitiesRequest implements Validateable
   static mapping = {
     version false
   }
+
+  static constraints = {
+    service(nullable: false, blank: false, validator: { val, obj ->
+      String result
+      if (val != "WMS")
+      {
+        result = "Invalid service"
+      }
+      result
+    })
+    version(nullable: false, blank: false, validator: { val, obj ->
+      String result
+      if (val != "1.1.1" && val != "1.3.0")
+      {
+        result = "Invalid version"
+      }
+      result
+    })
+    request(nullable: false, blank: false, validator: { val, obj ->
+      String result
+      if (val != "GetCapabilities")
+      {
+        result = "Invalid request"
+      }
+      result
+    })
+  }
 }
