@@ -30,9 +30,19 @@ spring:
                 - '**/*.gson'
                 - 'logback.groovy'
                 - '*.properties'
-management:
-    endpoints:
-        enabled-by-default: false
+environments:
+    development:
+        management:
+            endpoints:
+                enabled-by-default: true
+                web:
+                    base-path: '/actuator'
+                    exposure:
+                        include: '*'
+    production:
+        management:
+            endpoints:
+                enabled-by-default: false
 
 ---
 grails:
@@ -86,10 +96,6 @@ grails:
                 scriptlet: html
                 taglib: none
                 staticparts: none
-management:
-    endpoints:
-        jmx:
-            unique-names: true
 
 ---
 hibernate:
@@ -108,15 +114,15 @@ environments:
     development:
         dataSource:
             dbCreate: create-drop
-            url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+            url: jdbc:h2:mem:devDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
     test:
         dataSource:
             dbCreate: update
-            url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+            url: jdbc:h2:mem:testDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
     production:
         dataSource:
             dbCreate: none
-            url: jdbc:h2:./prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+            url: jdbc:h2:./prodDb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
             properties:
                 jmxEnabled: true
                 initialSize: 5
@@ -138,69 +144,5 @@ environments:
 ---
 server:
     servlet:
-        context-path: /omar-wms
-    contextPath: ${server.servlet.context-path}
+        context-path: /omar-wms                        
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    env:
-      enabled: true
-      sensitive: false
-    health:
-      enabled: true
-    
-grails:
-    cors:
-        enabled: true
-    resources:
-        pattern: '/**'
-    servlet:
-        version: 3.0
----
-spring:
-  application:
-    name: omar-wms
-  cloud:
-    discovery:
-      enabled: ${SPRING_CLOUD_DISCOVERY_ENABLED:false}
-    service-registry:
-      auto-registration:
-        enabled: ${spring.cloud.discovery.enabled}
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: ${EUREKA_URI:http://omar-eureka-server:8761/omar-eureka-server/eureka}
-  instance:
-    preferIpAddress: true
----
-logging:
-  config: classpath:logback.groovy
-
-omar:
-  wms:
-    stager:
-      # Is the location of the stager API.  This is used to update the last access date for images.
-      url: http://omar-stager-app:8080/omar-stager/dataManager
-    geoscript:
-      # Is the location of the geoscript API for the query service.  This is used to query the layers in the LAYERS parameter.
-      url: http://omar-geoscript-app:8080/omar-geoscript/geoscriptApi
-
-    oms:
-      chipper:
-        # Is the location of the chipper endpoint for chipping imagery.
-        url: http://omar-oms-app:8080/omar-oms/chipper
-        # Is the default histogram operation that is applied if no argument is passed in the styles.
-        # e.g.: "none", "auto-minmax", "auto-percentile", "std-stretch-1", "std-stretch-2", or "std-stretch-3"
-        histOp: auto-minmax
-    mosaic:
-      limit: 50
-# Define the http protocols that swagger will use
-swagger:
-  schemes:
-    - HTTPS
-    - HTTP

@@ -10,15 +10,3 @@ out/
 .project
 .settings
 .classpath
-prodDb.mv.db
-packaged-chart
-.lock
-charts/*.tgz
-results/
-package.json
-package-lock.json
-node_modules/
-cypress/plugins/
-cypress/screenshots/
-cypress/support/
-cypress/videos/
