@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "omar-wms.labels" . | nindent 4 }}
+  name: {{ include "omar-wms.fullname" . }}
+spec:
+  selector:
+    {{- include "omar-wms.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: {{ .Values.internalPort }}-tcp
+    port: {{ .Values.externalPort }}
+    protocol: TCP
+    targetPort: {{ .Values.internalPort }}
+  sessionAffinity: None
+  type: ClusterIP
