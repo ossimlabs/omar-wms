@@ -93,27 +93,26 @@ node(POD_LABEL){
         DOCKER_IMAGE_PATH = "${DOCKER_REGISTRY_PRIVATE_UPLOAD_URL}/${APP_NAME}"
     }
 
-//     CYPRESS TESTS COMING SOON
-//     stage ("Run Cypress Test") {
-//         container('cypress') {
-//             try {
-//                 sh """
-//                     cypress run --headless
-//                 """
-//             }
-//             catch (err) {
-//
-//             }
-//                 sh """
-//                     npm i -g xunit-viewer
-//                     xunit-viewer -r results -o results/${APP_NAME}-test-results.html
-//                 """
-//                     junit 'results/*.xml'
-//                     archiveArtifacts "results/*.xml"
-//                     archiveArtifacts "results/*.html"
-//                     s3Upload(file:'results/${APP_NAME}-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
-//                 }
-//             }
+    stage ("Run Cypress Test") {
+        container('cypress') {
+            try {
+                sh """
+                    cypress run --headless
+                """
+            }
+            catch (err) {
+
+            }
+                sh """
+                    npm i -g xunit-viewer
+                    xunit-viewer -r results -o results/omar-wms-test-results.html
+                """
+                    junit 'results/*.xml'
+                    archiveArtifacts "results/*.xml"
+                    archiveArtifacts "results/*.html"
+                    s3Upload(file:'results/omar-wms-test-results.html', bucket:'ossimlabs', path:'cypressTests/')
+                }
+            }
 
 //     stage('Fortify Scans') {
 //         COMING SOON
@@ -167,47 +166,26 @@ node(POD_LABEL){
       }
     }
 
-    stage('Docker build') {
-      container('docker') {
-        withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {  //TODO
-          if (BRANCH_NAME == 'master'){
+    stage('Docker Build') {
+        container('docker') {
+            withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_DOWNLOAD_URL}") {
                 sh """
-                    docker build --network=host -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}" ./docker
+                    docker build --build-arg BASE_IMAGE=${JDK11_BASE_IMAGE} --network=host -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}/${APP_NAME}:${TAG_NAME}" ./docker
                 """
-          }
-          else {
-                sh """
-                    docker build --network=host -t "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}".a ./docker
-                """
-          }
+            }
         }
-      }
     }
 
-    stage('Docker push'){
+    stage('Docker Push') {
         container('docker') {
-          withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
-            if (BRANCH_NAME == 'master'){
-                sh """
-                    docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}"
-                """
+            withDockerRegistry(credentialsId: 'dockerCredentials', url: "https://${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}") {
+            sh """
+                docker tag "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}/${APP_NAME}:${TAG_NAME}" "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}/${APP_NAME}:${TAG_NAME}"
+                docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}/${APP_NAME}:${TAG_NAME}"
+            """
             }
-            else if (BRANCH_NAME == 'dev') {
-                sh """
-                    docker tag "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}".a "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:dev
-                    docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}".a
-                    docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:dev
-                """
-            }
-            else {
-                sh """
-                    docker push "${DOCKER_REGISTRY_PUBLIC_UPLOAD_URL}"/omar-wms:"${VERSION}".a           
-                """
-            }
-          }
         }
-      }
-
+    }
 
     stage('Package & Upload Chart'){
         container('helm') {
